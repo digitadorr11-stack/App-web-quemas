@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { StatsOverview } from '@/components/StatsOverview';
 import { BurnFilters } from '@/components/BurnFilters';
@@ -369,8 +370,7 @@ export default function DashboardPage() {
       setActiveTab('todas');
       setStatusFilter('ALL');
     } else if (status === 'FINALIZADA') {
-      setActiveTab('finalizadas');
-      setStatusFilter('FINALIZADA');
+      router.push('/quemas-finalizadas');
     } else if (status === 'CANCELADA') {
       setActiveTab('todas');
       setStatusFilter('CANCELADA');
@@ -481,6 +481,15 @@ export default function DashboardPage() {
               </button>
             )}
 
+            <Link
+              href="/quemas-finalizadas"
+              className="px-3.5 py-2 bg-emerald-800/90 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl border border-emerald-600/60 flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+              title="Abrir tabla con todas las quemas finalizadas"
+            >
+              <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+              <span>Ver Finalizadas ({finalizedBurnsCount})</span>
+            </Link>
+
             <button
               onClick={() => exportToExcel(filteredBurns, 'Reporte_Quemas_Programadas')}
               className="px-3.5 py-2 bg-union-800 hover:bg-union-700 text-union-100 hover:text-white font-semibold text-xs rounded-xl border border-union-600 flex items-center gap-1.5 transition cursor-pointer"
@@ -517,7 +526,7 @@ export default function DashboardPage() {
           />
         )}
 
-        {/* Pestañas de Alcance Operativo: Solicitudes en Proceso vs Todas las Quemas vs Finalizadas */}
+        {/* Pestañas de Alcance Operativo */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-sm">
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
@@ -560,25 +569,16 @@ export default function DashboardPage() {
               </span>
             </button>
 
-            <button
-              onClick={() => {
-                setActiveTab('finalizadas');
-                setStatusFilter('ALL');
-              }}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
-                activeTab === 'finalizadas'
-                  ? 'bg-union-900 text-white shadow-md'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
-              }`}
+            <Link
+              href="/quemas-finalizadas"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 cursor-pointer"
             >
-              <CheckCircle2 className={`w-3.5 h-3.5 ${activeTab === 'finalizadas' ? 'text-emerald-400' : 'text-emerald-600'}`} />
-              <span>Solo Finalizadas</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                activeTab === 'finalizadas' ? 'bg-emerald-400 text-slate-950' : 'bg-slate-200 text-slate-800'
-              }`}>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Tabla de Finalizadas</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white">
                 {finalizedBurnsCount}
               </span>
-            </button>
+            </Link>
           </div>
 
           <div className="flex items-center gap-2 self-end sm:self-auto">

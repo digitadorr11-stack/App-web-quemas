@@ -19,6 +19,7 @@ import {
   X,
   ChevronRight,
   Sparkles,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -47,6 +48,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
           icon: Flame,
           color: 'text-amber-400',
           activeBg: 'bg-emerald-800 text-white border-l-4 border-amber-400 font-bold shadow-md shadow-emerald-950/40',
+          visible: true,
+        },
+        {
+          href: '/quemas-finalizadas',
+          label: 'Quemas Finalizadas',
+          icon: CheckCircle2,
+          color: 'text-emerald-400',
+          activeBg: 'bg-emerald-900 text-white border-l-4 border-emerald-400 font-bold shadow-md shadow-emerald-950/40',
           visible: true,
         },
         {
@@ -112,7 +121,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
 
   // Current Active Page Title for Top Bar
   const getCurrentPageTitle = () => {
-    if (pathname === '/') return { title: 'Quemas Programadas', icon: Flame, color: 'text-amber-400' };
+    if (pathname === '/') return { title: 'Quemas Programadas (En Proceso)', icon: Flame, color: 'text-amber-400' };
+    if (pathname === '/quemas-finalizadas') return { title: 'Registro de Quemas Finalizadas', icon: CheckCircle2, color: 'text-emerald-400' };
     if (pathname === '/quemas-criminales') return { title: 'Quemas Criminales', icon: ShieldAlert, color: 'text-red-400' };
     if (pathname === '/reportes') return { title: 'Reportes & KPIs', icon: BarChart3, color: 'text-blue-400' };
     if (pathname === '/bitacora') return { title: 'Bitácora de Auditoría', icon: ShieldCheck, color: 'text-emerald-400' };
