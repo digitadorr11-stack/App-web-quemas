@@ -92,7 +92,14 @@ export const BurnTable: React.FC<BurnTableProps> = ({
                 <tr key={burn.id} className="hover:bg-gray-50/80 transition">
                   {/* No. Quema */}
                   <td className="py-3.5 px-4 font-black text-gray-900 whitespace-nowrap">
-                    {burn.burn_number}
+                    <div className="flex items-center gap-1.5">
+                      <span>{burn.burn_number}</span>
+                      {burn.burn_type === 'CRIMINAL' && (
+                        <span className="text-[9px] font-black uppercase bg-red-600 text-white px-1.5 py-0.2 rounded border border-red-700 animate-pulse">
+                          Criminal
+                        </span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Frente & Finca */}
@@ -150,13 +157,29 @@ export const BurnTable: React.FC<BurnTableProps> = ({
                   </td>
 
                   {/* Tiempos */}
-                  <td className="py-3.5 px-4 text-center text-[11px] text-gray-600 whitespace-nowrap">
-                    {burn.burn_started_at ? (
-                      <span className="text-red-700 font-bold">
-                        Inicio: {formatTime(burn.burn_started_at)}
-                      </span>
+                  <td className="py-3.5 px-4 text-center text-xs text-gray-700 whitespace-nowrap">
+                    {burn.status === 'FINALIZADA' ? (
+                      <div className="space-y-0.5 font-mono">
+                        <div className="font-bold text-gray-900">
+                          {burn.burn_started_at ? formatTime(burn.burn_started_at) : '—'} ➔ {burn.burn_ended_at ? formatTime(burn.burn_ended_at) : '—'}
+                        </div>
+                        {burn.burn_duration_minutes && (
+                          <span className="inline-block bg-emerald-100 text-emerald-800 font-black text-[10px] px-1.5 py-0.2 rounded border border-emerald-300">
+                            ⏱️ {burn.burn_duration_minutes} min
+                          </span>
+                        )}
+                      </div>
+                    ) : burn.status === 'EN_QUEMA' ? (
+                      <div className="space-y-0.5">
+                        <span className="text-red-700 font-bold block font-mono">
+                          Inicio: {formatTime(burn.burn_started_at)}
+                        </span>
+                        <span className="inline-block bg-red-100 text-red-800 text-[10px] font-black px-1.5 py-0.2 rounded border border-red-300 animate-pulse">
+                          🔥 En progreso
+                        </span>
+                      </div>
                     ) : burn.patrol_arrived_at ? (
-                      <span className="text-union-800">
+                      <span className="text-union-800 font-medium font-mono">
                         Llegada: {formatTime(burn.patrol_arrived_at)}
                       </span>
                     ) : (
@@ -172,7 +195,7 @@ export const BurnTable: React.FC<BurnTableProps> = ({
                       {burn.status === 'SOLICITADA' && isQuemas && (
                         <button
                           onClick={() => onOpenAssign(burn)}
-                          className="px-2.5 py-1 text-xs font-bold text-white bg-amber-700 hover:bg-amber-600 rounded-md transition"
+                          className="px-2.5 py-1 text-xs font-bold text-white bg-amber-700 hover:bg-amber-600 rounded-md transition cursor-pointer"
                         >
                           Asignar
                         </button>
@@ -181,7 +204,7 @@ export const BurnTable: React.FC<BurnTableProps> = ({
                       {burn.status === 'PATRULLA_ASIGNADA' && isPatrulla && (
                         <button
                           onClick={() => onOpenPatrolAction(burn)}
-                          className="px-2.5 py-1 text-xs font-bold text-white bg-fire-600 hover:bg-fire-500 rounded-md transition"
+                          className="px-2.5 py-1 text-xs font-bold text-white bg-fire-600 hover:bg-fire-500 rounded-md transition cursor-pointer"
                         >
                           Llegada
                         </button>
@@ -190,7 +213,7 @@ export const BurnTable: React.FC<BurnTableProps> = ({
                       {burn.status === 'EN_REVISION' && isPatrulla && (
                         <button
                           onClick={() => onOpenPatrolAction(burn)}
-                          className="px-2.5 py-1 text-xs font-bold text-white bg-union-800 hover:bg-union-700 rounded-md transition"
+                          className="px-2.5 py-1 text-xs font-bold text-white bg-union-800 hover:bg-union-700 rounded-md transition cursor-pointer"
                         >
                           Revisar
                         </button>
@@ -199,7 +222,7 @@ export const BurnTable: React.FC<BurnTableProps> = ({
                       {burn.status === 'REVISION_COMPLETADA' && isDigitador && (
                         <button
                           onClick={() => onOpenValidation(burn)}
-                          className="px-2.5 py-1 text-xs font-bold text-white bg-purple-700 hover:bg-purple-600 rounded-md transition"
+                          className="px-2.5 py-1 text-xs font-bold text-white bg-purple-700 hover:bg-purple-600 rounded-md transition cursor-pointer"
                         >
                           Validar
                         </button>
@@ -208,18 +231,18 @@ export const BurnTable: React.FC<BurnTableProps> = ({
                       {burn.status === 'VALIDADA' && isPatrulla && (
                         <button
                           onClick={() => onOpenPatrolAction(burn)}
-                          className="px-2.5 py-1 text-xs font-bold text-white bg-red-600 hover:bg-red-500 rounded-md animate-pulse transition"
+                          className="px-2.5 py-1 text-xs font-bold text-white bg-red-600 hover:bg-red-500 rounded-md animate-pulse transition cursor-pointer"
                         >
                           Iniciar
                         </button>
                       )}
 
-                      {burn.status === 'EN_QUEMA' && isPatrulla && (
+                      {burn.status === 'EN_QUEMA' && (isPatrulla || isQuemas || isDigitador) && (
                         <button
                           onClick={() => onOpenPatrolAction(burn)}
-                          className="px-2.5 py-1 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-600 rounded-md transition"
+                          className="px-2.5 py-1 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-600 rounded-md transition cursor-pointer flex items-center gap-1"
                         >
-                          Finalizar
+                          <span>{burn.burn_type === 'CRIMINAL' ? '🚨 Liquidar' : 'Finalizar'}</span>
                         </button>
                       )}
 

@@ -26,6 +26,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  RefreshCw,
 } from 'lucide-react';
 
 export default function MaestrosPage() {
@@ -211,7 +212,29 @@ export default function MaestrosPage() {
     showToast('Patrulla de quema guardada');
   };
 
-  if (!currentUser) return null;
+  if (!currentUser || isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-4 text-center max-w-sm">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center">
+            <Flame className="w-8 h-8 text-amber-500 animate-pulse" />
+          </div>
+          <div>
+            <h2 className="text-lg font-black tracking-tight text-white">
+              Ingenio La Unión
+            </h2>
+            <p className="text-xs text-emerald-400 font-bold uppercase tracking-widest mt-0.5">
+              Catálogos Maestros Oficiales
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-400 mt-2">
+            <RefreshCw className="w-4 h-4 animate-spin text-emerald-500" />
+            <span>Cargando catálogos...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -225,7 +248,8 @@ export default function MaestrosPage() {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+      <main className="lg:pl-64 flex-1 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         {/* Banner Header */}
         <div className="mb-6 bg-gradient-to-r from-union-950 via-union-900 to-slate-900 text-white p-6 rounded-2xl shadow-md border border-union-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -237,7 +261,7 @@ export default function MaestrosPage() {
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white mt-1">
-              Base de Datos Maestra • Zafra 56
+              Base de Datos Maestra Oficial
             </h1>
             <p className="text-xs sm:text-sm text-union-200 mt-1 max-w-2xl">
               Aquí se gestionan las <strong>Fincas, Lotes y TCH oficiales</strong>, los <strong>Frentes de Cosecha</strong> y las <strong>Patrullas de Quema</strong>. Los cambios se reflejan de inmediato al solicitar quemas.
@@ -296,7 +320,7 @@ export default function MaestrosPage() {
             }`}
           >
             <MapPin className="w-4 h-4 text-emerald-600" />
-            <span>1. Maestro Fincas y Lotes (TCH Zafra 56)</span>
+            <span>1. Maestro Fincas y Lotes (TCH)</span>
             <span className="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-extrabold">
               {flattenedLotes.length} lotes
             </span>
@@ -545,6 +569,7 @@ export default function MaestrosPage() {
           </div>
         )}
 
+        </div>
       </main>
 
       {/* ========================================================================= */}

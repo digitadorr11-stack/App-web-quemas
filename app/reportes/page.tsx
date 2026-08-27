@@ -24,11 +24,12 @@ import {
   User,
   ShieldCheck,
   Users,
+  ShieldAlert,
 } from 'lucide-react';
 
 export default function ReportesPage() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile>(() => storageService.getActiveUser() || INITIAL_USERS[0]);
   const [allBurns, setAllBurns] = useState<BurnRequest[]>([]);
   const [userBurns, setUserBurns] = useState<BurnRequest[]>([]);
   const [fronts, setFronts] = useState<Front[]>([]);
@@ -80,6 +81,11 @@ export default function ReportesPage() {
   const canceladas = activeDataset.filter((b) => b.status === 'CANCELADA');
   const enProceso = activeDataset.filter((b) => b.status !== 'FINALIZADA' && b.status !== 'CANCELADA');
 
+  // Criminal Burns Analytics
+  const criminalBurns = activeDataset.filter((b) => b.burn_type === 'CRIMINAL');
+  const criminalHa = criminalBurns.reduce((acc, b) => acc + (Number(b.area_hectares) || 0), 0);
+  const criminalTons = criminalBurns.reduce((acc, b) => acc + (Number(b.estimated_tonnage) || 0), 0);
+
   const totalHa = activeDataset.reduce((acc, b) => acc + (Number(b.area_hectares) || 0), 0);
   const finalizadasHa = finalizadas.reduce((acc, b) => acc + (Number(b.area_hectares) || 0), 0);
   const totalTons = activeDataset.reduce((acc, b) => acc + (Number(b.estimated_tonnage) || 0), 0);
@@ -98,33 +104,36 @@ export default function ReportesPage() {
 
   // Breakdown by FRENTE (Frentes 15, 16, 17, 19, 23, 25)
   const frontStats = useMemo(() => {
-    const map: Record<string, { count: number; ha: number; tons: number; finalizadas: number }> = {};
+    const map: Record<string, { count: number; ha: number; tons: number; finalizadas: number; criminales: number }> = {};
     
     // Seed with all known fronts
     fronts.forEach((f) => {
-      map[f.name] = { count: 0, ha: 0, tons: 0, finalizadas: 0 };
+      map[f.name] = { count: 0, ha: 0, tons: 0, finalizadas: 0, criminales: 0 };
     });
 
     allBurns.forEach((b) => {
       const fName = b.front_number || 'Frente General';
-      if (!map[fName]) map[fName] = { count: 0, ha: 0, tons: 0, finalizadas: 0 };
+      if (!map[fName]) map[fName] = { count: 0, ha: 0, tons: 0, finalizadas: 0, criminales: 0 };
       map[fName].count += 1;
       map[fName].ha += Number(b.area_hectares) || 0;
       map[fName].tons += Number(b.estimated_tonnage) || 0;
       if (b.status === 'FINALIZADA') map[fName].finalizadas += 1;
+      if (b.burn_type === 'CRIMINAL') map[fName].criminales += 1;
     });
 
     return Object.entries(map).map(([name, data]) => ({ name, ...data }));
   }, [allBurns, fronts]);
 
-  // Breakdown by PATRULLA (Patrullas Alfa, Beta, Gamma, Delta)
+  // Breakdown by PATRULLA / CLAVE
   const patrolStats = useMemo(() => {
-    const map: Record<string, { count: number; finalizadas: number; ha: number; totalRevMin: number; revCount: number }> = {};
+    const map: Record<string, { count: number; finalizadas: number; criminales: number; programadas: number; ha: number; totalRevMin: number; revCount: number }> = {};
     allBurns.forEach((b) => {
       const p = b.assigned_patrol_name || 'Sin Asignar';
-      if (!map[p]) map[p] = { count: 0, finalizadas: 0, ha: 0, totalRevMin: 0, revCount: 0 };
+      if (!map[p]) map[p] = { count: 0, finalizadas: 0, criminales: 0, programadas: 0, ha: 0, totalRevMin: 0, revCount: 0 };
       map[p].count += 1;
       if (b.status === 'FINALIZADA') map[p].finalizadas += 1;
+      if (b.burn_type === 'CRIMINAL') map[p].criminales += 1;
+      else map[p].programadas += 1;
       map[p].ha += Number(b.area_hectares) || 0;
       if (b.review_duration_minutes) {
         map[p].totalRevMin += b.review_duration_minutes;
@@ -142,7 +151,8 @@ export default function ReportesPage() {
     <>
       <Navbar currentUser={currentUser} onUserChange={handleUserChange} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+      <main className="lg:pl-64 flex-1 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         {/* Header Banner */}
         <div className="mb-6 bg-gradient-to-r from-union-950 via-union-900 to-slate-900 text-white p-6 rounded-2xl shadow-md border border-union-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -198,7 +208,7 @@ export default function ReportesPage() {
         </div>
 
         {/* Personalized KPIs Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
           
           <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
             <div>
@@ -251,6 +261,25 @@ export default function ReportesPage() {
             </div>
           </div>
 
+          {/* Quemas Criminales KPI */}
+          <div className="bg-white p-5 rounded-2xl border-2 border-red-200 bg-red-50/20 shadow-sm flex items-center justify-between">
+            <div>
+              <span className="text-xs font-black text-red-600 uppercase tracking-wider flex items-center gap-1">
+                <Flame className="w-3.5 h-3.5 text-red-600 animate-pulse" />
+                Quemas Criminales
+              </span>
+              <div className="text-3xl font-black text-red-950 mt-1">
+                {criminalBurns.length} <span className="text-xs font-bold text-red-700">({criminalHa.toFixed(1)} ha)</span>
+              </div>
+              <span className="text-xs text-gray-500 mt-1 block font-medium">
+                {criminalTons.toLocaleString()} TM en fuego no programado
+              </span>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-red-100 border border-red-300 flex items-center justify-center text-red-700">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+          </div>
+
           <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -291,6 +320,7 @@ export default function ReportesPage() {
                     <tr>
                       <th className="pb-2">Frente</th>
                       <th className="pb-2 text-center">Quemas</th>
+                      <th className="pb-2 text-center text-red-600">Criminales</th>
                       <th className="pb-2 text-right">Área Total</th>
                       <th className="pb-2 text-right">Toneladas</th>
                       <th className="pb-2 text-center">Finalizadas</th>
@@ -301,6 +331,15 @@ export default function ReportesPage() {
                       <tr key={f.name} className="hover:bg-blue-50/50">
                         <td className="py-2.5 font-bold text-blue-900">{f.name}</td>
                         <td className="py-2.5 text-center font-semibold text-gray-700">{f.count}</td>
+                        <td className="py-2.5 text-center font-bold text-red-600">
+                          {f.criminales > 0 ? (
+                            <span className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded-full text-[10px] font-black">
+                              🚨 {f.criminales}
+                            </span>
+                          ) : (
+                            '0'
+                          )}
+                        </td>
                         <td className="py-2.5 text-right font-medium text-gray-800">{f.ha.toFixed(1)} ha</td>
                         <td className="py-2.5 text-right font-bold text-gray-900">{f.tons.toLocaleString()} TM</td>
                         <td className="py-2.5 text-center font-bold text-emerald-700">
@@ -313,7 +352,7 @@ export default function ReportesPage() {
               </div>
             </div>
 
-            {/* 2. BY PATRULLA (Patrullas Alfa, Beta, Gamma, Delta) */}
+            {/* 2. BY PATRULLA / CLAVE */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
               <div className="bg-gray-50 px-5 py-3.5 border-b border-gray-200 flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-gray-700 flex items-center gap-2">
@@ -329,9 +368,10 @@ export default function ReportesPage() {
                   <thead className="text-gray-500 font-bold border-b border-gray-200">
                     <tr>
                       <th className="pb-2">Patrulla</th>
-                      <th className="pb-2 text-center">Servicios</th>
-                      <th className="pb-2 text-center">Quemas Finalizadas</th>
-                      <th className="pb-2 text-right">Tiempo Rev. Prom</th>
+                      <th className="pb-2 text-center">Total</th>
+                      <th className="pb-2 text-center">Prog.</th>
+                      <th className="pb-2 text-center text-red-600">🚨 Criminal</th>
+                      <th className="pb-2 text-center text-emerald-700">Finalizadas</th>
                       <th className="pb-2 text-right">Efectividad</th>
                     </tr>
                   </thead>
@@ -340,8 +380,17 @@ export default function ReportesPage() {
                       <tr key={p.name} className="hover:bg-orange-50/50">
                         <td className="py-2.5 font-bold text-orange-950">{p.name}</td>
                         <td className="py-2.5 text-center font-semibold text-gray-700">{p.count}</td>
+                        <td className="py-2.5 text-center font-medium text-gray-600">{p.programadas}</td>
+                        <td className="py-2.5 text-center font-bold text-red-600">
+                          {p.criminales > 0 ? (
+                            <span className="bg-red-100 text-red-800 px-1.5 py-0.5 rounded-full text-[10px] font-black">
+                              🚨 {p.criminales}
+                            </span>
+                          ) : (
+                            '0'
+                          )}
+                        </td>
                         <td className="py-2.5 text-center font-bold text-emerald-700">{p.finalizadas}</td>
-                        <td className="py-2.5 text-right font-medium text-gray-700">{p.avgRev > 0 ? `${p.avgRev} min` : '—'}</td>
                         <td className="py-2.5 text-right font-black text-union-800">
                           {p.count > 0 ? ((p.finalizadas / p.count) * 100).toFixed(0) : 0}%
                         </td>
@@ -366,6 +415,7 @@ export default function ReportesPage() {
                 <thead className="bg-gray-50 text-gray-600 uppercase font-bold border-b border-gray-200">
                   <tr>
                     <th className="py-2.5 px-3">No. Quema</th>
+                    <th className="py-2.5 px-3">Tipo</th>
                     <th className="py-2.5 px-3">Frente</th>
                     <th className="py-2.5 px-3">Finca</th>
                     <th className="py-2.5 px-3">Lote / UM</th>
@@ -379,6 +429,17 @@ export default function ReportesPage() {
                   {userBurns.map((b) => (
                     <tr key={b.id} className="hover:bg-gray-50">
                       <td className="py-2 px-3 font-bold text-gray-900">{b.burn_number}</td>
+                      <td className="py-2 px-3">
+                        {b.burn_type === 'CRIMINAL' ? (
+                          <span className="text-[10px] font-black uppercase bg-red-600 text-white px-2 py-0.5 rounded-md animate-pulse">
+                            🚨 Criminal
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded">
+                            Programada
+                          </span>
+                        )}
+                      </td>
                       <td className="py-2 px-3 font-semibold text-blue-800">{b.front_number}</td>
                       <td className="py-2 px-3 text-gray-800 font-medium">{b.farm_name}</td>
                       <td className="py-2 px-3 text-union-800 font-bold">{b.lote_um ? `Lote ${b.lote_um}` : '—'}</td>
@@ -398,6 +459,7 @@ export default function ReportesPage() {
           </div>
         )}
 
+        </div>
       </main>
     </>
   );

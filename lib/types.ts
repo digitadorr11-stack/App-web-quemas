@@ -31,7 +31,8 @@ export type ActionType =
   | 'CANCELACION'
   | 'CAMBIO_CREDENCIALES'
   | 'ACTUALIZACION_MAESTRO'
-  | 'CAMBIO_TURNO_FRENTE';
+  | 'CAMBIO_TURNO_FRENTE'
+  | 'REGISTRO_QUEMA_CRIMINAL';
 
 export interface ReviewChecklist {
   firebreak_verified: boolean;
@@ -44,6 +45,7 @@ export interface ReviewChecklist {
 export interface BurnRequest {
   id: string;
   burn_number: string;
+  burn_type?: 'PROGRAMADA' | 'CRIMINAL';
   front_number: string;
   shift_name?: string;
   shift_supervisor_name: string;
@@ -59,6 +61,7 @@ export interface BurnRequest {
   status: BurnStatus;
   assigned_patrol_id?: string;
   assigned_patrol_name?: string;
+  assigned_patrol_leader?: string;
   patrol_assigned_at?: string;
   patrol_confirmed_at?: string;
   patrol_arrived_at?: string;
@@ -136,7 +139,9 @@ export interface Patrol {
   id: string;
   name: string;
   leader_name: string;
-  phone: string;
+  shift_info?: string;
+  crew_members?: string[];
+  phone?: string;
   vehicle_code?: string;
   status: 'DISPONIBLE' | 'EN_FRENTE' | 'EN_QUEMA';
   active: boolean;

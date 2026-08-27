@@ -17,9 +17,10 @@ import {
   Code2,
   FileCode,
 } from 'lucide-react';
+import { INITIAL_USERS } from '@/lib/mockData';
 
 export default function GuiaSupabasePage() {
-  const [currentUser, setCurrentUser] = useState<UserProfile>(() => storageService.getActiveUser());
+  const [currentUser, setCurrentUser] = useState<UserProfile>(() => storageService.getActiveUser() || INITIAL_USERS[0]);
   const [copied, setCopied] = useState(false);
 
   const handleUserChange = (user: UserProfile) => {

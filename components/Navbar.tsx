@@ -3,228 +3,347 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { UserProfile, UserRole, ROLE_DETAILS } from '@/lib/types';
+import { UserProfile, ROLE_DETAILS } from '@/lib/types';
 import { INITIAL_USERS } from '@/lib/mockData';
 import { storageService } from '@/lib/storageService';
 import {
   Flame,
   ShieldCheck,
   BarChart3,
-  Database,
   Users,
   Layers,
-  ChevronDown,
-  Check,
-  UserCheck,
   LogOut,
+  User,
+  ShieldAlert,
+  Menu,
+  X,
+  ChevronRight,
   Sparkles,
 } from 'lucide-react';
-import { isSupabaseConfigured } from '@/lib/supabaseClient';
 
 interface NavbarProps {
-  currentUser: UserProfile;
+  currentUser?: UserProfile | null;
   onUserChange?: (user: UserProfile) => void;
   onResetDemoData?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentUser, onUserChange, onResetDemoData }) => {
+export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
   const pathname = usePathname();
   const router = useRouter();
-  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const isDigitador = currentUser.role === 'digitador' || currentUser.role === 'admin';
-  const isJefatura = currentUser.role === 'jefatura';
+  const activeUser = currentUser || INITIAL_USERS[0];
+  const isDigitador = activeUser.role === 'digitador' || activeUser.role === 'admin';
+  const isJefatura = activeUser.role === 'jefatura';
 
-  // Role-based Nav Links
-  const navLinks = [
-    { href: '/', label: 'Tablero de Control', icon: Flame, visible: true },
-    { href: '/reportes', label: isDigitador || isJefatura ? 'Reportes & KPIs Generales' : 'Mis Métricas & Reportes', icon: BarChart3, visible: true },
-    { href: '/bitacora', label: 'Bitácora de Auditoría', icon: ShieldCheck, visible: isDigitador || isJefatura },
-    { href: '/maestros', label: 'Catálogos Maestros', icon: Layers, visible: isDigitador },
-    { href: '/usuarios', label: 'Gestión de Usuarios', icon: Users, visible: isDigitador },
-    { href: '/guia-supabase', label: 'Guía Cloud', icon: Database, visible: true },
-  ].filter((l) => l.visible);
+  // Navigation Items Grouped by Category for Sidebar
+  const navigationGroups = [
+    {
+      group: 'OPERACIÓN DE QUEMAS',
+      items: [
+        {
+          href: '/',
+          label: 'Quemas Programadas',
+          icon: Flame,
+          color: 'text-amber-400',
+          activeBg: 'bg-emerald-800 text-white border-l-4 border-amber-400 font-bold shadow-md shadow-emerald-950/40',
+          visible: true,
+        },
+        {
+          href: '/quemas-criminales',
+          label: 'Quemas Criminales',
+          icon: ShieldAlert,
+          color: 'text-rose-400',
+          activeBg: 'bg-red-950 text-white border-l-4 border-red-500 font-bold shadow-md shadow-red-950/60',
+          visible: true,
+        },
+      ],
+    },
+    {
+      group: 'SUPERVISIÓN & CONTROL',
+      items: [
+        {
+          href: '/reportes',
+          label: isDigitador || isJefatura ? 'Reportes & KPIs' : 'Mis Métricas',
+          icon: BarChart3,
+          color: 'text-blue-400',
+          activeBg: 'bg-union-800 text-white border-l-4 border-blue-400 font-bold',
+          visible: true,
+        },
+        {
+          href: '/bitacora',
+          label: 'Bitácora de Auditoría',
+          icon: ShieldCheck,
+          color: 'text-emerald-400',
+          activeBg: 'bg-union-800 text-white border-l-4 border-emerald-400 font-bold',
+          visible: isDigitador || isJefatura,
+        },
+      ],
+    },
+    {
+      group: 'ADMINISTRACIÓN & MAESTROS',
+      items: [
+        {
+          href: '/maestros',
+          label: 'Catálogos Maestros',
+          icon: Layers,
+          color: 'text-purple-400',
+          activeBg: 'bg-union-800 text-white border-l-4 border-purple-400 font-bold',
+          visible: isDigitador,
+        },
+        {
+          href: '/usuarios',
+          label: 'Gestión de Usuarios',
+          icon: Users,
+          color: 'text-cyan-400',
+          activeBg: 'bg-union-800 text-white border-l-4 border-cyan-400 font-bold',
+          visible: isDigitador,
+        },
+      ],
+    },
+  ];
 
   const handleLogout = () => {
     storageService.logout();
     router.push('/login');
   };
 
-  const roleMeta = ROLE_DETAILS[currentUser.role];
+  const roleMeta = ROLE_DETAILS[activeUser.role] || ROLE_DETAILS['digitador'];
+
+  // Current Active Page Title for Top Bar
+  const getCurrentPageTitle = () => {
+    if (pathname === '/') return { title: 'Quemas Programadas', icon: Flame, color: 'text-amber-400' };
+    if (pathname === '/quemas-criminales') return { title: 'Quemas Criminales', icon: ShieldAlert, color: 'text-red-400' };
+    if (pathname === '/reportes') return { title: 'Reportes & KPIs', icon: BarChart3, color: 'text-blue-400' };
+    if (pathname === '/bitacora') return { title: 'Bitácora de Auditoría', icon: ShieldCheck, color: 'text-emerald-400' };
+    if (pathname === '/maestros') return { title: 'Catálogos Maestros', icon: Layers, color: 'text-purple-400' };
+    if (pathname === '/usuarios') return { title: 'Gestión de Usuarios', icon: Users, color: 'text-cyan-400' };
+    return { title: 'Ingenio La Unión', icon: Flame, color: 'text-emerald-400' };
+  };
+
+  const currentInfo = getCurrentPageTitle();
+  const CurrentIcon = currentInfo.icon;
 
   return (
-    <header className="bg-union-900 text-white shadow-lg sticky top-0 z-40 border-b border-union-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          
-          {/* Logo y Nombre de la Empresa */}
-          <div className="flex items-center space-x-3">
-            <Link href="/" className="flex items-center space-x-2.5 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fire-500 to-fire-600 flex items-center justify-center shadow-md shadow-fire-600/30 group-hover:scale-105 transition-transform">
-                <Flame className="w-6 h-6 text-white animate-pulse" />
-              </div>
-              <div>
-                <span className="font-extrabold text-lg tracking-tight text-white flex items-center gap-1.5">
-                  INGENIO LA UNIÓN
-                  <span className="text-[10px] uppercase font-bold tracking-widest bg-fire-500/20 text-fire-300 border border-fire-500/30 px-1.5 py-0.5 rounded">
-                    Quemas
-                  </span>
-                </span>
-                <p className="text-xs text-union-200 hidden sm:block font-medium">
-                  Control Operativo y Auditoría de Quemas
-                </p>
-              </div>
-            </Link>
-          </div>
-
-          {/* Enlaces de Navegación de Escritorio */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            {navLinks.map((link) => {
-              const Icon = link.icon;
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                    isActive
-                      ? 'bg-union-800 text-white shadow-inner border border-union-700'
-                      : 'text-union-100 hover:bg-union-800/60 hover:text-white'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-fire-400' : 'text-union-300'}`} />
-                  <span>{link.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* User Profile & Role Switcher */}
-          <div className="flex items-center space-x-2.5">
-            
-            {/* Active User Chip */}
-            <div className="relative">
-              <button
-                onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-                className="flex items-center space-x-2 bg-union-800 hover:bg-union-700 border border-union-600/60 px-3 py-1.5 rounded-xl text-sm font-medium transition shadow-sm"
-                title="Cambiar de Rol / Usuario de prueba"
-              >
-                <div className="text-left">
-                  <div className="text-[10px] text-union-300 font-semibold uppercase tracking-wider">
-                    {currentUser.full_name.split(' ')[0]} {currentUser.full_name.split(' ')[1] || ''}
-                  </div>
-                  <div className="text-xs font-bold text-white max-w-[130px] truncate flex items-center gap-1">
-                    <span>{roleMeta.label}</span>
-                    {currentUser.assigned_front && (
-                      <span className="text-[10px] bg-blue-500/30 text-blue-200 px-1 rounded">
-                        {currentUser.assigned_front}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <ChevronDown className="w-4 h-4 text-union-300 ml-1" />
-              </button>
-
-              {showRoleDropdown && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl py-2 z-50 border border-gray-100 text-gray-800 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="px-4 py-2 border-b border-gray-100 bg-gray-50">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Simulador Rápido de Usuarios
-                    </p>
-                    <p className="text-[11px] text-gray-600 mt-0.5">
-                      Cambia de usuario para probar las vistas aisladas de cada rol.
-                    </p>
-                  </div>
-
-                  <div className="py-1 max-h-80 overflow-y-auto">
-                    {INITIAL_USERS.map((user) => {
-                      const isSelected = currentUser.id === user.id;
-                      const uMeta = ROLE_DETAILS[user.role];
-                      return (
-                        <button
-                          key={user.id}
-                          onClick={() => {
-                            if (onUserChange) onUserChange(user);
-                            storageService.setActiveUser(user);
-                            setShowRoleDropdown(false);
-                          }}
-                          className={`w-full text-left px-4 py-2 text-xs flex items-start space-x-2.5 transition hover:bg-union-50 ${
-                            isSelected ? 'bg-union-50 font-bold' : ''
-                          }`}
-                        >
-                          <div className="mt-0.5">
-                            {isSelected ? (
-                              <Check className="w-4 h-4 text-union-700" />
-                            ) : (
-                              <div className="w-4 h-4 rounded-full border border-gray-300" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <div className="font-bold text-gray-900">{user.full_name}</div>
-                            <div className="text-[11px] text-union-700 font-semibold">{uMeta.label}</div>
-                            {user.assigned_front && (
-                              <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">
-                                Asignado a {user.assigned_front}
-                              </span>
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {onResetDemoData && (
-                    <div className="border-t border-gray-100 pt-1 px-3">
-                      <button
-                        onClick={() => {
-                          if (confirm('¿Restablecer datos de prueba?')) {
-                            onResetDemoData();
-                            setShowRoleDropdown(false);
-                          }
-                        }}
-                        className="w-full text-left px-2 py-1.5 text-xs text-gray-600 hover:text-red-600 flex items-center space-x-1.5 rounded"
-                      >
-                        <span>Restablecer datos de prueba iniciales</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+    <>
+      {/* ========================================================================= */}
+      {/* 1. CINTA DE OPCIONES A LADO IZQUIERDO (SIDEBAR DESKTOP) */}
+      {/* ========================================================================= */}
+      <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-union-950 text-white border-r border-union-800 hidden lg:flex flex-col shadow-2xl">
+        
+        {/* Brand & Logo Header */}
+        <div className="p-5 border-b border-union-800/80">
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500/30 flex items-center justify-center shadow-md shadow-emerald-950/40 group-hover:scale-105 transition-transform">
+              <Flame className="w-6 h-6 text-amber-400 animate-pulse" />
             </div>
-
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="p-2 bg-union-950/70 hover:bg-red-900/80 text-union-200 hover:text-white rounded-xl border border-union-800 transition"
-              title="Cerrar Sesión"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-
-          </div>
+            <div>
+              <span className="font-extrabold text-sm tracking-tight text-white flex items-center gap-1.5">
+                INGENIO LA UNIÓN
+              </span>
+              <p className="text-[10px] text-union-300 font-medium">
+                Control Operativo de Quemas
+              </p>
+            </div>
+          </Link>
         </div>
 
-        {/* Mobile Navigation bar */}
-        <div className="lg:hidden flex items-center justify-around py-2 border-t border-union-800 text-xs overflow-x-auto">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive = pathname === link.href;
+        {/* Navigation Options List */}
+        <div className="flex-1 px-3 py-4 space-y-6 overflow-y-auto custom-scrollbar">
+          {navigationGroups.map((group, gIdx) => {
+            const visibleItems = group.items.filter((item) => item.visible);
+            if (visibleItems.length === 0) return null;
+
             return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`flex flex-col items-center py-1 px-2 rounded whitespace-nowrap ${
-                  isActive ? 'text-fire-400 font-bold' : 'text-union-200'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="text-[10px] mt-0.5">{link.label.split(' ')[0]}</span>
-              </Link>
+              <div key={gIdx} className="space-y-1.5">
+                <div className="px-3 text-[10px] font-black uppercase tracking-wider text-union-400">
+                  {group.group}
+                </div>
+
+                <nav className="space-y-1">
+                  {visibleItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.href;
+
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-150 group ${
+                          isActive
+                            ? item.activeBg
+                            : 'text-union-200 hover:bg-union-900/90 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2.5">
+                          <Icon
+                            className={`w-4 h-4 ${
+                              isActive ? 'text-white' : item.color
+                            } group-hover:scale-110 transition-transform`}
+                          />
+                          <span className={isActive ? 'font-black tracking-tight' : 'font-medium'}>
+                            {item.label}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
             );
           })}
         </div>
 
-      </div>
-    </header>
+        {/* Sidebar Bottom Profile Card */}
+        <div className="p-3.5 border-t border-union-800/80 bg-union-900/40">
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-union-900/90 border border-union-700/60 shadow-sm">
+            <div className="flex items-center space-x-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <User className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-white truncate">
+                  {activeUser.full_name}
+                </div>
+                <div className="text-[10px] text-emerald-400 font-semibold truncate">
+                  {roleMeta.label}
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="p-1.5 text-rose-300 hover:text-white hover:bg-rose-900/60 rounded-lg transition"
+              title="Cerrar Sesión"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* ========================================================================= */}
+      {/* 2. CINTA SUPERIOR (TOP HEADER BAR) */}
+      {/* ========================================================================= */}
+      <header className="lg:pl-64 sticky top-0 z-30 bg-union-900 text-white border-b border-union-800 shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            
+            {/* Left: Mobile Toggle & Current Section Indicator */}
+            <div className="flex items-center space-x-3">
+              {/* Mobile Hamburger Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="lg:hidden p-2 text-union-200 hover:text-white hover:bg-union-800 rounded-lg transition"
+                aria-label="Abrir menú"
+              >
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+
+              {/* Current Section Breadcrumb / Badge */}
+              <div className="flex items-center space-x-2">
+                <div className="p-1.5 rounded-lg bg-union-800/80 border border-union-700 hidden sm:flex items-center justify-center">
+                  <CurrentIcon className={`w-4 h-4 ${currentInfo.color}`} />
+                </div>
+                <div>
+                  <div className="text-xs text-union-300 font-semibold uppercase tracking-wider hidden sm:block">
+                    Módulo Activo
+                  </div>
+                  <div className="text-sm sm:text-base font-black text-white flex items-center gap-1.5">
+                    <span>{currentInfo.title}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ========================================================================= */}
+      {/* 3. MOBILE SLIDEOVER DRAWER (PARA PANTALLAS PEQUEÑAS) */}
+      {/* ========================================================================= */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+
+          {/* Drawer Panel */}
+          <div className="relative w-4/5 max-w-xs bg-union-950 text-white flex flex-col p-4 shadow-2xl border-r border-union-800 z-10">
+            <div className="flex items-center justify-between pb-4 border-b border-union-800">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
+                  <Flame className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <span className="font-extrabold text-sm text-white">INGENIO LA UNIÓN</span>
+                  <span className="text-[10px] text-emerald-400 block font-medium">Control de Quemas</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1.5 text-union-300 hover:text-white rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Mobile Links */}
+            <div className="flex-1 py-4 space-y-6 overflow-y-auto">
+              {navigationGroups.map((group, gIdx) => {
+                const visibleItems = group.items.filter((item) => item.visible);
+                if (visibleItems.length === 0) return null;
+
+                return (
+                  <div key={gIdx} className="space-y-1.5">
+                    <div className="px-2 text-[10px] font-black uppercase text-union-400">
+                      {group.group}
+                    </div>
+                    <div className="space-y-1">
+                      {visibleItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = pathname === item.href;
+
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs ${
+                              isActive
+                                ? item.activeBg
+                                : 'text-union-200 hover:bg-union-900 hover:text-white'
+                            }`}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : item.color}`} />
+                              <span className="font-bold">{item.label}</span>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Mobile Drawer Footer */}
+            <div className="pt-3 border-t border-union-800">
+              <button
+                onClick={handleLogout}
+                className="w-full py-2 bg-rose-900/60 hover:bg-rose-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Cerrar Sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

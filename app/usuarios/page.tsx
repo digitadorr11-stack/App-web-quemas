@@ -20,17 +20,25 @@ import {
   Sparkles,
   CheckCircle2,
   Lock,
+  Trash2,
+  AlertTriangle,
+  X,
 } from 'lucide-react';
+
+import { INITIAL_USERS } from '@/lib/mockData';
 
 export default function UsuariosPage() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile>(() => storageService.getActiveUser() || INITIAL_USERS[0]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [fronts, setFronts] = useState<Front[]>([]);
   const [patrols, setPatrols] = useState<Patrol[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+
+  // Delete User Confirmation Modal
+  const [deletingUser, setDeletingUser] = useState<UserProfile | null>(null);
 
   // Edit / Create User Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -135,6 +143,19 @@ export default function UsuariosPage() {
     loadData();
   };
 
+  const handleConfirmDelete = async () => {
+    if (!deletingUser || !currentUser) return;
+    try {
+      await storageService.deleteUser(deletingUser.id, currentUser);
+      showToast(`Usuario ${deletingUser.full_name} eliminado exitosamente.`);
+      setDeletingUser(null);
+      loadData();
+    } catch (err) {
+      console.error('Error deleting user', err);
+      showToast('Error al eliminar usuario');
+    }
+  };
+
   const filteredUsers = users.filter((u) => {
     const q = searchQuery.toLowerCase().trim();
     const matchQ =
@@ -162,7 +183,8 @@ export default function UsuariosPage() {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+      <main className="lg:pl-64 flex-1 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         {/* Header */}
         <div className="mb-6 bg-purple-950 text-white p-6 rounded-2xl shadow-md border border-purple-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -308,13 +330,31 @@ export default function UsuariosPage() {
 
                       {/* Actions */}
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <button
-                          onClick={() => handleOpenModal(u)}
-                          className="px-3 py-1.5 text-xs font-bold text-purple-900 bg-purple-100 hover:bg-purple-200 rounded-lg flex items-center gap-1.5 ml-auto transition"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                          <span>Modificar Clave / Rol</span>
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => handleOpenModal(u)}
+                            className="px-2.5 py-1.5 text-xs font-bold text-purple-900 bg-purple-100 hover:bg-purple-200 rounded-lg flex items-center gap-1 transition cursor-pointer"
+                            title="Modificar clave, rol o datos"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                            <span>Modificar</span>
+                          </button>
+
+                          {u.id !== currentUser.id ? (
+                            <button
+                              onClick={() => setDeletingUser(u)}
+                              className="px-2.5 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center gap-1 transition cursor-pointer"
+                              title="Eliminar usuario definitivamente"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Eliminar</span>
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-gray-400 italic px-2 py-1 bg-gray-100 rounded">
+                              Tu usuario
+                            </span>
+                          )}
+                        </div>
                       </td>
 
                     </tr>
@@ -325,6 +365,7 @@ export default function UsuariosPage() {
           </div>
         </div>
 
+        </div>
       </main>
 
       {/* ================================================================ */}
@@ -443,7 +484,15 @@ export default function UsuariosPage() {
                   <label className="block font-bold text-orange-900 mb-1">Patrulla de Quema Asignada</label>
                   <select
                     value={formData.assigned_patrol_name}
-                    onChange={(e) => setFormData({ ...formData, assigned_patrol_name: e.target.value })}
+                    onChange={(e) => {
+                      const selectedName = e.target.value;
+                      const matched = patrols.find((p) => p.name === selectedName);
+                      setFormData({
+                        ...formData,
+                        assigned_patrol_name: selectedName,
+                        assigned_patrol_id: matched ? matched.id : undefined,
+                      });
+                    }}
                     className="w-full p-2 rounded-lg border border-orange-300 bg-orange-50/50 font-bold text-orange-900"
                   >
                     <option value="">-- Sin patrulla fija --</option>
@@ -486,6 +535,61 @@ export default function UsuariosPage() {
                 </button>
               </div>
             </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* ================================================================ */}
+      {/* MODAL CONFIRMAR ELIMINACIÓN DE USUARIO                           */}
+      {/* ================================================================ */}
+      {deletingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-6 space-y-4">
+            
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center shrink-0">
+                <Trash2 className="w-6 h-6 text-rose-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-gray-900">¿Eliminar Colaborador?</h3>
+                <p className="text-xs text-gray-500">Esta acción removerá el acceso al sistema</p>
+              </div>
+            </div>
+
+            <div className="p-4 bg-rose-50/70 border border-rose-200 rounded-2xl space-y-1 text-xs">
+              <p className="text-gray-800">
+                <strong>Nombre:</strong> {deletingUser.full_name}
+              </p>
+              <p className="text-gray-800 font-mono">
+                <strong>Usuario:</strong> @{deletingUser.username}
+              </p>
+              <p className="text-gray-800">
+                <strong>Rol:</strong> {ROLE_DETAILS[deletingUser.role]?.label || deletingUser.role}
+              </p>
+            </div>
+
+            <p className="text-xs text-gray-500 leading-relaxed">
+              El colaborador ya no podrá iniciar sesión y el registro de eliminación quedará guardado en la <strong>Bitácora de Auditoría</strong>.
+            </p>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDeletingUser(null)}
+                className="px-4 py-2.5 text-xs font-bold text-gray-600 hover:text-gray-900 rounded-xl cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/30 flex items-center gap-2 cursor-pointer transition"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Eliminar Definitivamente</span>
+              </button>
+            </div>
 
           </div>
         </div>

@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { AuditLog, UserProfile, ROLE_DETAILS, ActionType } from '@/lib/types';
 import { storageService } from '@/lib/storageService';
+import { INITIAL_USERS } from '@/lib/mockData';
 import { exportAuditLogsToExcel } from '@/lib/exportUtils';
 import {
   ShieldCheck,
@@ -21,7 +22,7 @@ import {
 import { format } from 'date-fns';
 
 export default function BitacoraPage() {
-  const [currentUser, setCurrentUser] = useState<UserProfile>(() => storageService.getActiveUser());
+  const [currentUser, setCurrentUser] = useState<UserProfile>(() => storageService.getActiveUser() || INITIAL_USERS[0]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -77,7 +78,8 @@ export default function BitacoraPage() {
         onUserChange={handleUserChange}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+      <main className="lg:pl-64 flex-1 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         {/* Header Banner */}
         <div className="mb-6 bg-slate-900 text-white p-6 rounded-2xl shadow-md border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -299,6 +301,7 @@ export default function BitacoraPage() {
           )}
         </div>
 
+        </div>
       </main>
     </>
   );

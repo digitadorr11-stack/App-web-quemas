@@ -1,5 +1,5 @@
 import { BurnRequest, AuditLog, Farm, UserProfile, UserRole, ActionType, Patrol, Front } from './types';
-import { INITIAL_BURNS, INITIAL_AUDIT_LOGS, INITIAL_FARMS, INITIAL_PATROLS, INITIAL_USERS, INITIAL_FRONTS } from './mockData';
+import { INITIAL_BURNS, INITIAL_AUDIT_LOGS, INITIAL_USERS, INITIAL_FRONTS, INITIAL_PATROLS } from './mockData';
 import { FINCAS_LOTES_DATA, FincaInfo, LoteInfo } from './fincasLotesData';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
@@ -11,15 +11,64 @@ const FARMS_STORAGE_KEY = 'la_union_farms_catalog_v6';
 const PATROLS_STORAGE_KEY = 'la_union_patrols_catalog_v6';
 const FRONTS_STORAGE_KEY = 'la_union_fronts_catalog_v6';
 const FINCAS_LOTES_STORAGE_KEY = 'la_union_fincas_lotes_master_v6';
-
 const isBrowser = typeof window !== 'undefined';
+
+const SUPABASE_BURN_COLUMNS = new Set([
+  'id',
+  'burn_number',
+  'front_number',
+  'shift_name',
+  'shift_supervisor_name',
+  'farm_name',
+  'lote_um',
+  'area_hectares',
+  'area_manzanas',
+  'estimated_tonnage',
+  'planned_burn_time',
+  'requested_at',
+  'created_by_user_id',
+  'created_by_name',
+  'status',
+  'assigned_patrol_id',
+  'assigned_patrol_name',
+  'patrol_assigned_at',
+  'patrol_confirmed_at',
+  'patrol_arrived_at',
+  'review_duration_minutes',
+  'review_completed_at',
+  'review_checklist',
+  'review_notes',
+  'validated_by_user_id',
+  'validated_by_name',
+  'validated_at',
+  'validation_notes',
+  'burn_started_at',
+  'burn_ended_at',
+  'burn_duration_minutes',
+  'cancellation_reason',
+  'cancelled_by_name',
+  'cancelled_by_role',
+  'cancelled_at',
+  'created_at',
+  'updated_at',
+]);
+
+function sanitizeBurnForSupabase(burn: Record<string, any>): Record<string, any> {
+  const clean: Record<string, any> = {};
+  for (const key of Object.keys(burn)) {
+    if (SUPABASE_BURN_COLUMNS.has(key)) {
+      clean[key] = burn[key];
+    }
+  }
+  return clean;
+}
 
 export const storageService = {
   // =========================================================================
   // 1. AUTENTICACIÓN Y SESIÓN DE USUARIO
   // =========================================================================
   getActiveUser(): UserProfile | null {
-    if (!isBrowser) return INITIAL_USERS[0];
+    if (!isBrowser) return null;
     const saved = localStorage.getItem(ACTIVE_SESSION_KEY);
     if (saved) {
       try {
@@ -49,7 +98,7 @@ export const storageService = {
 
     const user = users.find((u) => {
       const matchUser = u.username.toLowerCase() === cleanId;
-      const matchEmail = u.email.toLowerCase() === cleanId;
+      const matchEmail = u.email ? u.email.toLowerCase() === cleanId : false;
       const matchName = u.full_name.toLowerCase().includes(cleanId);
       const matchRole = u.role.toLowerCase() === cleanId;
       return (matchUser || matchEmail || matchName || matchRole) && (u.active !== false);
@@ -75,6 +124,18 @@ export const storageService = {
   },
 
   async getAllUsers(): Promise<UserProfile[]> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.from('users_app').select('*');
+        if (!error && data && data.length > 0) {
+          if (isBrowser) localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(data));
+          return data;
+        }
+      } catch (e) {
+        console.warn('Supabase users fallback to local');
+      }
+    }
+
     if (isBrowser) {
       const saved = localStorage.getItem(USERS_STORAGE_KEY);
       if (saved) {
@@ -101,6 +162,12 @@ export const storageService = {
     const oldUser = users[index];
     const updatedUser = { ...oldUser, ...updates };
     users[index] = updatedUser;
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('users_app').upsert(updatedUser);
+      } catch (e) {}
+    }
 
     if (isBrowser) {
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
@@ -130,6 +197,13 @@ export const storageService = {
       id: `usr-${Date.now()}`,
     };
     const updated = [...users, user];
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('users_app').insert(user);
+      } catch (e) {}
+    }
+
     if (isBrowser) {
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updated));
     }
@@ -147,11 +221,53 @@ export const storageService = {
     return user;
   },
 
+  async deleteUser(userId: string, adminUser: UserProfile): Promise<boolean> {
+    const users = await this.getAllUsers();
+    const userToDelete = users.find((u) => u.id === userId);
+    if (!userToDelete) return false;
+
+    const filtered = users.filter((u) => u.id !== userId);
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('users_app').delete().eq('id', userId);
+      } catch (e) {
+        console.error('Supabase delete user error', e);
+      }
+    }
+
+    if (isBrowser) {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(filtered));
+    }
+
+    await this.logAudit({
+      user_id: adminUser.id,
+      user_name: adminUser.full_name,
+      user_role: adminUser.role,
+      action_type: 'CAMBIO_CREDENCIALES',
+      field_name: `Usuario Eliminado: ${userToDelete.full_name}`,
+      old_value: `@${userToDelete.username} (${userToDelete.role})`,
+      new_value: 'ELIMINADO',
+      change_reason: 'Eliminación definitiva de usuario del sistema por Digitador.',
+    });
+
+    return true;
+  },
+
   // =========================================================================
   // 2. CATÁLOGOS MAESTROS (FRENTES, PATRULLAS, FINCAS Y LOTES CON TCH)
   // =========================================================================
-
   async getFronts(): Promise<Front[]> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.from('fronts').select('*').order('name');
+        if (!error && data && data.length > 0) {
+          if (isBrowser) localStorage.setItem(FRONTS_STORAGE_KEY, JSON.stringify(data));
+          return data;
+        }
+      } catch (e) {}
+    }
+
     if (isBrowser) {
       const saved = localStorage.getItem(FRONTS_STORAGE_KEY);
       if (saved) {
@@ -170,6 +286,13 @@ export const storageService = {
     const fronts = await this.getFronts();
     const newFront: Front = { ...front, id: `fr-${Date.now()}` };
     const updated = [...fronts, newFront];
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('fronts').insert(newFront);
+      } catch (e) {}
+    }
+
     if (isBrowser) localStorage.setItem(FRONTS_STORAGE_KEY, JSON.stringify(updated));
 
     await this.logAudit({
@@ -191,6 +314,13 @@ export const storageService = {
     if (idx === -1) return null;
     const updated = { ...fronts[idx], ...updates };
     fronts[idx] = updated;
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('fronts').update(updates).eq('id', id);
+      } catch (e) {}
+    }
+
     if (isBrowser) localStorage.setItem(FRONTS_STORAGE_KEY, JSON.stringify(fronts));
 
     await this.logAudit({
@@ -207,6 +337,16 @@ export const storageService = {
   },
 
   async getPatrols(): Promise<Patrol[]> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase.from('patrols').select('*').order('name');
+        if (!error && data && data.length > 0) {
+          if (isBrowser) localStorage.setItem(PATROLS_STORAGE_KEY, JSON.stringify(data));
+          return data;
+        }
+      } catch (e) {}
+    }
+
     if (isBrowser) {
       const saved = localStorage.getItem(PATROLS_STORAGE_KEY);
       if (saved) {
@@ -225,6 +365,13 @@ export const storageService = {
     const patrols = await this.getPatrols();
     const newPatrol: Patrol = { ...patrol, id: `pat-${Date.now()}` };
     const updated = [...patrols, newPatrol];
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('patrols').insert(newPatrol);
+      } catch (e) {}
+    }
+
     if (isBrowser) localStorage.setItem(PATROLS_STORAGE_KEY, JSON.stringify(updated));
 
     await this.logAudit({
@@ -246,6 +393,13 @@ export const storageService = {
     if (idx === -1) return null;
     const updated = { ...patrols[idx], ...updates };
     patrols[idx] = updated;
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('patrols').update(updates).eq('id', id);
+      } catch (e) {}
+    }
+
     if (isBrowser) localStorage.setItem(PATROLS_STORAGE_KEY, JSON.stringify(patrols));
 
     await this.logAudit({
@@ -296,7 +450,6 @@ export const storageService = {
     let finca = list.find((f) => f.name.toUpperCase() === cleanFincaName);
 
     if (!finca) {
-      // Create new finca
       finca = {
         name: cleanFincaName,
         lotes: [loteData],
@@ -304,7 +457,6 @@ export const storageService = {
       list.push(finca);
       list.sort((a, b) => a.name.localeCompare(b.name));
     } else {
-      // Update or add lote in existing finca
       const lIndex = finca.lotes.findIndex((l) => l.lote === loteData.lote);
       if (lIndex >= 0) {
         finca.lotes[lIndex] = { ...finca.lotes[lIndex], ...loteData };
@@ -370,9 +522,29 @@ export const storageService = {
   },
 
   // =========================================================================
-  // 3. SOLICITUDES DE QUEMA Y AISLAMIENTO POR ROL
+  // 3. SOLICITUDES DE QUEMA CON SUPABASE EN TIEMPO REAL
   // =========================================================================
   async getBurnRequests(): Promise<BurnRequest[]> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('burn_requests')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && data) {
+          const parsed = data.map((b: any) => ({
+            ...b,
+            burn_type: b.burn_type || (b.review_notes?.includes('[QUEMA_CRIMINAL]') || b.burn_number?.startsWith('QC-') ? 'CRIMINAL' : 'PROGRAMADA'),
+          }));
+          if (isBrowser) localStorage.setItem(BURNS_STORAGE_KEY, JSON.stringify(parsed));
+          return parsed;
+        }
+      } catch (e) {
+        console.warn('Supabase burns fallback to local');
+      }
+    }
+
     if (isBrowser) {
       const saved = localStorage.getItem(BURNS_STORAGE_KEY);
       if (saved) {
@@ -394,27 +566,43 @@ export const storageService = {
     if (user.role === 'supervisor_frente') {
       return all.filter((b) => {
         const matchCreator = b.created_by_user_id === user.id;
-        const matchName = b.shift_supervisor_name.toLowerCase().includes(user.full_name.toLowerCase()) ||
-                          user.full_name.toLowerCase().includes(b.shift_supervisor_name.toLowerCase());
+        const matchName = b.shift_supervisor_name?.toLowerCase().includes(user.full_name.toLowerCase()) ||
+                          user.full_name.toLowerCase().includes(b.shift_supervisor_name?.toLowerCase() || '');
         const matchFront = user.assigned_front ? b.front_number === user.assigned_front : false;
         return matchCreator || matchName || matchFront;
       });
     }
 
-    // 2. PATRULLA: Solo ve las quemas asignadas a su patrulla
+    // 2. PATRULLA: Ve las quemas asignadas a su clave/patrulla o creadas por él
     if (user.role === 'patrulla') {
       return all.filter((b) => {
-        const patrolName = user.assigned_patrol_name || user.full_name;
-        const matchName = b.assigned_patrol_name
-          ? b.assigned_patrol_name.toLowerCase().includes('alfa') && patrolName.toLowerCase().includes('alfa') ||
-            b.assigned_patrol_name.toLowerCase().includes('beta') && patrolName.toLowerCase().includes('beta') ||
-            b.assigned_patrol_name.toLowerCase().includes('gamma') && patrolName.toLowerCase().includes('gamma') ||
-            b.assigned_patrol_name.toLowerCase().includes('delta') && patrolName.toLowerCase().includes('delta') ||
-            b.assigned_patrol_name.toLowerCase() === patrolName.toLowerCase()
-          : false;
+        // Creadas por este usuario
+        if (b.created_by_user_id === user.id || b.created_by_name === user.full_name) return true;
 
-        const matchId = user.assigned_patrol_id ? b.assigned_patrol_id === user.assigned_patrol_id : false;
-        return matchName || matchId;
+        const userPatrolName = (user.assigned_patrol_name || '').toLowerCase().trim();
+        const userPatrolId = (user.assigned_patrol_id || '').toLowerCase().trim();
+        const burnPatrolName = (b.assigned_patrol_name || '').toLowerCase().trim();
+        const burnPatrolId = (b.assigned_patrol_id || '').toLowerCase().trim();
+        const userName = user.full_name.toLowerCase().trim();
+        const burnLeader = (b.assigned_patrol_leader || '').toLowerCase().trim();
+
+        // 1. Coincidencia directa por ID de patrulla (ej: 'pat-c1')
+        if (userPatrolId && burnPatrolId && userPatrolId === burnPatrolId) return true;
+
+        // 2. Coincidencia por Nombre de patrulla (ej: 'Clave C-1' o 'Clave RUBEN')
+        if (userPatrolName && burnPatrolName) {
+          if (userPatrolName.includes(burnPatrolName) || burnPatrolName.includes(userPatrolName)) return true;
+        }
+
+        // 3. Extracción de código (C-1 a C-7, RUBEN)
+        const userCode = (userPatrolName || userPatrolId).match(/(c-\d|c\d|ruben)/i)?.[0]?.replace('-', '');
+        const burnCode = (burnPatrolName || burnPatrolId).match(/(c-\d|c\d|ruben)/i)?.[0]?.replace('-', '');
+        if (userCode && burnCode && userCode.toLowerCase() === burnCode.toLowerCase()) return true;
+
+        // 4. Coincidencia por nombre de líder/encargado
+        if (burnLeader && userName && (userName.includes(burnLeader) || burnLeader.includes(userName))) return true;
+
+        return false;
       });
     }
 
@@ -427,18 +615,35 @@ export const storageService = {
     user: UserProfile
   ): Promise<BurnRequest> {
     const existing = await this.getBurnRequests();
+    const isCriminal = data.burn_type === 'CRIMINAL';
     const nextSeq = existing.length + 1;
-    const burn_number = `Q-2026-${String(nextSeq).padStart(3, '0')}`;
+    const burn_number = isCriminal
+      ? `QC-2026-${String(nextSeq).padStart(3, '0')}`
+      : `Q-2026-${String(nextSeq).padStart(3, '0')}`;
     const nowIso = new Date().toISOString();
 
     const newBurn: BurnRequest = {
       ...data,
       id: isBrowser && window.crypto?.randomUUID ? window.crypto.randomUUID() : `burn-${Date.now()}`,
       burn_number,
-      area_manzanas: Number((data.area_hectares * 1.4308).toFixed(2)),
+      burn_type: isCriminal ? 'CRIMINAL' : 'PROGRAMADA',
+      area_manzanas: Number(((Number(data.area_hectares) || 0) * 1.4308).toFixed(2)),
       created_at: nowIso,
       updated_at: nowIso,
     };
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const payload = sanitizeBurnForSupabase(newBurn);
+        if (isCriminal) {
+          payload.review_notes = `[QUEMA_CRIMINAL] ${newBurn.review_notes || ''}`;
+        }
+        const { error } = await supabase.from('burn_requests').insert(payload);
+        if (error) console.error('Supabase insert burn error:', error);
+      } catch (e) {
+        console.error('Supabase insert burn error', e);
+      }
+    }
 
     if (isBrowser) {
       const updatedList = [newBurn, ...existing];
@@ -451,9 +656,13 @@ export const storageService = {
       user_id: user.id,
       user_name: user.full_name,
       user_role: user.role,
-      action_type: 'CREACION',
-      new_value: `Frente: ${newBurn.front_number}, Finca: ${newBurn.farm_name}, Lote: ${newBurn.lote_um || 'N/A'}, Área: ${newBurn.area_hectares} ha, Tons: ${newBurn.estimated_tonnage}`,
-      change_reason: 'Creación de solicitud inicial por supervisor de frente.',
+      action_type: isCriminal ? 'REGISTRO_QUEMA_CRIMINAL' : 'CREACION',
+      new_value: isCriminal
+        ? `🚨 QUEMA CRIMINAL: Frente ${newBurn.front_number}, Finca ${newBurn.farm_name}, Lote ${newBurn.lote_um || 'N/A'}, Patrulla ${newBurn.assigned_patrol_name}`
+        : `Frente: ${newBurn.front_number}, Finca: ${newBurn.farm_name}, Lote: ${newBurn.lote_um || 'N/A'}, Área: ${newBurn.area_hectares} ha, Tons: ${newBurn.estimated_tonnage}`,
+      change_reason: isCriminal
+        ? 'Reporte de emergencia y despacho de combate por quema criminal.'
+        : 'Creación de solicitud inicial por supervisor de frente.',
     });
 
     return newBurn;
@@ -486,6 +695,16 @@ export const storageService = {
     };
 
     all[index] = updatedBurn;
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        const payload = sanitizeBurnForSupabase(updatedBurn);
+        const { error } = await supabase.from('burn_requests').update(payload).eq('id', id);
+        if (error) console.error('Supabase update burn error:', error);
+      } catch (e) {
+        console.error('Supabase update burn error', e);
+      }
+    }
 
     if (isBrowser) {
       localStorage.setItem(BURNS_STORAGE_KEY, JSON.stringify(all));
@@ -527,6 +746,22 @@ export const storageService = {
   // 4. BITÁCORA DE AUDITORÍA
   // =========================================================================
   async getAuditLogs(burnRequestId?: string): Promise<AuditLog[]> {
+    if (supabase && isSupabaseConfigured) {
+      try {
+        let query = supabase.from('audit_logs').select('*').order('created_at', { ascending: false });
+        if (burnRequestId) {
+          query = query.eq('burn_request_id', burnRequestId);
+        }
+        const { data, error } = await query;
+        if (!error && data) {
+          if (isBrowser && !burnRequestId) localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(data));
+          return data;
+        }
+      } catch (e) {
+        console.warn('Supabase audit fallback to local');
+      }
+    }
+
     if (isBrowser) {
       const saved = localStorage.getItem(AUDIT_STORAGE_KEY);
       let logs: AuditLog[] = [];
@@ -556,6 +791,12 @@ export const storageService = {
       id: isBrowser && window.crypto?.randomUUID ? window.crypto.randomUUID() : `log-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       created_at: new Date().toISOString(),
     };
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('audit_logs').insert(newLog);
+      } catch (e) {}
+    }
 
     if (isBrowser) {
       const currentLogs = await this.getAuditLogs();

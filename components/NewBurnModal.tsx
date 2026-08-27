@@ -291,7 +291,7 @@ export const NewBurnModal: React.FC<NewBurnModalProps> = ({
                 Nueva Solicitud de Quema Programada
               </h2>
               <p style={{ fontSize: '11px', color: '#bbf7d0', margin: '2px 0 0 0' }}>
-                Ingenio La Unión • Cosecha Zafra 56
+                Ingenio La Unión • Control Operativo de Quemas
               </p>
             </div>
           </div>

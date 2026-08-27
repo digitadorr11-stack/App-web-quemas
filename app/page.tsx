@@ -9,6 +9,7 @@ import { BurnCard } from '@/components/BurnCard';
 import { BurnTable } from '@/components/BurnTable';
 import { NewBurnModal } from '@/components/NewBurnModal';
 import { AssignPatrolModal } from '@/components/AssignPatrolModal';
+import { PatrolAvailabilityMonitor } from '@/components/PatrolAvailabilityMonitor';
 import { PatrolActionModal } from '@/components/PatrolActionModal';
 import { ValidationModal } from '@/components/ValidationModal';
 import { EditBurnModal } from '@/components/EditBurnModal';
@@ -72,8 +73,9 @@ export default function DashboardPage() {
       setIsLoading(true);
       let user = storageService.getActiveUser();
       if (!user) {
-        user = INITIAL_USERS[0];
-        storageService.setActiveUser(user);
+        // Redirigir al login si es primera vez o no hay sesión activa
+        window.location.href = '/login';
+        return;
       }
       setCurrentUser(user);
 
@@ -136,7 +138,8 @@ export default function DashboardPage() {
     burnId: string,
     patrolId: string,
     patrolName: string,
-    assignedAt: string
+    assignedAt: string,
+    patrolLeader?: string
   ) => {
     if (!currentUser) return;
     await storageService.updateBurnRequest(
@@ -144,15 +147,16 @@ export default function DashboardPage() {
       {
         assigned_patrol_id: patrolId,
         assigned_patrol_name: patrolName,
+        assigned_patrol_leader: patrolLeader,
         patrol_assigned_at: assignedAt,
         status: 'PATRULLA_ASIGNADA',
       },
       currentUser,
       'ASIGNACION_PATRULLA',
-      `Asignada patrulla ${patrolName} para desplazamiento al frente.`
+      `Asignada ${patrolName} (Encargado: ${patrolLeader || 'No especificado'}) para desplazamiento al frente.`
     );
     await refreshData();
-    showToast(`Patrulla ${patrolName} asignada.`);
+    showToast(`Patrulla ${patrolName} (${patrolLeader || ''}) asignada.`);
   };
 
   // 3. Confirmar Llegada
@@ -239,6 +243,9 @@ export default function DashboardPage() {
   // 7. Finalizar Quema (Patrulla)
   const handleFinishBurn = async (burnId: string, endedAt: string, durationMinutes: number) => {
     if (!currentUser) return;
+    const targetBurn = burns.find((b) => b.id === burnId);
+    const isCriminal = targetBurn?.burn_type === 'CRIMINAL';
+
     await storageService.updateBurnRequest(
       burnId,
       {
@@ -248,7 +255,9 @@ export default function DashboardPage() {
       },
       currentUser,
       'FIN_QUEMA',
-      `Quema concluida y liquidada sin incidentes. Duración total: ${durationMinutes} min.`
+      isCriminal
+        ? `Quema criminal combatida y liquidada en terreno. La patrulla queda liberada y 100% DISPONIBLE. Duración: ${durationMinutes} min.`
+        : `Quema concluida y liquidada sin incidentes. Duración total: ${durationMinutes} min.`
     );
     await refreshData();
 
@@ -256,7 +265,11 @@ export default function DashboardPage() {
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     } catch (e) {}
 
-    showToast('¡Quema finalizada y liquidada con éxito!');
+    if (isCriminal) {
+      showToast('🚨 Quema criminal liquidada con éxito. La patrulla queda nuevamente 100% DISPONIBLE.');
+    } else {
+      showToast('¡Quema finalizada y liquidada con éxito! Patrulla disponible.');
+    }
   };
 
   // 8. Cancelar Quema
@@ -299,16 +312,18 @@ export default function DashboardPage() {
     showToast('Correcciones guardadas y registradas en la bitácora.');
   };
 
-  // Filtered Burns
+  // Filtered Programadas Burns
+  const programadasBurns = useMemo(() => burns.filter((b) => b.burn_type !== 'CRIMINAL'), [burns]);
+
   const filteredBurns = useMemo(() => {
-    return burns.filter((b) => {
+    return programadasBurns.filter((b) => {
       const q = searchQuery.toLowerCase().trim();
       const matchSearch =
         !q ||
         b.burn_number.toLowerCase().includes(q) ||
         b.front_number.toLowerCase().includes(q) ||
         b.farm_name.toLowerCase().includes(q) ||
-        b.shift_supervisor_name.toLowerCase().includes(q) ||
+        b.shift_supervisor_name?.toLowerCase().includes(q) ||
         (b.assigned_patrol_name && b.assigned_patrol_name.toLowerCase().includes(q));
 
       const matchStatus = statusFilter === 'ALL' || b.status === statusFilter;
@@ -316,13 +331,43 @@ export default function DashboardPage() {
 
       return matchSearch && matchStatus && matchFarm;
     });
-  }, [burns, searchQuery, statusFilter, farmFilter]);
+  }, [programadasBurns, searchQuery, statusFilter, farmFilter]);
 
-  if (!currentUser) return null;
+  if (!currentUser || isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-4 text-center max-w-sm">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center">
+            <Flame className="w-8 h-8 text-amber-500 animate-pulse" />
+          </div>
+          <div>
+            <h2 className="text-lg font-black tracking-tight text-white">
+              Ingenio La Unión
+            </h2>
+            <p className="text-xs text-emerald-400 font-bold uppercase tracking-widest mt-0.5">
+              Control de Quemas Programadas
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-400 mt-2">
+            <RefreshCw className="w-4 h-4 animate-spin text-emerald-500" />
+            <span>Cargando sistema...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const roleMeta = ROLE_DETAILS[currentUser.role];
   const canCreate = currentUser.role === 'supervisor_frente' || currentUser.role === 'digitador' || currentUser.role === 'admin';
   const isGlobalView = currentUser.role === 'digitador' || currentUser.role === 'jefatura' || currentUser.role === 'supervisor_quemas' || currentUser.role === 'admin';
+  
+  // Disponibilidad de patrullas visible únicamente para supervisor de quemas, digitador, jefatura, admin y patrulla
+  const canViewPatrolAvailability =
+    currentUser.role === 'supervisor_quemas' ||
+    currentUser.role === 'digitador' ||
+    currentUser.role === 'jefatura' ||
+    currentUser.role === 'admin' ||
+    currentUser.role === 'patrulla';
 
   return (
     <>
@@ -340,7 +385,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+      <main className="lg:pl-64 flex-1 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
         {/* Banner de Rol e Instrucciones con Aislamiento de Funciones */}
         <div className="mb-6 bg-gradient-to-r from-union-900 via-union-800 to-slate-900 text-white p-4 sm:p-6 rounded-2xl shadow-md border border-union-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -356,9 +402,12 @@ export default function DashboardPage() {
                 </span>
               )}
             </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white mt-1">
-              Registro y Control de Quemas Programadas
+            
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white mt-1 flex items-center gap-2">
+              <Flame className="w-6 h-6 text-amber-400" />
+              <span>Registro y Control de Quemas Programadas</span>
             </h1>
+
             <p className="text-xs sm:text-sm text-union-100 mt-1 max-w-2xl">
               {currentUser.role === 'supervisor_frente' &&
                 `Vista de Frente: Estás viendo únicamente las quemas asignadas a tu turno / frente (${currentUser.assigned_front || 'Frente asignado'}). Puedes crear nuevas solicitudes y editar los datos iniciales.`}
@@ -378,7 +427,7 @@ export default function DashboardPage() {
             {canCreate && (
               <button
                 onClick={() => setIsNewModalOpen(true)}
-                className="px-4 py-2.5 bg-gradient-to-r from-fire-500 to-fire-600 hover:from-fire-600 hover:to-fire-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-fire-900/30 flex items-center gap-2 transition hover:scale-105"
+                className="px-4 py-2.5 bg-gradient-to-r from-fire-500 to-fire-600 hover:from-fire-600 hover:to-fire-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-fire-900/30 flex items-center gap-2 transition hover:scale-105 cursor-pointer"
               >
                 <PlusCircle className="w-4 h-4" />
                 <span>Nueva Solicitud de Quema</span>
@@ -386,8 +435,8 @@ export default function DashboardPage() {
             )}
 
             <button
-              onClick={() => exportToExcel(filteredBurns)}
-              className="px-3.5 py-2 bg-union-800 hover:bg-union-700 text-union-100 hover:text-white font-semibold text-xs rounded-xl border border-union-600 flex items-center gap-1.5 transition"
+              onClick={() => exportToExcel(filteredBurns, 'Reporte_Quemas_Programadas')}
+              className="px-3.5 py-2 bg-union-800 hover:bg-union-700 text-union-100 hover:text-white font-semibold text-xs rounded-xl border border-union-600 flex items-center gap-1.5 transition cursor-pointer"
               title="Descargar datos en Excel"
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
@@ -396,7 +445,7 @@ export default function DashboardPage() {
 
             <button
               onClick={() => exportToPDF(filteredBurns)}
-              className="px-3.5 py-2 bg-union-800 hover:bg-union-700 text-union-100 hover:text-white font-semibold text-xs rounded-xl border border-union-600 flex items-center gap-1.5 transition"
+              className="px-3.5 py-2 bg-union-800 hover:bg-union-700 text-union-100 hover:text-white font-semibold text-xs rounded-xl border border-union-600 flex items-center gap-1.5 transition cursor-pointer"
               title="Descargar reporte en PDF"
             >
               <FileText className="w-4 h-4 text-fire-400" />
@@ -407,10 +456,19 @@ export default function DashboardPage() {
 
         {/* Overview KPI Cards */}
         <StatsOverview
-          burns={burns}
+          burns={programadasBurns}
           activeFilter={statusFilter}
           onFilterStatus={(status) => setStatusFilter(status)}
         />
+
+        {/* Real-time Patrol Availability & Timers Monitor (Visible para Supervisor de Quemas, Digitador, Jefatura, Admin y Patrulla) */}
+        {canViewPatrolAvailability && (
+          <PatrolAvailabilityMonitor
+            patrols={patrols}
+            burns={burns}
+            currentUser={currentUser}
+          />
+        )}
 
         {/* Filters and Search Bar */}
         <BurnFilters
@@ -520,6 +578,7 @@ export default function DashboardPage() {
             onOpenCancel={(b) => setSelectedBurnForCancel(b)}
           />
         )}
+        </div>
       </main>
 
       {/* ================================================================ */}
@@ -543,6 +602,7 @@ export default function DashboardPage() {
           onClose={() => setSelectedBurnForAssign(null)}
           burn={selectedBurnForAssign}
           patrols={patrols}
+          allBurns={burns}
           currentUser={currentUser}
           onAssign={handleAssignPatrol}
         />
