@@ -32,6 +32,14 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
+  // Form Mode: Login vs Registro Directo
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [regFullName, setRegFullName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+
   // Shift & Front Configuration Modal for Supervisors
   const [configuringSupervisor, setConfiguringSupervisor] = useState<UserProfile | null>(null);
   const [selectedFront, setSelectedFront] = useState('Frente 15');
@@ -123,6 +131,38 @@ export default function LoginPage() {
     }
   };
 
+  // Form Submit Registro de Nuevo Usuario Directo en Tarjeta
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regFullName.trim() || !regEmail.trim() || !regPassword.trim()) {
+      setErrorMsg('Por favor complete todos los campos obligatorios (*).');
+      return;
+    }
+
+    try {
+      setIsRegistering(true);
+      setErrorMsg('');
+      setSuccessMsg('');
+
+      await storageService.registerUser({
+        full_name: regFullName.trim(),
+        email: regEmail.trim(),
+        password: regPassword.trim(),
+        phone: regPhone.trim() || undefined,
+        role: 'supervisor_frente',
+      });
+
+      setIdentifier(regEmail.trim());
+      setPassword(regPassword.trim());
+      setIsRegisterMode(false);
+      setSuccessMsg(`¡Solicitud enviada! Su cuenta (${regEmail.trim()}) ha sido registrada. El Administrador o Digitador le asignará su rol y permisos en el Maestro de Usuarios para darte acceso.`);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Error al procesar el registro.');
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
   // Confirm Front and Shift for Supervisor
   const handleConfirmShiftAndEnter = () => {
     if (!configuringSupervisor) return;
@@ -145,7 +185,7 @@ export default function LoginPage() {
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Main Login Card - Exact Match to Reference Design */}
+      {/* Main Login / Register Card - Exact Match to Reference Design */}
       <div className="w-full max-w-[420px] bg-[#0B121E] border border-slate-800/80 rounded-3xl p-7 sm:p-9 shadow-2xl relative z-10 space-y-6">
         
         {/* Header Branding */}
@@ -158,11 +198,13 @@ export default function LoginPage() {
               Ingenio La Unión
             </h1>
             <p className="text-xs uppercase tracking-widest font-extrabold text-emerald-400 mt-1">
-              CONTROL DE QUEMAS PROGRAMADAS
+              {isRegisterMode ? 'SOLICITUD DE REGISTRO' : 'CONTROL DE QUEMAS PROGRAMADAS'}
             </p>
           </div>
           <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-            Acceso seguro en tiempo real a la plataforma operativa.
+            {isRegisterMode
+              ? 'Complete sus datos para solicitar acceso. El Administrador asignará su rol en el sistema.'
+              : 'Acceso seguro en tiempo real a la plataforma operativa.'}
           </p>
         </div>
 
@@ -182,79 +224,182 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Formulario de Inicio con Correo / Credenciales */}
-        <form onSubmit={handleFormLogin} className="space-y-4">
-          
-          {/* Campo: Correo Electrónico */}
-          <div className="space-y-1.5">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-              CORREO ELECTRÓNICO
-            </label>
-            <div className="relative">
-              <User className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="oscar.morales o correo"
-                className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3.5 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
-                required
-                autoComplete="username"
-              />
-            </div>
-          </div>
-
-          {/* Campo: Contraseña */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
+        {/* ========================================================================= */}
+        {/* FORMULARIO DINÁMICO: LOGIN O REGISTRO EN LA MISMA TARJETA                */}
+        {/* ========================================================================= */}
+        {!isRegisterMode ? (
+          /* MODO LOGIN */
+          <form onSubmit={handleFormLogin} className="space-y-4">
+            
+            {/* Campo: Correo Electrónico */}
+            <div className="space-y-1.5">
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                CONTRASEÑA
+                CORREO ELECTRÓNICO
               </label>
-              <button
-                type="button"
-                onClick={() => setShowHelpModal(true)}
-                className="text-[11px] text-emerald-400 hover:text-emerald-300 font-bold cursor-pointer"
-              >
-                ¿Olvidó su clave?
-              </button>
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="oscar.morales o correo"
+                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3.5 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                  required
+                  autoComplete="username"
+                />
+              </div>
             </div>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••"
-                className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-11 py-3.5 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
-                required
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 cursor-pointer"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
 
-          {/* Botón Principal: Iniciar con Credenciales */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
-          >
-            {isLoading ? (
-              <span>Validando acceso...</span>
-            ) : (
-              <>
-                <span>Iniciar con Credenciales</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </form>
+            {/* Campo: Contraseña */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                  CONTRASEÑA
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowHelpModal(true)}
+                  className="text-[11px] text-emerald-400 hover:text-emerald-300 font-bold cursor-pointer"
+                >
+                  ¿Olvidó su clave?
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••"
+                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-11 py-3.5 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                  required
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 cursor-pointer"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Botón Principal: Iniciar con Credenciales */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
+            >
+              {isLoading ? (
+                <span>Validando acceso...</span>
+              ) : (
+                <>
+                  <span>Iniciar con Credenciales</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+        ) : (
+          /* MODO REGISTRO EN LA MISMA TARJETA */
+          <form onSubmit={handleRegisterSubmit} className="space-y-3.5 animate-in fade-in duration-200">
+            
+            {/* Campo: Nombre Completo */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                NOMBRE COMPLETO *
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={regFullName}
+                  onChange={(e) => setRegFullName(e.target.value)}
+                  placeholder="Ej. Oscar Morales"
+                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Campo: Correo Electrónico */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                CORREO ELECTRÓNICO *
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
+                <input
+                  type="email"
+                  value={regEmail}
+                  onChange={(e) => setRegEmail(e.target.value)}
+                  placeholder="nombre@launion.com o gmail"
+                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Campo: Contraseña Deseada */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                CONTRASEÑA DESEADA *
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-11 py-3 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 cursor-pointer"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Campo: Teléfono Móvil (Opcional) */}
+            <div className="space-y-1">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                TELÉFONO MÓVIL (OPCIONAL)
+              </label>
+              <div className="relative">
+                <Phone className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={regPhone}
+                  onChange={(e) => setRegPhone(e.target.value)}
+                  placeholder="+502 ..."
+                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                />
+              </div>
+            </div>
+
+            {/* Botón Principal: Enviar Solicitud de Registro */}
+            <button
+              type="submit"
+              disabled={isRegistering}
+              className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
+            >
+              {isRegistering ? (
+                <span>Enviando solicitud...</span>
+              ) : (
+                <>
+                  <span>Enviar Solicitud de Registro</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+        )}
 
         {/* Separador: O CONTINUAR CON */}
         <div className="flex items-center gap-3 my-3">
@@ -299,11 +444,39 @@ export default function LoginPage() {
           )}
         </button>
 
-        {/* Nota informativa de acceso */}
-        <div className="text-center pt-1">
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Nuevos colaboradores: ingrese su correo y clave directamente para solicitar acceso al Administrador.
-          </p>
+        {/* Toggle Footer: Login <-> Registro */}
+        <div className="text-center pt-2">
+          {!isRegisterMode ? (
+            <p className="text-xs text-slate-400 font-medium">
+              ¿No tiene cuenta?{' '}
+              <button
+                type="button"
+                onClick={() => {
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                  setIsRegisterMode(true);
+                }}
+                className="text-emerald-400 hover:text-emerald-300 font-bold underline underline-offset-4 cursor-pointer"
+              >
+                Regístrese aquí
+              </button>
+            </p>
+          ) : (
+            <p className="text-xs text-slate-400 font-medium">
+              ¿Ya tiene una cuenta?{' '}
+              <button
+                type="button"
+                onClick={() => {
+                  setErrorMsg('');
+                  setSuccessMsg('');
+                  setIsRegisterMode(false);
+                }}
+                className="text-emerald-400 hover:text-emerald-300 font-bold underline underline-offset-4 cursor-pointer"
+              >
+                Iniciar sesión aquí
+              </button>
+            </p>
+          )}
         </div>
 
         {/* Footer Institucional */}
@@ -314,7 +487,6 @@ export default function LoginPage() {
         </div>
 
       </div>
-      )}
 
       {/* ========================================================================= */}
       {/* MODAL CONFIGURACIÓN DE FRENTE Y TURNO (SUPERVISORES DE FRENTE)            */}
