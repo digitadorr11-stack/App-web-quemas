@@ -99,8 +99,42 @@ export default function UsuariosPage() {
     storageService.setActiveUser(user);
   };
 
-  const togglePasswordVisibility = (userId: string) => {
-    setShowPasswords((prev) => ({ ...prev, [userId]: !prev[userId] }));
+  const [togglingUserId, setTogglingUserId] = useState<string | null>(null);
+
+  const handleToggleActive = async (targetUser: UserProfile) => {
+    if (!currentUser) return;
+    if (targetUser.id === currentUser.id) {
+      showToast('No puedes desactivar tu propia cuenta en sesión activa.');
+      return;
+    }
+
+    const nextState = !targetUser.active;
+    setTogglingUserId(targetUser.id);
+
+    // Actualización optimista inmediata en la UI
+    setUsers((prev) =>
+      prev.map((u) => (u.id === targetUser.id ? { ...u, active: nextState } : u))
+    );
+
+    try {
+      await storageService.updateUserCredentials(
+        targetUser.id,
+        { active: nextState },
+        currentUser
+      );
+      showToast(
+        `Usuario ${targetUser.full_name} ${nextState ? 'habilitado' : 'desactivado'} con éxito.`
+      );
+    } catch (err) {
+      console.error('Error toggling user active state', err);
+      showToast('Error al cambiar el estado del usuario');
+      // Revertir si hubo error
+      setUsers((prev) =>
+        prev.map((u) => (u.id === targetUser.id ? { ...u, active: !nextState } : u))
+      );
+    } finally {
+      setTogglingUserId(null);
+    }
   };
 
   const handleOpenModal = (user?: UserProfile, activateOnOpen: boolean = false) => {
@@ -319,122 +353,286 @@ export default function UsuariosPage() {
           </div>
         )}
 
-        {/* Users Table */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        {/* ================================================================ */}
+        {/* VISTA MÓVIL: TARJETAS RESPONSIVAS (Optimizado para teléfonos)    */}
+        {/* ================================================================ */}
+        <div className="block md:hidden space-y-3 mb-8">
+          {filteredUsers.length === 0 ? (
+            <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-400 text-xs">
+              No se encontraron colaboradores con los filtros seleccionados.
+            </div>
+          ) : (
+            filteredUsers.map((u) => {
+              const roleMeta = ROLE_DETAILS[u.role] || {
+                label: u.role,
+                badgeColor: 'bg-slate-100 text-slate-800 border-slate-200',
+              };
+              const isCurrentUser = u.id === currentUser.id;
+
+              return (
+                <div
+                  key={u.id}
+                  className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex flex-col justify-between gap-3.5 transition"
+                >
+                  {/* Fila Superior: Nombre, Rol y Switch */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-slate-900 text-sm">{u.full_name}</span>
+                        {isCurrentUser && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                            Tú
+                          </span>
+                        )}
+                        {!u.active && (
+                          <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">
+                            Inactivo
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                        @{u.username}
+                        <span className="mx-1 text-slate-300">•</span>
+                        <span className="font-sans text-slate-400 truncate">{u.email}</span>
+                      </div>
+                      <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${roleMeta.badgeColor}`}
+                        >
+                          {roleMeta.label}
+                        </span>
+                        {u.assigned_front && (
+                          <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                            {u.assigned_front}
+                          </span>
+                        )}
+                        {u.assigned_patrol_name && (
+                          <span className="text-[10px] font-semibold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                            {u.assigned_patrol_name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Switch Toggle Móvil */}
+                    <div className="flex flex-col items-end shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleActive(u)}
+                        disabled={isCurrentUser || togglingUserId === u.id}
+                        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                          u.active ? 'bg-emerald-600' : 'bg-slate-300'
+                        } ${isCurrentUser ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        title={u.active ? 'Habilitado - Clic para desactivar' : 'Inactivo - Clic para habilitar'}
+                      >
+                        <span
+                          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                            u.active ? 'translate-x-5' : 'translate-x-0'
+                          }`}
+                        />
+                      </button>
+                      <span
+                        className={`text-[9px] font-bold uppercase tracking-wider mt-1 ${
+                          u.active ? 'text-emerald-700' : 'text-slate-400'
+                        }`}
+                      >
+                        {u.active ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Fila Inferior: Teléfono y Acciones */}
+                  <div className="flex items-center justify-between pt-2.5 border-t border-slate-100 text-xs">
+                    <div className="text-slate-500 text-[11px] flex items-center gap-1">
+                      {u.phone ? (
+                        <>
+                          <Phone className="w-3 h-3 text-slate-400" />
+                          <span>{u.phone}</span>
+                        </>
+                      ) : (
+                        <span className="text-slate-400">Sin teléfono</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleOpenModal(u)}
+                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg flex items-center gap-1 transition cursor-pointer active:scale-95"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>Editar</span>
+                      </button>
+
+                      {!isCurrentUser && (
+                        <button
+                          onClick={() => setDeletingUser(u)}
+                          className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer active:scale-95"
+                          title="Eliminar colaborador"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* ================================================================ */}
+        {/* VISTA ESCRITORIO: TABLA EJECUTIVA CON SWITCH DIRECTO              */}
+        {/* ================================================================ */}
+        <div className="hidden md:block bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-900 text-white uppercase text-[11px] font-bold tracking-wider">
                 <tr>
                   <th className="py-3.5 px-4">Colaborador / Rol</th>
                   <th className="py-3.5 px-4">Usuario (@) / Correo</th>
-                  <th className="py-3.5 px-4">Asignación</th>
-                  <th className="py-3.5 px-4">Estado de Acceso</th>
+                  <th className="py-3.5 px-4">Asignación Operativa</th>
+                  <th className="py-3.5 px-4 text-center">Acceso (Switch)</th>
                   <th className="py-3.5 px-4">Contacto</th>
                   <th className="py-3.5 px-4 text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredUsers.map((u) => {
-                  const roleMeta = ROLE_DETAILS[u.role];
+              <tbody className="divide-y divide-slate-100">
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-slate-400">
+                      No se encontraron colaboradores coincidentes con la búsqueda.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((u) => {
+                    const roleMeta = ROLE_DETAILS[u.role] || {
+                      label: u.role,
+                      badgeColor: 'bg-slate-100 text-slate-800 border-slate-200',
+                    };
+                    const isCurrentUser = u.id === currentUser.id;
 
-                  return (
-                    <tr key={u.id} className="hover:bg-purple-50/20 transition">
-                      
-                      {/* Name & Role */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-2">
-                          <div className="font-bold text-gray-900 text-sm">{u.full_name}</div>
-                          {!u.active && (
-                            <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">
-                              ⏳ Pendiente
-                            </span>
-                          )}
-                        </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border inline-block mt-0.5 ${roleMeta.badgeColor}`}>
-                          {roleMeta.label}
-                        </span>
-                      </td>
-
-                      {/* Username */}
-                      <td className="py-3.5 px-4 font-mono font-bold text-purple-950">
-                        @{u.username}
-                        <span className="block text-[11px] font-normal text-gray-500 font-sans">{u.email}</span>
-                      </td>
-
-                      {/* Assignment */}
-                      <td className="py-3.5 px-4">
-                        {u.assigned_front ? (
-                          <span className="font-semibold text-blue-800 bg-blue-50 px-2 py-1 rounded border border-blue-200">
-                            {u.assigned_front}
-                          </span>
-                        ) : u.assigned_patrol_name ? (
-                          <span className="font-semibold text-orange-800 bg-orange-50 px-2 py-1 rounded border border-orange-200">
-                            {u.assigned_patrol_name}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">General Ingenio</span>
-                        )}
-                      </td>
-
-                      {/* Estado de Acceso Seguro (Sin exponer claves) */}
-                      <td className="py-3.5 px-4 whitespace-nowrap">
-                        {u.active ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Habilitado</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300">
-                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                            <span>Pendiente de Aprobación</span>
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Contact */}
-                      <td className="py-3.5 px-4 text-gray-600 whitespace-nowrap">
-                        {u.phone ? (
-                          <span className="flex items-center gap-1">
-                            <Phone className="w-3 h-3 text-gray-400" />
-                            {u.phone}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => handleOpenModal(u)}
-                            className="px-2.5 py-1.5 text-xs font-bold text-purple-900 bg-purple-100 hover:bg-purple-200 rounded-lg flex items-center gap-1 transition cursor-pointer"
-                            title="Modificar clave, rol o datos"
+                    return (
+                      <tr key={u.id} className="hover:bg-slate-50/80 transition group">
+                        
+                        {/* Colaborador & Rol */}
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-900 text-sm">{u.full_name}</span>
+                            {isCurrentUser && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
+                                Tu cuenta
+                              </span>
+                            )}
+                            {!u.active && (
+                              <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-full">
+                                Pendiente
+                              </span>
+                            )}
+                          </div>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border inline-block mt-0.5 ${roleMeta.badgeColor}`}
                           >
-                            <Edit className="w-3.5 h-3.5" />
-                            <span>Modificar</span>
-                          </button>
+                            {roleMeta.label}
+                          </span>
+                        </td>
 
-                          {u.id !== currentUser.id ? (
-                            <button
-                              onClick={() => setDeletingUser(u)}
-                              className="px-2.5 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg flex items-center gap-1 transition cursor-pointer"
-                              title="Eliminar usuario definitivamente"
-                            >
-                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                              <span>Eliminar</span>
-                            </button>
-                          ) : (
-                            <span className="text-[10px] text-gray-400 italic px-2 py-1 bg-gray-100 rounded">
-                              Tu usuario
+                        {/* Username & Email */}
+                        <td className="py-3.5 px-4 font-mono">
+                          <span className="font-bold text-slate-800">@{u.username}</span>
+                          <span className="block text-[11px] font-normal text-slate-500 font-sans">
+                            {u.email || '-'}
+                          </span>
+                        </td>
+
+                        {/* Asignación */}
+                        <td className="py-3.5 px-4">
+                          {u.assigned_front ? (
+                            <span className="font-semibold text-blue-800 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200">
+                              {u.assigned_front}
                             </span>
+                          ) : u.assigned_patrol_name ? (
+                            <span className="font-semibold text-orange-800 bg-orange-50 px-2.5 py-1 rounded-md border border-orange-200">
+                              {u.assigned_patrol_name}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">General Ingenio</span>
                           )}
-                        </div>
-                      </td>
+                        </td>
 
-                    </tr>
-                  );
-                })}
+                        {/* Switch Interactivo Moderno (Estilo SICA) */}
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          <div className="inline-flex flex-col items-center">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleActive(u)}
+                              disabled={isCurrentUser || togglingUserId === u.id}
+                              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 ${
+                                u.active ? 'bg-emerald-600' : 'bg-slate-300'
+                              } ${isCurrentUser ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              title={
+                                isCurrentUser
+                                  ? 'No puedes desactivarte a ti mismo'
+                                  : u.active
+                                  ? 'Usuario habilitado. Clic para desactivar.'
+                                  : 'Usuario inactivo. Clic para habilitar.'
+                              }
+                            >
+                              <span
+                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                                  u.active ? 'translate-x-5' : 'translate-x-0'
+                                }`}
+                              />
+                            </button>
+                            <span
+                              className={`text-[10px] font-bold mt-1 ${
+                                u.active ? 'text-emerald-700' : 'text-slate-400'
+                              }`}
+                            >
+                              {u.active ? 'Habilitado' : 'Inactivo'}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Contacto */}
+                        <td className="py-3.5 px-4 text-slate-600 whitespace-nowrap">
+                          {u.phone ? (
+                            <span className="flex items-center gap-1 text-slate-600 font-medium">
+                              <Phone className="w-3.5 h-3.5 text-slate-400" />
+                              {u.phone}
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">-</span>
+                          )}
+                        </td>
+
+                        {/* Acciones */}
+                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => handleOpenModal(u)}
+                              className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg flex items-center gap-1.5 transition cursor-pointer active:scale-95"
+                              title="Editar rol, frente o datos del colaborador"
+                            >
+                              <Edit className="w-3.5 h-3.5 text-slate-600" />
+                              <span>Modificar</span>
+                            </button>
+
+                            {!isCurrentUser && (
+                              <button
+                                onClick={() => setDeletingUser(u)}
+                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer active:scale-95"
+                                title="Eliminar colaborador"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
