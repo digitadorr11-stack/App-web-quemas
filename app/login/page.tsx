@@ -37,7 +37,6 @@ export default function LoginPage() {
   const [regFullName, setRegFullName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  const [regPhone, setRegPhone] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
 
   // Shift & Front Configuration Modal for Supervisors
@@ -148,7 +147,6 @@ export default function LoginPage() {
         full_name: regFullName.trim(),
         email: regEmail.trim(),
         password: regPassword.trim(),
-        phone: regPhone.trim() || undefined,
         role: 'supervisor_frente',
       });
 
@@ -363,23 +361,6 @@ export default function LoginPage() {
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
-
-            {/* Campo: Teléfono Móvil (Opcional) */}
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                TELÉFONO MÓVIL (OPCIONAL)
-              </label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={regPhone}
-                  onChange={(e) => setRegPhone(e.target.value)}
-                  placeholder="+502 ..."
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
-                />
               </div>
             </div>
 
