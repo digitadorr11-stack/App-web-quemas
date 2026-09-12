@@ -64,14 +64,19 @@ export default function LoginPage() {
       try {
         const user = await storageService.handleAuthSession();
         if (user) {
+          if (user.active === false) {
+            setErrorMsg(`Hola ${user.full_name}, tu cuenta (${user.email}) ha sido registrada y está pendiente de aprobación. Comunícate con el Administrador o Digitador para que te habilite y te asigne tu rol en el Maestro de Usuarios.`);
+            return;
+          }
           if (user.role === 'supervisor_frente' && !user.assigned_front) {
             setConfiguringSupervisor(user);
           } else if (user.role) {
             window.location.href = '/';
           }
         }
-      } catch (e) {
+      } catch (e: any) {
         console.warn('Error checking session', e);
+        setErrorMsg(e.message || 'Error al validar sesión');
       }
     };
 
@@ -104,6 +109,10 @@ export default function LoginPage() {
       const user = await storageService.login(identifier, password);
 
       if (user) {
+        if (user.active === false) {
+          setErrorMsg(`Su cuenta (${user.email || user.username}) está pendiente de aprobación. El Administrador debe asignarle rol y activarla en el Maestro de Usuarios.`);
+          return;
+        }
         if (user.role === 'supervisor_frente') {
           setConfiguringSupervisor(user);
           setSelectedFront(user.assigned_front || 'Frente 15');
@@ -142,10 +151,8 @@ export default function LoginPage() {
         full_name: regFullName.trim(),
         email: regEmail.trim(),
         password: regPassword.trim(),
-        role: regRole,
-        assigned_front: regRole === 'supervisor_frente' ? regFront : undefined,
+        role: 'supervisor_frente',
         phone: regPhone.trim() || undefined,
-        current_shift: regRole === 'supervisor_frente' ? 'Turno Día (06:00 - 18:00)' : undefined,
       });
 
       setRegisterSuccess(true);
@@ -461,57 +468,18 @@ export default function LoginPage() {
                   />
                 </div>
 
-                {/* Rol Solicitado */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <label className="block text-[10px] font-bold uppercase text-slate-300">
-                      Rol Operativo *
-                    </label>
-                    <select
-                      value={regRole}
-                      onChange={(e) => setRegRole(e.target.value as UserRole)}
-                      className="w-full bg-[#EDF2F7] text-slate-900 rounded-xl p-2.5 text-xs font-bold focus:ring-2 focus:ring-emerald-500"
-                    >
-                      <option value="supervisor_frente">Supervisor de Frente</option>
-                      <option value="patrulla">Patrulla de Quema</option>
-                      <option value="supervisor_quemas">Supervisor de Quemas</option>
-                      <option value="digitador">Digitador</option>
-                      <option value="jefatura">Jefatura / Gerencia</option>
-                    </select>
-                  </div>
-
-                  {/* Frente (si aplica) */}
-                  {regRole === 'supervisor_frente' ? (
-                    <div className="space-y-1">
-                      <label className="block text-[10px] font-bold uppercase text-slate-300">
-                        Frente de Cosecha
-                      </label>
-                      <select
-                        value={regFront}
-                        onChange={(e) => setRegFront(e.target.value)}
-                        className="w-full bg-[#EDF2F7] text-slate-900 rounded-xl p-2.5 text-xs font-bold focus:ring-2 focus:ring-emerald-500"
-                      >
-                        {fronts.map((f) => (
-                          <option key={f.id} value={f.name}>
-                            {f.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      <label className="block text-[10px] font-bold uppercase text-slate-300">
-                        Teléfono Móvil
-                      </label>
-                      <input
-                        type="text"
-                        value={regPhone}
-                        onChange={(e) => setRegPhone(e.target.value)}
-                        placeholder="+502 ..."
-                        className="w-full bg-[#EDF2F7] text-slate-900 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                  )}
+                {/* Teléfono Móvil */}
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold uppercase text-slate-300">
+                    Teléfono Móvil (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={regPhone}
+                    onChange={(e) => setRegPhone(e.target.value)}
+                    placeholder="+502 ..."
+                    className="w-full bg-[#EDF2F7] text-slate-900 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
                 </div>
 
                 <div className="pt-2 flex justify-end gap-2">

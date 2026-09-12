@@ -307,24 +307,31 @@ export const storageService = {
 
       if (!error && profiles && profiles.length > 0) {
         const profile = userFromDb(profiles[0]);
+        if (profile.active === false) {
+          return profile;
+        }
         this.setActiveUser(profile);
         return profile;
       }
 
+      // Nuevo usuario por Google: registrar como inactivo para autorización del Admin
       const newProfile: UserProfile = {
         id: `usr-${authUser.id.substring(0, 8)}`,
+        auth_id: authUser.id,
         username: userEmail.split('@')[0],
         email: userEmail,
         full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || userEmail.split('@')[0],
         role: 'supervisor_frente',
-        active: true,
+        active: false, // Pendiente de asignación de rol y aprobación por Admin en el Maestro de Usuarios
+        created_at: new Date().toISOString(),
       };
 
       try {
         await supabase.from('perfiles_usuarios').insert(userToDb(newProfile));
-      } catch (e) {}
+      } catch (e) {
+        console.error('Error insertando nuevo usuario Google', e);
+      }
 
-      this.setActiveUser(newProfile);
       return newProfile;
     } catch (e) {
       console.warn('Error fetching auth session', e);

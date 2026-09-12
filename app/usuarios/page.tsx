@@ -103,7 +103,7 @@ export default function UsuariosPage() {
     setShowPasswords((prev) => ({ ...prev, [userId]: !prev[userId] }));
   };
 
-  const handleOpenModal = (user?: UserProfile) => {
+  const handleOpenModal = (user?: UserProfile, activateOnOpen: boolean = false) => {
     if (user) {
       setEditingUser(user);
       setFormData({
@@ -116,7 +116,7 @@ export default function UsuariosPage() {
         phone: user.phone || '',
         assigned_front: user.assigned_front || '',
         assigned_patrol_name: user.assigned_patrol_name || '',
-        active: user.active ?? true,
+        active: activateOnOpen ? true : (user.active ?? true),
       });
     } else {
       setEditingUser(null);
@@ -142,7 +142,7 @@ export default function UsuariosPage() {
 
     if (editingUser) {
       await storageService.updateUserCredentials(editingUser.id, formData, currentUser);
-      showToast(`Credenciales de ${formData.full_name} actualizadas.`);
+      showToast(`Usuario ${formData.full_name} actualizado y habilitado con éxito.`);
     } else {
       await storageService.createUser(formData, currentUser);
       showToast(`Usuario ${formData.full_name} creado exitosamente.`);
@@ -208,14 +208,14 @@ export default function UsuariosPage() {
               Gestión de Usuarios, Roles y Credenciales
             </h1>
             <p className="text-xs sm:text-sm text-purple-200 mt-1 max-w-2xl">
-              Consulta contraseñas y PINes olvidados en campo, restablece credenciales y asigna frentes de trabajo o patrullas a los colaboradores.
+              Autoriza solicitudes de acceso, asigna roles operativos (Supervisor de Frente, Patrulla, Digitador, etc.), define frentes de trabajo y administra credenciales.
             </p>
           </div>
 
           <div>
             <button
               onClick={() => handleOpenModal()}
-              className="px-4 py-2.5 bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md flex items-center gap-2 transition"
+              className="px-4 py-2.5 bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md flex items-center gap-2 transition cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Registrar Nuevo Colaborador</span>
@@ -231,7 +231,7 @@ export default function UsuariosPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar colaborador por nombre, usuario o frente..."
+              placeholder="Buscar colaborador por nombre, correo, usuario o frente..."
               className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-600 focus:outline-none"
             />
           </div>
@@ -254,41 +254,65 @@ export default function UsuariosPage() {
 
         {/* Banner de Usuarios Pendientes de Aprobación */}
         {users.filter((u) => !u.active).length > 0 && (
-          <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 mb-6 shadow-sm">
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-2xl p-5 mb-6 shadow-sm">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800">
+                <div className="w-11 h-11 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-500/30">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-amber-900">
-                    Solicitudes de Registro Pendientes ({users.filter((u) => !u.active).length})
+                  <h3 className="text-sm font-black text-amber-950">
+                    Solicitudes de Acceso Pendientes ({users.filter((u) => !u.active).length})
                   </h3>
-                  <p className="text-xs text-amber-700">
-                    Nuevos colaboradores que se registraron y están esperando tu autorización para poder ingresar.
+                  <p className="text-xs text-amber-800">
+                    Colaboradores registrados que esperan asignación de rol, frente de trabajo y autorización.
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {users.filter((u) => !u.active).map((pendingUser) => (
-                <div key={pendingUser.id} className="bg-white p-3 rounded-xl border border-amber-200 shadow-xs flex items-center justify-between">
+                <div key={pendingUser.id} className="bg-white p-3.5 rounded-xl border border-amber-200 shadow-xs flex flex-col justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="font-bold text-gray-900 text-xs truncate">{pendingUser.full_name}</div>
-                    <div className="text-[10px] text-gray-500 truncate">{pendingUser.email || pendingUser.username} · <span className="font-semibold text-amber-800">{ROLE_DETAILS[pendingUser.role]?.label}</span></div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-black text-gray-900 text-xs truncate">{pendingUser.full_name}</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                        Pendiente
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-gray-500 truncate mt-0.5">
+                      {pendingUser.email || pendingUser.username}
+                    </div>
+                    {pendingUser.phone && (
+                      <div className="text-[10px] text-gray-400 mt-0.5 flex items-center gap-1">
+                        <Phone className="w-3 h-3" />
+                        <span>{pendingUser.phone}</span>
+                      </div>
+                    )}
                   </div>
-                  <button
-                    onClick={async () => {
-                      await storageService.updateUserCredentials(pendingUser.id, { active: true }, currentUser);
-                      await loadData();
-                      showToast(`¡Usuario ${pendingUser.full_name} aprobado y habilitado!`);
-                    }}
-                    className="ml-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1 cursor-pointer shrink-0 transition"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Aprobar</span>
-                  </button>
+
+                  <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                    <button
+                      onClick={() => handleOpenModal(pendingUser, true)}
+                      className="flex-1 py-1.5 px-2.5 bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs rounded-lg shadow-xs flex items-center justify-center gap-1 cursor-pointer transition"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                      <span>Asignar Rol & Aprobar</span>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await storageService.updateUserCredentials(pendingUser.id, { active: true }, currentUser);
+                        await loadData();
+                        showToast(`¡Usuario ${pendingUser.full_name} aprobado y habilitado!`);
+                      }}
+                      className="py-1.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1 cursor-pointer transition shrink-0"
+                      title="Aprobar directamente con rol actual"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Aprobar</span>
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -567,30 +591,48 @@ export default function UsuariosPage() {
                 </div>
               )}
 
-              <div>
-                <label className="block font-bold text-gray-700 mb-1">Correo Electrónico</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="ej: colaborador@launion.com"
-                  className="w-full p-2 rounded-lg border border-gray-300"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Correo Electrónico</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="ej: colaborador@launion.com"
+                    className="w-full p-2 rounded-lg border border-gray-300"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Estado de Acceso</label>
+                  <select
+                    value={formData.active ? 'true' : 'false'}
+                    onChange={(e) => setFormData({ ...formData, active: e.target.value === 'true' })}
+                    className={`w-full p-2 rounded-lg border font-bold ${
+                      formData.active
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                        : 'border-amber-300 bg-amber-50 text-amber-800'
+                    }`}
+                  >
+                    <option value="true">✓ Habilitado / Aprobado</option>
+                    <option value="false">⏳ Inactivo / Pendiente</option>
+                  </select>
+                </div>
               </div>
 
               <div className="pt-3 border-t flex justify-end space-x-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition"
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-purple-800 hover:bg-purple-700 text-white font-bold rounded-lg shadow-md transition"
+                  className="px-5 py-2 bg-purple-800 hover:bg-purple-700 text-white font-bold rounded-lg shadow-md transition cursor-pointer"
                 >
-                  Guardar Credenciales
+                  Guardar y Habilitar
                 </button>
               </div>
             </form>
