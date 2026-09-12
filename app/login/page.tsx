@@ -21,7 +21,6 @@ import {
   Mail,
   ShieldAlert,
 } from 'lucide-react';
-import FlameLogo from '@/components/FlameLogo';
 
 export default function LoginPage() {
   const [fronts, setFronts] = useState<Front[]>([]);
@@ -184,8 +183,8 @@ export default function LoginPage() {
         
         {/* Header Branding */}
         <div className="text-center space-y-2.5">
-          <div className="flex justify-center">
-            <FlameLogo size={64} className="hover:scale-105 transition-transform duration-300 shadow-emerald-900/60" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-800 to-emerald-600 border border-emerald-400/30 shadow-lg shadow-emerald-900/50">
+            <Flame className="w-8 h-8 text-amber-400 animate-pulse" />
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight text-white">
