@@ -100,6 +100,22 @@ export default function DashboardPage() {
 
   useEffect(() => {
     refreshData();
+
+    // Suscripción 100% en tiempo real a Supabase (WebSockets)
+    const unsubBurns = storageService.subscribeToBurnRequests((payload) => {
+      console.log('⚡ Realtime burn update received', payload);
+      refreshData();
+    });
+
+    const unsubPatrols = storageService.subscribeToPatrols((payload) => {
+      console.log('⚡ Realtime patrol update received', payload);
+      refreshData();
+    });
+
+    return () => {
+      unsubBurns();
+      unsubPatrols();
+    };
   }, []);
 
   const handleUserChange = (user: UserProfile) => {

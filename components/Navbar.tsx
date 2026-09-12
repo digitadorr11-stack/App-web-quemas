@@ -20,6 +20,8 @@ import {
   ChevronRight,
   Sparkles,
   CheckCircle2,
+  Activity,
+  Radio,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -104,31 +106,43 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
           href: '/usuarios',
           label: 'Gestión de Usuarios',
           icon: Users,
-          color: 'text-cyan-400',
-          activeBg: 'bg-union-800 text-white border-l-4 border-cyan-400 font-bold',
+          color: 'text-indigo-400',
+          activeBg: 'bg-union-800 text-white border-l-4 border-indigo-400 font-bold',
           visible: isDigitador,
         },
       ],
     },
   ];
 
-  const handleLogout = () => {
-    storageService.logout();
+  const handleLogout = async () => {
+    await storageService.logout();
     router.push('/login');
   };
 
-  const roleMeta = ROLE_DETAILS[activeUser.role] || ROLE_DETAILS['digitador'];
+  const roleMeta = ROLE_DETAILS[activeUser.role] || {
+    label: activeUser.role,
+    color: 'bg-gray-100 text-gray-800',
+  };
 
-  // Current Active Page Title for Top Bar
   const getCurrentPageTitle = () => {
-    if (pathname === '/') return { title: 'Quemas Programadas (En Proceso)', icon: Flame, color: 'text-amber-400' };
-    if (pathname === '/quemas-finalizadas') return { title: 'Registro de Quemas Finalizadas', icon: CheckCircle2, color: 'text-emerald-400' };
-    if (pathname === '/quemas-criminales') return { title: 'Quemas Criminales', icon: ShieldAlert, color: 'text-red-400' };
-    if (pathname === '/reportes') return { title: 'Reportes & KPIs', icon: BarChart3, color: 'text-blue-400' };
-    if (pathname === '/bitacora') return { title: 'Bitácora de Auditoría', icon: ShieldCheck, color: 'text-emerald-400' };
-    if (pathname === '/maestros') return { title: 'Catálogos Maestros', icon: Layers, color: 'text-purple-400' };
-    if (pathname === '/usuarios') return { title: 'Gestión de Usuarios', icon: Users, color: 'text-cyan-400' };
-    return { title: 'Ingenio La Unión', icon: Flame, color: 'text-emerald-400' };
+    switch (pathname) {
+      case '/':
+        return { title: 'Quemas Programadas', icon: Flame, color: 'text-amber-400' };
+      case '/quemas-finalizadas':
+        return { title: 'Quemas Finalizadas', icon: CheckCircle2, color: 'text-emerald-400' };
+      case '/quemas-criminales':
+        return { title: 'Quemas Criminales (Atención de Emergencia)', icon: ShieldAlert, color: 'text-rose-400' };
+      case '/reportes':
+        return { title: 'Reportes y Métricas Operativas', icon: BarChart3, color: 'text-blue-400' };
+      case '/bitacora':
+        return { title: 'Bitácora Inmutable de Auditoría', icon: ShieldCheck, color: 'text-emerald-400' };
+      case '/maestros':
+        return { title: 'Administración de Catálogos Maestros', icon: Layers, color: 'text-purple-400' };
+      case '/usuarios':
+        return { title: 'Gestión de Usuarios y Credenciales', icon: Users, color: 'text-indigo-400' };
+      default:
+        return { title: 'Control de Quemas', icon: Flame, color: 'text-amber-400' };
+    }
   };
 
   const currentInfo = getCurrentPageTitle();
@@ -137,64 +151,61 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
   return (
     <>
       {/* ========================================================================= */}
-      {/* 1. CINTA DE OPCIONES A LADO IZQUIERDO (SIDEBAR DESKTOP) */}
+      {/* 1. BARRA LATERAL FIJA (DESKTOP SIDEBAR)                                    */}
       {/* ========================================================================= */}
-      <aside className="fixed inset-y-0 left-0 z-40 w-64 bg-union-950 text-white border-r border-union-800 hidden lg:flex flex-col shadow-2xl">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-union-950 text-white border-r border-union-800 shadow-2xl z-40">
         
-        {/* Brand & Logo Header */}
-        <div className="p-5 border-b border-union-800/80">
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-700 border border-emerald-500/30 flex items-center justify-center shadow-md shadow-emerald-950/40 group-hover:scale-105 transition-transform">
+        {/* Brand Header */}
+        <div className="p-4 border-b border-union-800/80 bg-union-900/50">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-700 to-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-950/50 border border-emerald-400/30">
               <Flame className="w-6 h-6 text-amber-400 animate-pulse" />
             </div>
             <div>
-              <span className="font-extrabold text-sm tracking-tight text-white flex items-center gap-1.5">
+              <span className="font-black text-sm tracking-tight text-white block">
                 INGENIO LA UNIÓN
               </span>
-              <p className="text-[10px] text-union-300 font-medium">
-                Control Operativo de Quemas
-              </p>
+              <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1">
+                <span>Control de Quemas</span>
+              </span>
             </div>
-          </Link>
+          </div>
         </div>
 
-        {/* Navigation Options List */}
-        <div className="flex-1 px-3 py-4 space-y-6 overflow-y-auto custom-scrollbar">
-          {navigationGroups.map((group, gIdx) => {
-            const visibleItems = group.items.filter((item) => item.visible);
+        {/* Navigation Menus */}
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+          {navigationGroups.map((grp) => {
+            const visibleItems = grp.items.filter((item) => item.visible);
             if (visibleItems.length === 0) return null;
 
             return (
-              <div key={gIdx} className="space-y-1.5">
-                <div className="px-3 text-[10px] font-black uppercase tracking-wider text-union-400">
-                  {group.group}
+              <div key={grp.group} className="space-y-1.5">
+                <div className="px-3 text-[10px] font-black uppercase tracking-wider text-union-300/70">
+                  {grp.group}
                 </div>
-
                 <nav className="space-y-1">
                   {visibleItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = pathname === item.href;
-
                     return (
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-all duration-150 group ${
+                        className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition group cursor-pointer ${
                           isActive
                             ? item.activeBg
-                            : 'text-union-200 hover:bg-union-900/90 hover:text-white'
+                            : 'text-union-200 hover:bg-union-900/80 hover:text-white'
                         }`}
                       >
                         <div className="flex items-center space-x-2.5">
                           <Icon
                             className={`w-4 h-4 ${
-                              isActive ? 'text-white' : item.color
-                            } group-hover:scale-110 transition-transform`}
+                              isActive ? 'text-white' : `${item.color} group-hover:scale-110 transition-transform`
+                            }`}
                           />
-                          <span className={isActive ? 'font-black tracking-tight' : 'font-medium'}>
-                            {item.label}
-                          </span>
+                          <span>{item.label}</span>
                         </div>
+                        {isActive && <ChevronRight className="w-3.5 h-3.5 text-union-300" />}
                       </Link>
                     );
                   })}
@@ -204,8 +215,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
           })}
         </div>
 
-        {/* Sidebar Bottom Profile Card */}
-        <div className="p-3.5 border-t border-union-800/80 bg-union-900/40">
+        {/* Live Status & Sidebar Bottom Profile Card */}
+        <div className="p-3.5 border-t border-union-800/80 bg-union-900/40 space-y-2.5">
+          {/* Live indicator badge */}
+          <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>TIEMPO REAL</span>
+            </span>
+            <span className="text-[10px] text-emerald-300/80 font-mono">SUPABASE LIVE</span>
+          </div>
+
           <div className="flex items-center justify-between p-2.5 rounded-xl bg-union-900/90 border border-union-700/60 shadow-sm">
             <div className="flex items-center space-x-2.5 min-w-0">
               <div className="w-8 h-8 rounded-lg bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
@@ -223,7 +243,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
 
             <button
               onClick={handleLogout}
-              className="p-1.5 text-rose-300 hover:text-white hover:bg-rose-900/60 rounded-lg transition"
+              className="p-1.5 text-rose-300 hover:text-white hover:bg-rose-900/60 rounded-lg transition cursor-pointer"
               title="Cerrar Sesión"
             >
               <LogOut className="w-4 h-4" />
@@ -233,7 +253,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
       </aside>
 
       {/* ========================================================================= */}
-      {/* 2. CINTA SUPERIOR (TOP HEADER BAR) */}
+      {/* 2. CINTA SUPERIOR (TOP HEADER BAR)                                         */}
       {/* ========================================================================= */}
       <header className="lg:pl-64 sticky top-0 z-30 bg-union-900 text-white border-b border-union-800 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -244,13 +264,13 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
               {/* Mobile Hamburger Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 text-union-200 hover:text-white hover:bg-union-800 rounded-lg transition"
+                className="lg:hidden p-2 text-union-200 hover:text-white hover:bg-union-800 rounded-lg transition cursor-pointer"
                 aria-label="Abrir menú"
               >
                 {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
 
-              {/* Current Section Breadcrumb / Badge */}
+              {/* Current Section Breadcrumb */}
               <div className="flex items-center space-x-2">
                 <div className="p-1.5 rounded-lg bg-union-800/80 border border-union-700 hidden sm:flex items-center justify-center">
                   <CurrentIcon className={`w-4 h-4 ${currentInfo.color}`} />
@@ -265,12 +285,30 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
                 </div>
               </div>
             </div>
+
+            {/* Right: Live Sync Badge & User Pill */}
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 text-xs font-bold shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="hidden sm:inline">Sincronización en Vivo</span>
+                <span className="sm:hidden">EN VIVO</span>
+              </div>
+
+              {/* Desktop quick user badge */}
+              <div className="hidden sm:flex items-center gap-2 pl-2 border-l border-union-700 text-xs">
+                <div className="text-right">
+                  <div className="font-bold text-white truncate max-w-[140px]">{activeUser.full_name}</div>
+                  <div className="text-[10px] text-emerald-400">{roleMeta.label}</div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </header>
 
       {/* ========================================================================= */}
-      {/* 3. MOBILE SLIDEOVER DRAWER (PARA PANTALLAS PEQUEÑAS) */}
+      {/* 3. MOBILE SLIDEOVER DRAWER (PARA PANTALLAS PEQUEÑAS)                       */}
       {/* ========================================================================= */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
@@ -295,62 +333,64 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
 
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-1.5 text-union-300 hover:text-white rounded-lg"
+                className="p-1.5 text-union-300 hover:text-white rounded-lg cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Mobile Links */}
-            <div className="flex-1 py-4 space-y-6 overflow-y-auto">
-              {navigationGroups.map((group, gIdx) => {
-                const visibleItems = group.items.filter((item) => item.visible);
+            {/* Mobile Navigation List */}
+            <div className="flex-1 overflow-y-auto py-4 space-y-5">
+              {navigationGroups.map((grp) => {
+                const visibleItems = grp.items.filter((item) => item.visible);
                 if (visibleItems.length === 0) return null;
 
                 return (
-                  <div key={gIdx} className="space-y-1.5">
-                    <div className="px-2 text-[10px] font-black uppercase text-union-400">
-                      {group.group}
+                  <div key={grp.group} className="space-y-1">
+                    <div className="text-[10px] font-black uppercase text-union-300/70 tracking-wider px-2">
+                      {grp.group}
                     </div>
-                    <div className="space-y-1">
-                      {visibleItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href;
-
-                        return (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs ${
-                              isActive
-                                ? item.activeBg
-                                : 'text-union-200 hover:bg-union-900 hover:text-white'
-                            }`}
-                          >
-                            <div className="flex items-center space-x-2">
-                              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : item.color}`} />
-                              <span className="font-bold">{item.label}</span>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
+                    {visibleItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex items-center space-x-3 px-3 py-3 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                            isActive
+                              ? item.activeBg
+                              : 'text-union-200 hover:bg-union-900 hover:text-white'
+                          }`}
+                        >
+                          <Icon className={`w-4 h-4 ${isActive ? 'text-white' : item.color}`} />
+                          <span>{item.label}</span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 );
               })}
             </div>
 
-            {/* Mobile Drawer Footer */}
+            {/* Mobile Drawer Footer User */}
             <div className="pt-3 border-t border-union-800">
-              <button
-                onClick={handleLogout}
-                className="w-full py-2 bg-rose-900/60 hover:bg-rose-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Cerrar Sesión</span>
-              </button>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-union-900 border border-union-700">
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-white truncate">{activeUser.full_name}</div>
+                  <div className="text-[10px] text-emerald-400 font-medium">{roleMeta.label}</div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-1.5 text-rose-300 hover:text-rose-100 cursor-pointer"
+                  title="Cerrar sesión"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
             </div>
+
           </div>
         </div>
       )}

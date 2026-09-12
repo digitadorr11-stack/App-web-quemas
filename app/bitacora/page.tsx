@@ -45,6 +45,15 @@ export default function BitacoraPage() {
 
   useEffect(() => {
     loadLogs();
+
+    // Suscripción 100% en tiempo real a Supabase (WebSockets)
+    const unsub = storageService.subscribeToAuditLogs(() => {
+      loadLogs();
+    });
+
+    return () => {
+      unsub();
+    };
   }, []);
 
   const handleUserChange = (user: UserProfile) => {

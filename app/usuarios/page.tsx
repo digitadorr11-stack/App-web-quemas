@@ -83,6 +83,15 @@ export default function UsuariosPage() {
 
   useEffect(() => {
     loadData();
+
+    // Suscripción 100% en tiempo real a cambios de usuarios
+    const unsub = storageService.subscribeToUsers(() => {
+      loadData();
+    });
+
+    return () => {
+      unsub();
+    };
   }, []);
 
   const handleUserChange = (user: UserProfile) => {

@@ -1,36 +1,66 @@
 -- ====================================================================
--- ESQUEMA DE BASE DE DATOS MAESTRA: CONTROL DE QUEMAS - INGENIO LA UNIÓN
+-- ESQUEMA LIMPIO DE BASE DE DATOS MAESTRA: CONTROL DE QUEMAS
+-- INGENIO LA UNIÓN (100% TIEMPO REAL + GOOGLE AUTH + AUDITORÍA)
 -- ====================================================================
--- Datos oficiales actualizados con Frentes 15, 16, 17, 19, 23, 25 y Cobertura de Descansos
+
+-- 1. LIMPIEZA TOTAL (DROP TABLES CON CASCADE PARA EMPEZAR DE CERO)
+DROP TABLE IF EXISTS public.burn_audit_logs CASCADE;
+DROP TABLE IF EXISTS public.burn_requests CASCADE;
+DROP TABLE IF EXISTS public.patrols_catalog CASCADE;
+DROP TABLE IF EXISTS public.fronts_catalog CASCADE;
+DROP TABLE IF EXISTS public.farms_catalog CASCADE;
+DROP TABLE IF EXISTS public.users_profiles CASCADE;
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 1. TABLA: CATÁLOGO DE FRENTES DE COSECHA
-CREATE TABLE IF NOT EXISTS public.fronts_catalog (
+-- 2. TABLA: PERFILES DE USUARIO Y CREDENCIALES
+CREATE TABLE public.users_profiles (
+    id TEXT PRIMARY KEY,
+    auth_id UUID, -- Vinculación con auth.users de Supabase (Google OAuth)
+    username TEXT UNIQUE,
+    password TEXT DEFAULT 'frente123',
+    pin TEXT DEFAULT '1234',
+    email TEXT UNIQUE,
+    full_name TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('supervisor_frente', 'supervisor_quemas', 'patrulla', 'digitador', 'jefatura', 'admin')),
+    phone TEXT,
+    avatar_url TEXT,
+    assigned_front TEXT,
+    current_shift TEXT,
+    is_relief_supervisor BOOLEAN DEFAULT FALSE,
+    assigned_patrol_id TEXT,
+    assigned_patrol_name TEXT,
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 3. TABLA: CATÁLOGO DE FRENTES DE COSECHA
+CREATE TABLE public.fronts_catalog (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     code TEXT,
-    harvest_type TEXT NOT NULL DEFAULT 'Mecanizada',
+    harvest_type TEXT NOT NULL DEFAULT 'Mecanizada' CHECK (harvest_type IN ('Mecanizada', 'Manual', 'Mixta')),
     supervisor_turno_a TEXT,
     supervisor_turno_b TEXT,
     active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. TABLA: CATÁLOGO DE PATRULLAS DE QUEMA
-CREATE TABLE IF NOT EXISTS public.patrols_catalog (
+-- 4. TABLA: CATÁLOGO DE PATRULLAS DE QUEMA
+CREATE TABLE public.patrols_catalog (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     leader_name TEXT NOT NULL,
     phone TEXT NOT NULL,
     vehicle_code TEXT,
-    status TEXT NOT NULL DEFAULT 'DISPONIBLE',
+    status TEXT NOT NULL DEFAULT 'DISPONIBLE' CHECK (status IN ('DISPONIBLE', 'EN_FRENTE', 'EN_QUEMA')),
     active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. TABLA: CATÁLOGO DE FINCAS
-CREATE TABLE IF NOT EXISTS public.farms_catalog (
+-- 5. TABLA: CATÁLOGO DE FINCAS Y ZONAS
+CREATE TABLE public.farms_catalog (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL UNIQUE,
     code TEXT,
@@ -39,35 +69,19 @@ CREATE TABLE IF NOT EXISTS public.farms_catalog (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. TABLA: PERFILES DE USUARIO Y CREDENCIALES
-CREATE TABLE IF NOT EXISTS public.users_profiles (
-    id TEXT PRIMARY KEY,
-    username TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL DEFAULT 'frente123',
-    pin TEXT DEFAULT '1234',
-    email TEXT,
-    full_name TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('supervisor_frente', 'supervisor_quemas', 'patrulla', 'digitador', 'jefatura', 'admin')),
-    phone TEXT,
-    assigned_front TEXT,
-    current_shift TEXT,
-    is_relief_supervisor BOOLEAN DEFAULT FALSE,
-    assigned_patrol_id TEXT,
-    assigned_patrol_name TEXT,
-    active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- 5. TABLA: SOLICITUDES Y CONTROL DE QUEMAS
-CREATE TABLE IF NOT EXISTS public.burn_requests (
+-- 6. TABLA: SOLICITUDES Y CONTROL OPERATIVO DE QUEMAS
+CREATE TABLE public.burn_requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     burn_number TEXT NOT NULL UNIQUE,
+    burn_type TEXT NOT NULL DEFAULT 'PROGRAMADA' CHECK (burn_type IN ('PROGRAMADA', 'CRIMINAL')),
     front_number TEXT NOT NULL,
     shift_name TEXT,
     shift_supervisor_name TEXT NOT NULL,
     farm_name TEXT NOT NULL,
-    area_hectares NUMERIC(10,2) NOT NULL,
-    estimated_tonnage NUMERIC(10,2) NOT NULL,
+    lote_um TEXT,
+    area_hectares NUMERIC(10,2) NOT NULL DEFAULT 0,
+    area_manzanas NUMERIC(10,2) NOT NULL DEFAULT 0,
+    estimated_tonnage NUMERIC(10,2) NOT NULL DEFAULT 0,
     planned_burn_time TIMESTAMP WITH TIME ZONE NOT NULL,
     requested_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     
@@ -89,9 +103,10 @@ CREATE TABLE IF NOT EXISTS public.burn_requests (
         )
     ),
     
-    -- Patrulla
+    -- Patrulla y Tiempos de Campo
     assigned_patrol_id TEXT,
     assigned_patrol_name TEXT,
+    assigned_patrol_leader TEXT,
     patrol_assigned_at TIMESTAMP WITH TIME ZONE,
     patrol_confirmed_at TIMESTAMP WITH TIME ZONE,
     patrol_arrived_at TIMESTAMP WITH TIME ZONE,
@@ -106,13 +121,13 @@ CREATE TABLE IF NOT EXISTS public.burn_requests (
     }'::jsonb,
     review_notes TEXT,
     
-    -- Validación
+    -- Validación Técnica (Digitador)
     validated_by_user_id TEXT,
     validated_by_name TEXT,
     validated_at TIMESTAMP WITH TIME ZONE,
     validation_notes TEXT,
     
-    -- Quema
+    -- Quema Activa y Liquidación
     burn_started_at TIMESTAMP WITH TIME ZONE,
     burn_ended_at TIMESTAMP WITH TIME ZONE,
     burn_duration_minutes INTEGER,
@@ -127,8 +142,8 @@ CREATE TABLE IF NOT EXISTS public.burn_requests (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 6. TABLA: BITÁCORA / AUDITORÍA INMUTABLE
-CREATE TABLE IF NOT EXISTS public.burn_audit_logs (
+-- 7. TABLA: BITÁCORA / AUDITORÍA INMUTABLE
+CREATE TABLE public.burn_audit_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     burn_request_id UUID REFERENCES public.burn_requests(id) ON DELETE CASCADE,
     burn_number TEXT,
@@ -143,7 +158,7 @@ CREATE TABLE IF NOT EXISTS public.burn_audit_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- RLS
+-- 8. POLÍTICAS DE SEGURIDAD (RLS)
 ALTER TABLE public.fronts_catalog ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.patrols_catalog ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.farms_catalog ENABLE ROW LEVEL SECURITY;
@@ -151,14 +166,101 @@ ALTER TABLE public.users_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.burn_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.burn_audit_logs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Permitir todo a anon para fronts_catalog" ON public.fronts_catalog FOR ALL USING (true);
-CREATE POLICY "Permitir todo a anon para patrols_catalog" ON public.patrols_catalog FOR ALL USING (true);
-CREATE POLICY "Permitir todo a anon para farms_catalog" ON public.farms_catalog FOR ALL USING (true);
-CREATE POLICY "Permitir todo a anon para users_profiles" ON public.users_profiles FOR ALL USING (true);
-CREATE POLICY "Permitir todo a anon para burn_requests" ON public.burn_requests FOR ALL USING (true);
-CREATE POLICY "Permitir todo a anon para burn_audit_logs" ON public.burn_audit_logs FOR ALL USING (true);
+CREATE POLICY "Permitir todo a anon y authenticated para fronts_catalog" ON public.fronts_catalog FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Permitir todo a anon y authenticated para patrols_catalog" ON public.patrols_catalog FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Permitir todo a anon y authenticated para farms_catalog" ON public.farms_catalog FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Permitir todo a anon y authenticated para users_profiles" ON public.users_profiles FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Permitir todo a anon y authenticated para burn_requests" ON public.burn_requests FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Permitir todo a anon y authenticated para burn_audit_logs" ON public.burn_audit_logs FOR ALL USING (true) WITH CHECK (true);
 
--- 7. DATOS SEMILLA OFICIALES
+-- 9. ACTIVACIÓN DE SUPABASE REALTIME (WEBSOCKETS) EN TODAS LAS TABLAS
+DO $$
+BEGIN
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.burn_requests;
+    EXCEPTION WHEN duplicate_object THEN NULL; END;
+    
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.burn_audit_logs;
+    EXCEPTION WHEN duplicate_object THEN NULL; END;
+    
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.patrols_catalog;
+    EXCEPTION WHEN duplicate_object THEN NULL; END;
+    
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.fronts_catalog;
+    EXCEPTION WHEN duplicate_object THEN NULL; END;
+    
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.farms_catalog;
+    EXCEPTION WHEN duplicate_object THEN NULL; END;
+
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.users_profiles;
+    EXCEPTION WHEN duplicate_object THEN NULL; END;
+END $$;
+
+-- 10. TRIGGER PARA VINCULAR AUTOMÁTICAMENTE GOOGLE AUTH CON USERS_PROFILES
+CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+RETURNS TRIGGER AS $$
+DECLARE
+    existing_profile_id TEXT;
+    user_email TEXT;
+    user_full_name TEXT;
+    user_avatar TEXT;
+BEGIN
+    user_email := NEW.email;
+    user_full_name := COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(user_email, '@', 1));
+    user_avatar := NEW.raw_user_meta_data->>'avatar_url';
+
+    -- Verificar si ya existe un perfil con ese correo electrónico
+    SELECT id INTO existing_profile_id FROM public.users_profiles WHERE email = user_email LIMIT 1;
+
+    IF existing_profile_id IS NOT NULL THEN
+        -- Actualizar el auth_id y avatar del perfil existente
+        UPDATE public.users_profiles
+        SET auth_id = NEW.id,
+            avatar_url = COALESCE(user_avatar, avatar_url),
+            updated_at = NOW()
+        WHERE id = existing_profile_id;
+    ELSE
+        -- Crear un perfil inicial para el nuevo usuario de Google
+        INSERT INTO public.users_profiles (
+            id,
+            auth_id,
+            username,
+            email,
+            full_name,
+            role,
+            avatar_url,
+            active
+        ) VALUES (
+            'usr-' || substr(NEW.id::text, 1, 8),
+            NEW.id,
+            split_part(user_email, '@', 1),
+            user_email,
+            user_full_name,
+            'supervisor_frente', -- Rol por defecto inicial (puede ser cambiado por el Digitador/Admin)
+            user_avatar,
+            TRUE
+        )
+        ON CONFLICT (email) DO UPDATE
+        SET auth_id = NEW.id,
+            avatar_url = EXCLUDED.avatar_url;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger sobre auth.users
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
+
+-- 11. DATOS SEMILLA OFICIALES (FRENTES, PATRULLAS, USUARIOS)
 INSERT INTO public.fronts_catalog (id, name, code, harvest_type, supervisor_turno_a, supervisor_turno_b) VALUES
 ('fr-15', 'Frente 15', 'FR-15', 'Mecanizada', 'Christian Josue Perez Car', 'Oscar Geovany Villalobos Ixcal'),
 ('fr-16', 'Frente 16', 'FR-16', 'Mecanizada', 'Moises Elizardo Argueta', 'Marvin Castillo'),
@@ -170,9 +272,9 @@ ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.patrols_catalog (id, name, leader_name, phone, vehicle_code, status) VALUES
 ('pat-1', 'Patrulla Alfa', 'Juan Pérez', '+502 5555-0301', 'UNI-401', 'DISPONIBLE'),
-('pat-2', 'Patrulla Beta', 'Luis Morales', '+502 5555-0302', 'UNI-402', 'EN_FRENTE'),
+('pat-2', 'Patrulla Beta', 'Luis Morales', '+502 5555-0302', 'UNI-402', 'DISPONIBLE'),
 ('pat-3', 'Patrulla Gamma', 'Pedro Ruiz', '+502 5555-0303', 'UNI-403', 'DISPONIBLE'),
-('pat-4', 'Patrulla Delta', 'Hugo Estrada', '+502 5555-0304', 'UNI-404', 'EN_QUEMA')
+('pat-4', 'Patrulla Delta', 'Hugo Estrada', '+502 5555-0304', 'UNI-404', 'DISPONIBLE')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.users_profiles (id, username, password, pin, full_name, email, role, phone, assigned_front, current_shift, is_relief_supervisor) VALUES

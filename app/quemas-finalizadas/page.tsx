@@ -85,6 +85,15 @@ export default function QuemasFinalizadasPage() {
 
   useEffect(() => {
     loadData();
+
+    // Suscripción en tiempo real a Supabase
+    const unsub = storageService.subscribeToBurnRequests(() => {
+      loadData();
+    });
+
+    return () => {
+      unsub();
+    };
   }, []);
 
   const handleUserChange = (user: UserProfile) => {

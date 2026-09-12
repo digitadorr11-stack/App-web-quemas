@@ -57,6 +57,15 @@ export default function ReportesPage() {
 
   useEffect(() => {
     loadData();
+
+    // Suscripción 100% en tiempo real para recálculo de métricas
+    const unsub = storageService.subscribeToBurnRequests(() => {
+      loadData();
+    });
+
+    return () => {
+      unsub();
+    };
   }, []);
 
   const handleUserChange = (user: UserProfile) => {
