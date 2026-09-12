@@ -574,7 +574,13 @@ export const storageService = {
     const index = users.findIndex((u) => u.id === userId);
     if (index === -1) return null;
 
-    const updatedUser = { ...users[index], ...updates };
+    // Si no se proporcionó contraseña o está vacía, no sobrescribir la existente
+    const cleanedUpdates = { ...updates };
+    if (!cleanedUpdates.password) {
+      delete cleanedUpdates.password;
+    }
+
+    const updatedUser = { ...users[index], ...cleanedUpdates };
     users[index] = updatedUser;
 
     if (supabase && isSupabaseConfigured) {

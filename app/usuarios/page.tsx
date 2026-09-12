@@ -326,9 +326,9 @@ export default function UsuariosPage() {
               <thead className="bg-slate-900 text-white uppercase text-[11px] font-bold tracking-wider">
                 <tr>
                   <th className="py-3.5 px-4">Colaborador / Rol</th>
-                  <th className="py-3.5 px-4">Usuario (@)</th>
+                  <th className="py-3.5 px-4">Usuario (@) / Correo</th>
                   <th className="py-3.5 px-4">Asignación</th>
-                  <th className="py-3.5 px-4">Contraseña / PIN (Consultable)</th>
+                  <th className="py-3.5 px-4">Estado de Acceso</th>
                   <th className="py-3.5 px-4">Contacto</th>
                   <th className="py-3.5 px-4 text-right">Acciones</th>
                 </tr>
@@ -336,7 +336,6 @@ export default function UsuariosPage() {
               <tbody className="divide-y divide-gray-200">
                 {filteredUsers.map((u) => {
                   const roleMeta = ROLE_DETAILS[u.role];
-                  const isVisible = showPasswords[u.id];
 
                   return (
                     <tr key={u.id} className="hover:bg-purple-50/20 transition">
@@ -377,26 +376,19 @@ export default function UsuariosPage() {
                         )}
                       </td>
 
-                      {/* Pass / PIN with Toggle */}
+                      {/* Estado de Acceso Seguro (Sin exponer claves) */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono bg-gray-100 px-2 py-1 rounded border border-gray-200 text-gray-800 font-bold">
-                            {isVisible ? u.password || 'Sin clave' : '••••••••'}
+                        {u.active ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Habilitado</span>
                           </span>
-                          {u.pin && (
-                            <span className="font-mono bg-amber-50 text-amber-900 border border-amber-200 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                              PIN: {isVisible ? u.pin : '•••'}
-                            </span>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => togglePasswordVisibility(u.id)}
-                            className="text-gray-400 hover:text-purple-700 p-1"
-                            title={isVisible ? 'Ocultar' : 'Ver credencial'}
-                          >
-                            {isVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-300">
+                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                            <span>Pendiente de Aprobación</span>
+                          </span>
+                        )}
                       </td>
 
                       {/* Contact */}
@@ -488,30 +480,42 @@ export default function UsuariosPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-purple-900 mb-1">Contraseña de Acceso *</label>
-                  <input
-                    type="text"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder="ej: clave123"
-                    className="w-full p-2 rounded-lg border-2 border-purple-300 bg-purple-50/30 font-mono font-bold text-purple-950"
-                    required
-                  />
+              {/* Contraseña / Seguridad Estilo SICA */}
+              {editingUser ? (
+                <div className="bg-purple-50/60 border border-purple-200 rounded-xl p-3 flex items-start gap-2.5">
+                  <Lock className="w-4 h-4 text-purple-700 mt-0.5 shrink-0" />
+                  <div className="text-[11px] text-purple-900 leading-tight">
+                    <p className="font-bold">Credenciales Protegidas (Supabase Auth)</p>
+                    <p className="text-purple-700 mt-0.5">
+                      Por seguridad y privacidad (estilo SICA), las contraseñas son confidenciales y están cifradas. Solo el colaborador puede ingresar con su contraseña o recuperarla por correo.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <label className="block font-bold text-amber-900 mb-1">PIN Rápido (4 dígitos)</label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={formData.pin}
-                    onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
-                    placeholder="ej: 1234"
-                    className="w-full p-2 rounded-lg border border-amber-300 bg-amber-50/30 font-mono font-bold text-amber-950"
-                  />
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-purple-900 mb-1">Contraseña Inicial</label>
+                    <input
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      placeholder="Contraseña provisoria"
+                      className="w-full p-2 rounded-lg border-2 border-purple-300 bg-purple-50/30 font-mono font-bold text-purple-950"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-amber-900 mb-1">PIN Rápido (Opcional)</label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={formData.pin}
+                      onChange={(e) => setFormData({ ...formData, pin: e.target.value })}
+                      placeholder="ej: 1234"
+                      className="w-full p-2 rounded-lg border border-amber-300 bg-amber-50/30 font-mono font-bold text-amber-950"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
