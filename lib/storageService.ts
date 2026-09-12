@@ -3,71 +3,235 @@ import { INITIAL_BURNS, INITIAL_AUDIT_LOGS, INITIAL_USERS, INITIAL_FRONTS, INITI
 import { FINCAS_LOTES_DATA, FincaInfo, LoteInfo } from './fincasLotesData';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
-const BURNS_STORAGE_KEY = 'la_union_burn_requests_v7';
-const AUDIT_STORAGE_KEY = 'la_union_audit_logs_v7';
-const ACTIVE_SESSION_KEY = 'la_union_active_session_v7';
-const USERS_STORAGE_KEY = 'la_union_users_catalog_v7';
-const FARMS_STORAGE_KEY = 'la_union_farms_catalog_v7';
-const PATROLS_STORAGE_KEY = 'la_union_patrols_catalog_v7';
-const FRONTS_STORAGE_KEY = 'la_union_fronts_catalog_v7';
-const FINCAS_LOTES_STORAGE_KEY = 'la_union_fincas_lotes_master_v7';
+const BURNS_STORAGE_KEY = 'la_union_burn_requests_es_v1';
+const AUDIT_STORAGE_KEY = 'la_union_audit_logs_es_v1';
+const ACTIVE_SESSION_KEY = 'la_union_active_session_es_v1';
+const USERS_STORAGE_KEY = 'la_union_users_catalog_es_v1';
+const FARMS_STORAGE_KEY = 'la_union_farms_catalog_es_v1';
+const PATROLS_STORAGE_KEY = 'la_union_patrols_catalog_es_v1';
+const FRONTS_STORAGE_KEY = 'la_union_fronts_catalog_es_v1';
+const FINCAS_LOTES_STORAGE_KEY = 'la_union_fincas_lotes_master_es_v1';
 const isBrowser = typeof window !== 'undefined';
 
-const SUPABASE_BURN_COLUMNS = new Set([
-  'id',
-  'burn_number',
-  'burn_type',
-  'front_number',
-  'shift_name',
-  'shift_supervisor_name',
-  'farm_name',
-  'lote_um',
-  'area_hectares',
-  'area_manzanas',
-  'estimated_tonnage',
-  'planned_burn_time',
-  'requested_at',
-  'created_by_user_id',
-  'created_by_name',
-  'status',
-  'assigned_patrol_id',
-  'assigned_patrol_name',
-  'assigned_patrol_leader',
-  'patrol_assigned_at',
-  'patrol_confirmed_at',
-  'patrol_arrived_at',
-  'review_duration_minutes',
-  'review_completed_at',
-  'review_checklist',
-  'review_notes',
-  'validated_by_user_id',
-  'validated_by_name',
-  'validated_at',
-  'validation_notes',
-  'burn_started_at',
-  'burn_ended_at',
-  'burn_duration_minutes',
-  'cancellation_reason',
-  'cancelled_by_name',
-  'cancelled_by_role',
-  'cancelled_at',
-  'created_at',
-  'updated_at',
-]);
+// ==========================================
+// TRADUCTORES / MAPPERS (APP <-> SUPABASE EN ESPAÑOL)
+// ==========================================
 
-function sanitizeBurnForSupabase(burn: Record<string, any>): Record<string, any> {
-  const clean: Record<string, any> = {};
-  for (const key of Object.keys(burn)) {
-    if (SUPABASE_BURN_COLUMNS.has(key)) {
-      clean[key] = burn[key];
-    }
-  }
-  return clean;
+function burnToDb(b: Partial<BurnRequest>): Record<string, any> {
+  const row: Record<string, any> = {};
+  if (b.id !== undefined) row.id = b.id;
+  if (b.burn_number !== undefined) row.numero_quema = b.burn_number;
+  if (b.burn_type !== undefined) row.tipo_quema = b.burn_type;
+  if (b.front_number !== undefined) row.numero_frente = b.front_number;
+  if (b.shift_name !== undefined) row.nombre_turno = b.shift_name;
+  if (b.shift_supervisor_name !== undefined) row.nombre_supervisor_frente = b.shift_supervisor_name;
+  if (b.farm_name !== undefined) row.nombre_finca = b.farm_name;
+  if (b.lote_um !== undefined) row.lote_um = b.lote_um;
+  if (b.area_hectares !== undefined) row.area_hectareas = b.area_hectares;
+  if (b.area_manzanas !== undefined) row.area_manzanas = b.area_manzanas;
+  if (b.estimated_tonnage !== undefined) row.tonelaje_estimado = b.estimated_tonnage;
+  if (b.planned_burn_time !== undefined) row.hora_programada = b.planned_burn_time;
+  if (b.requested_at !== undefined) row.hora_solicitud = b.requested_at;
+  if (b.created_by_user_id !== undefined) row.creado_por_usuario_id = b.created_by_user_id;
+  if (b.created_by_name !== undefined) row.creado_por_nombre = b.created_by_name;
+  if (b.status !== undefined) row.estado = b.status;
+  if (b.assigned_patrol_id !== undefined) row.patrulla_asignada_id = b.assigned_patrol_id;
+  if (b.assigned_patrol_name !== undefined) row.nombre_patrulla_asignada = b.assigned_patrol_name;
+  if (b.assigned_patrol_leader !== undefined) row.lider_patrulla_asignada = b.assigned_patrol_leader;
+  if (b.patrol_assigned_at !== undefined) row.hora_asignacion_patrulla = b.patrol_assigned_at;
+  if (b.patrol_confirmed_at !== undefined) row.hora_confirmacion_patrulla = b.patrol_confirmed_at;
+  if (b.patrol_arrived_at !== undefined) row.hora_llegada_patrulla = b.patrol_arrived_at;
+  if (b.review_duration_minutes !== undefined) row.duracion_revision_minutos = b.review_duration_minutes;
+  if (b.review_completed_at !== undefined) row.hora_fin_revision = b.review_completed_at;
+  if (b.review_checklist !== undefined) row.checklist_revision = b.review_checklist;
+  if (b.review_notes !== undefined) row.observaciones_revision = b.review_notes;
+  if (b.validated_by_user_id !== undefined) row.validado_por_usuario_id = b.validated_by_user_id;
+  if (b.validated_by_name !== undefined) row.nombre_validador = b.validated_by_name;
+  if (b.validated_at !== undefined) row.hora_validacion = b.validated_at;
+  if (b.validation_notes !== undefined) row.observaciones_validacion = b.validation_notes;
+  if (b.burn_started_at !== undefined) row.hora_inicio_quema = b.burn_started_at;
+  if (b.burn_ended_at !== undefined) row.hora_fin_quema = b.burn_ended_at;
+  if (b.burn_duration_minutes !== undefined) row.duracion_quema_minutos = b.burn_duration_minutes;
+  if (b.cancellation_reason !== undefined) row.motivo_cancelacion = b.cancellation_reason;
+  if (b.cancelled_by_name !== undefined) row.cancelado_por_nombre = b.cancelled_by_name;
+  if (b.cancelled_by_role !== undefined) row.rol_cancelador = b.cancelled_by_role;
+  if (b.cancelled_at !== undefined) row.hora_cancelacion = b.cancelled_at;
+  if (b.created_at !== undefined) row.created_at = b.created_at;
+  if (b.updated_at !== undefined) row.updated_at = b.updated_at;
+  return row;
+}
+
+function burnFromDb(row: Record<string, any>): BurnRequest {
+  return {
+    id: row.id,
+    burn_number: row.numero_quema,
+    burn_type: row.tipo_quema || 'PROGRAMADA',
+    front_number: row.numero_frente,
+    shift_name: row.nombre_turno,
+    shift_supervisor_name: row.nombre_supervisor_frente,
+    farm_name: row.nombre_finca,
+    lote_um: row.lote_um,
+    area_hectares: Number(row.area_hectareas) || 0,
+    area_manzanas: Number(row.area_manzanas) || 0,
+    estimated_tonnage: Number(row.tonelaje_estimado) || 0,
+    planned_burn_time: row.hora_programada,
+    requested_at: row.hora_solicitud || row.created_at,
+    created_by_user_id: row.creado_por_usuario_id,
+    created_by_name: row.creado_por_nombre,
+    status: row.estado,
+    assigned_patrol_id: row.patrulla_asignada_id,
+    assigned_patrol_name: row.nombre_patrulla_asignada,
+    assigned_patrol_leader: row.lider_patrulla_asignada,
+    patrol_assigned_at: row.hora_asignacion_patrulla,
+    patrol_confirmed_at: row.hora_confirmacion_patrulla,
+    patrol_arrived_at: row.hora_llegada_patrulla,
+    review_duration_minutes: row.duracion_revision_minutos,
+    review_completed_at: row.hora_fin_revision,
+    review_checklist: row.checklist_revision,
+    review_notes: row.observaciones_revision,
+    validated_by_user_id: row.validado_por_usuario_id,
+    validated_by_name: row.nombre_validador,
+    validated_at: row.hora_validacion,
+    validation_notes: row.observaciones_validacion,
+    burn_started_at: row.hora_inicio_quema,
+    burn_ended_at: row.hora_fin_quema,
+    burn_duration_minutes: row.duracion_quema_minutos,
+    cancellation_reason: row.motivo_cancelacion,
+    cancelled_by_name: row.cancelado_por_nombre,
+    cancelled_by_role: row.rol_cancelador,
+    cancelled_at: row.hora_cancelacion,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
+function userToDb(u: Partial<UserProfile>): Record<string, any> {
+  const row: Record<string, any> = {};
+  if (u.id !== undefined) row.id = u.id;
+  if (u.auth_id !== undefined) row.auth_id = u.auth_id;
+  if (u.username !== undefined) row.nombre_usuario = u.username;
+  if (u.password !== undefined) row.password = u.password;
+  if (u.pin !== undefined) row.pin = u.pin;
+  if (u.email !== undefined) row.correo = u.email;
+  if (u.full_name !== undefined) row.nombre_completo = u.full_name;
+  if (u.role !== undefined) row.rol = u.role;
+  if (u.phone !== undefined) row.telefono = u.phone;
+  if (u.avatar_url !== undefined) row.avatar_url = u.avatar_url;
+  if (u.assigned_front !== undefined) row.frente_asignado = u.assigned_front;
+  if (u.current_shift !== undefined) row.turno_actual = u.current_shift;
+  if (u.is_relief_supervisor !== undefined) row.es_supervisor_descanso = u.is_relief_supervisor;
+  if (u.assigned_patrol_id !== undefined) row.patrulla_asignada_id = u.assigned_patrol_id;
+  if (u.assigned_patrol_name !== undefined) row.nombre_patrulla_asignada = u.assigned_patrol_name;
+  if (u.active !== undefined) row.activo = u.active;
+  return row;
+}
+
+function userFromDb(row: Record<string, any>): UserProfile {
+  return {
+    id: row.id,
+    auth_id: row.auth_id,
+    username: row.nombre_usuario || row.username || '',
+    password: row.password,
+    pin: row.pin,
+    email: row.correo || row.email || '',
+    full_name: row.nombre_completo || row.full_name || '',
+    role: row.rol || row.role || 'supervisor_frente',
+    phone: row.telefono || row.phone,
+    avatar_url: row.avatar_url,
+    assigned_front: row.frente_asignado || row.assigned_front,
+    current_shift: row.turno_actual || row.current_shift,
+    is_relief_supervisor: row.es_supervisor_descanso || row.is_relief_supervisor || false,
+    assigned_patrol_id: row.patrulla_asignada_id || row.assigned_patrol_id,
+    assigned_patrol_name: row.nombre_patrulla_asignada || row.assigned_patrol_name,
+    active: row.activo !== false,
+  };
+}
+
+function frontToDb(f: Partial<Front>): Record<string, any> {
+  return {
+    id: f.id,
+    nombre: f.name,
+    codigo: f.code,
+    tipo_cosecha: f.harvest_type,
+    supervisor_turno_a: f.supervisor_turno_a,
+    supervisor_turno_b: f.supervisor_turno_b,
+    activo: f.active !== false,
+  };
+}
+
+function frontFromDb(row: Record<string, any>): Front {
+  return {
+    id: row.id,
+    name: row.nombre || row.name,
+    code: row.codigo || row.code,
+    harvest_type: row.tipo_cosecha || row.harvest_type || 'Mecanizada',
+    supervisor_turno_a: row.supervisor_turno_a,
+    supervisor_turno_b: row.supervisor_turno_b,
+    active: row.activo !== false,
+  };
+}
+
+function patrolToDb(p: Partial<Patrol>): Record<string, any> {
+  return {
+    id: p.id,
+    nombre: p.name,
+    nombre_lider: p.leader_name,
+    telefono: p.phone,
+    codigo_vehiculo: p.vehicle_code,
+    estado: p.status || 'DISPONIBLE',
+    activo: p.active !== false,
+  };
+}
+
+function patrolFromDb(row: Record<string, any>): Patrol {
+  return {
+    id: row.id,
+    name: row.nombre || row.name,
+    leader_name: row.nombre_lider || row.leader_name,
+    phone: row.telefono || row.phone,
+    vehicle_code: row.codigo_vehiculo || row.vehicle_code,
+    status: row.estado || row.status || 'DISPONIBLE',
+    active: row.activo !== false,
+  };
+}
+
+function auditToDb(a: Partial<AuditLog>): Record<string, any> {
+  return {
+    id: a.id,
+    solicitud_quema_id: a.burn_request_id,
+    numero_quema: a.burn_number,
+    usuario_id: a.user_id,
+    nombre_usuario: a.user_name,
+    rol_usuario: a.user_role,
+    tipo_accion: a.action_type,
+    campo_modificado: a.field_name,
+    valor_anterior: a.old_value,
+    valor_nuevo: a.new_value,
+    motivo_cambio: a.change_reason,
+    created_at: a.created_at,
+  };
+}
+
+function auditFromDb(row: Record<string, any>): AuditLog {
+  return {
+    id: row.id,
+    burn_request_id: row.solicitud_quema_id || row.burn_request_id,
+    burn_number: row.numero_quema || row.burn_number,
+    user_id: row.usuario_id || row.user_id,
+    user_name: row.nombre_usuario || row.user_name,
+    user_role: row.rol_usuario || row.user_role,
+    action_type: row.tipo_accion || row.action_type,
+    field_name: row.campo_modificado || row.field_name,
+    old_value: row.valor_anterior || row.old_value,
+    new_value: row.valor_nuevo || row.new_value,
+    change_reason: row.motivo_cambio || row.change_reason,
+    created_at: row.created_at,
+  };
 }
 
 export const storageService = {
   // ==========================================
-  // 1. AUTHENTICATION & GOOGLE OAUTH
+  // 1. AUTENTICACIÓN & GOOGLE OAUTH
   // ==========================================
   getActiveUser(): UserProfile | null {
     if (!isBrowser) return null;
@@ -116,9 +280,7 @@ export const storageService = {
       },
     });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
   },
 
   async handleAuthSession(): Promise<UserProfile | null> {
@@ -137,20 +299,18 @@ export const storageService = {
 
       if (!userEmail) return this.getActiveUser();
 
-      // Buscar perfil en users_profiles por email o auth_id
       const { data: profiles, error } = await supabase
-        .from('users_profiles')
+        .from('perfiles_usuarios')
         .select('*')
-        .or(`email.eq.${userEmail},auth_id.eq.${authUser.id}`)
+        .or(`correo.eq.${userEmail},auth_id.eq.${authUser.id}`)
         .limit(1);
 
       if (!error && profiles && profiles.length > 0) {
-        const profile = profiles[0];
+        const profile = userFromDb(profiles[0]);
         this.setActiveUser(profile);
         return profile;
       }
 
-      // Si no existe, crear perfil automático para este usuario de Google
       const newProfile: UserProfile = {
         id: `usr-${authUser.id.substring(0, 8)}`,
         username: userEmail.split('@')[0],
@@ -158,11 +318,10 @@ export const storageService = {
         full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || userEmail.split('@')[0],
         role: 'supervisor_frente',
         active: true,
-        created_at: new Date().toISOString(),
       };
 
       try {
-        await supabase.from('users_profiles').insert(newProfile);
+        await supabase.from('perfiles_usuarios').insert(userToDb(newProfile));
       } catch (e) {}
 
       this.setActiveUser(newProfile);
@@ -206,19 +365,18 @@ export const storageService = {
   },
 
   // ==========================================
-  // 2. USERS CATALOG & CREDENTIALS
+  // 2. USUARIOS & CREDENCIALES
   // ==========================================
   async getAllUsers(): Promise<UserProfile[]> {
     if (supabase && isSupabaseConfigured) {
       try {
-        const { data, error } = await supabase.from('users_profiles').select('*').order('full_name');
+        const { data, error } = await supabase.from('perfiles_usuarios').select('*').order('nombre_completo');
         if (!error && data && data.length > 0) {
-          if (isBrowser) localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(data));
-          return data;
+          const mapped = data.map(userFromDb);
+          if (isBrowser) localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(mapped));
+          return mapped;
         }
-      } catch (e) {
-        console.warn('Supabase users fallback to local');
-      }
+      } catch (e) {}
     }
 
     if (isBrowser) {
@@ -244,13 +402,12 @@ export const storageService = {
     const index = users.findIndex((u) => u.id === userId);
     if (index === -1) return null;
 
-    const oldUser = users[index];
-    const updatedUser = { ...oldUser, ...updates };
+    const updatedUser = { ...users[index], ...updates };
     users[index] = updatedUser;
 
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('users_profiles').upsert(updatedUser);
+        await supabase.from('perfiles_usuarios').upsert(userToDb(updatedUser));
       } catch (e) {}
     }
 
@@ -285,7 +442,7 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('users_profiles').insert(user);
+        await supabase.from('perfiles_usuarios').insert(userToDb(user));
       } catch (e) {}
     }
 
@@ -315,7 +472,7 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('users_profiles').delete().eq('id', userId);
+        await supabase.from('perfiles_usuarios').delete().eq('id', userId);
       } catch (e) {}
     }
 
@@ -338,15 +495,16 @@ export const storageService = {
   },
 
   // ==========================================
-  // 3. FRENTES & PATROLLAS
+  // 3. FRENTES & PATRULLAS
   // ==========================================
   async getFronts(): Promise<Front[]> {
     if (supabase && isSupabaseConfigured) {
       try {
-        const { data, error } = await supabase.from('fronts_catalog').select('*').order('name');
+        const { data, error } = await supabase.from('catalogo_frentes').select('*').order('nombre');
         if (!error && data && data.length > 0) {
-          if (isBrowser) localStorage.setItem(FRONTS_STORAGE_KEY, JSON.stringify(data));
-          return data;
+          const mapped = data.map(frontFromDb);
+          if (isBrowser) localStorage.setItem(FRONTS_STORAGE_KEY, JSON.stringify(mapped));
+          return mapped;
         }
       } catch (e) {}
     }
@@ -375,7 +533,7 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('fronts_catalog').insert(newFront);
+        await supabase.from('catalogo_frentes').insert(frontToDb(newFront));
       } catch (e) {}
     }
 
@@ -406,7 +564,7 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('fronts_catalog').update(updates).eq('id', id);
+        await supabase.from('catalogo_frentes').update(frontToDb(updates)).eq('id', id);
       } catch (e) {}
     }
 
@@ -430,10 +588,11 @@ export const storageService = {
   async getPatrols(): Promise<Patrol[]> {
     if (supabase && isSupabaseConfigured) {
       try {
-        const { data, error } = await supabase.from('patrols_catalog').select('*').order('name');
+        const { data, error } = await supabase.from('catalogo_patrullas').select('*').order('nombre');
         if (!error && data && data.length > 0) {
-          if (isBrowser) localStorage.setItem(PATROLS_STORAGE_KEY, JSON.stringify(data));
-          return data;
+          const mapped = data.map(patrolFromDb);
+          if (isBrowser) localStorage.setItem(PATROLS_STORAGE_KEY, JSON.stringify(mapped));
+          return mapped;
         }
       } catch (e) {}
     }
@@ -462,7 +621,7 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('patrols_catalog').insert(newPatrol);
+        await supabase.from('catalogo_patrullas').insert(patrolToDb(newPatrol));
       } catch (e) {}
     }
 
@@ -493,7 +652,7 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('patrols_catalog').update(updates).eq('id', id);
+        await supabase.from('catalogo_patrullas').update(patrolToDb(updates)).eq('id', id);
       } catch (e) {}
     }
 
@@ -520,10 +679,17 @@ export const storageService = {
   async getFarms(): Promise<Farm[]> {
     if (supabase && isSupabaseConfigured) {
       try {
-        const { data, error } = await supabase.from('farms_catalog').select('*').order('name');
+        const { data, error } = await supabase.from('catalogo_fincas').select('*').order('nombre');
         if (!error && data && data.length > 0) {
-          if (isBrowser) localStorage.setItem(FARMS_STORAGE_KEY, JSON.stringify(data));
-          return data;
+          const mapped: Farm[] = data.map((d: any) => ({
+            id: d.id,
+            name: d.nombre,
+            code: d.codigo,
+            zone: d.zona,
+            active: d.activo !== false,
+          }));
+          if (isBrowser) localStorage.setItem(FARMS_STORAGE_KEY, JSON.stringify(mapped));
+          return mapped;
         }
       } catch (e) {}
     }
@@ -562,7 +728,13 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('farms_catalog').insert(newFarm);
+        await supabase.from('catalogo_fincas').insert({
+          id: newFarm.id,
+          nombre: newFarm.name,
+          codigo: newFarm.code,
+          zona: newFarm.zone,
+          activo: newFarm.active !== false,
+        });
       } catch (e) {}
     }
 
@@ -629,23 +801,22 @@ export const storageService = {
   },
 
   // ==========================================
-  // 5. BURN REQUESTS (QUEMAS PROGRAMADAS & CRIMINALES)
+  // 5. SOLICITUDES DE QUEMAS (PROGRAMADAS & CRIMINALES)
   // ==========================================
   async getBurnRequests(): Promise<BurnRequest[]> {
     if (supabase && isSupabaseConfigured) {
       try {
         const { data, error } = await supabase
-          .from('burn_requests')
+          .from('solicitudes_quemas')
           .select('*')
           .order('created_at', { ascending: false });
 
         if (!error && data) {
-          if (isBrowser) localStorage.setItem(BURNS_STORAGE_KEY, JSON.stringify(data));
-          return data;
+          const mapped = data.map(burnFromDb);
+          if (isBrowser) localStorage.setItem(BURNS_STORAGE_KEY, JSON.stringify(mapped));
+          return mapped;
         }
-      } catch (e) {
-        console.warn('Supabase burns fallback to local');
-      }
+      } catch (e) {}
     }
 
     if (isBrowser) {
@@ -724,10 +895,10 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        const payload = sanitizeBurnForSupabase(newBurn);
-        await supabase.from('burn_requests').insert(payload);
+        const payload = burnToDb(newBurn);
+        await supabase.from('solicitudes_quemas').insert(payload);
       } catch (e) {
-        console.error('Error inserting burn into Supabase', e);
+        console.error('Error insertando quema en Supabase', e);
       }
     }
 
@@ -778,10 +949,10 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        const payload = sanitizeBurnForSupabase(updatedBurn);
-        await supabase.from('burn_requests').update(payload).eq('id', id);
+        const payload = burnToDb(updatedBurn);
+        await supabase.from('solicitudes_quemas').update(payload).eq('id', id);
       } catch (e) {
-        console.error('Error updating burn in Supabase', e);
+        console.error('Error actualizando quema en Supabase', e);
       }
     }
 
@@ -823,19 +994,20 @@ export const storageService = {
   },
 
   // ==========================================
-  // 6. AUDIT LOGS (BITÁCORA INMUTABLE)
+  // 6. BITÁCORA DE AUDITORÍA
   // ==========================================
   async getAuditLogs(burnRequestId?: string): Promise<AuditLog[]> {
     if (supabase && isSupabaseConfigured) {
       try {
-        let query = supabase.from('burn_audit_logs').select('*').order('created_at', { ascending: false });
+        let query = supabase.from('bitacora_auditoria').select('*').order('created_at', { ascending: false });
         if (burnRequestId) {
-          query = query.eq('burn_request_id', burnRequestId);
+          query = query.eq('solicitud_quema_id', burnRequestId);
         }
         const { data, error } = await query;
         if (!error && data) {
-          if (isBrowser && !burnRequestId) localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(data));
-          return data;
+          const mapped = data.map(auditFromDb);
+          if (isBrowser && !burnRequestId) localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(mapped));
+          return mapped;
         }
       } catch (e) {}
     }
@@ -872,7 +1044,7 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('burn_audit_logs').insert(newLog);
+        await supabase.from('bitacora_auditoria').insert(auditToDb(newLog));
       } catch (e) {}
     }
 
@@ -886,7 +1058,7 @@ export const storageService = {
   },
 
   // ==========================================
-  // 7. REALTIME SUBSCRIPTIONS (WEBSOCKETS)
+  // 7. SUSCRIPCIONES EN TIEMPO REAL (WEBSOCKETS)
   // ==========================================
   subscribeToBurnRequests(callback: (payload: any) => void): () => void {
     if (!supabase || !isSupabaseConfigured) {
@@ -894,13 +1066,13 @@ export const storageService = {
     }
 
     const channel = supabase
-      .channel(`burn_requests_realtime_${Math.random().toString(36).substring(2, 7)}`)
+      .channel(`solicitudes_quemas_realtime_${Math.random().toString(36).substring(2, 7)}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'burn_requests',
+          table: 'solicitudes_quemas',
         },
         (payload) => {
           callback(payload);
@@ -919,13 +1091,13 @@ export const storageService = {
     }
 
     const channel = supabase
-      .channel(`patrols_realtime_${Math.random().toString(36).substring(2, 7)}`)
+      .channel(`patrullas_realtime_${Math.random().toString(36).substring(2, 7)}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'patrols_catalog',
+          table: 'catalogo_patrullas',
         },
         (payload) => {
           callback(payload);
@@ -944,13 +1116,13 @@ export const storageService = {
     }
 
     const channel = supabase
-      .channel(`audit_realtime_${Math.random().toString(36).substring(2, 7)}`)
+      .channel(`bitacora_realtime_${Math.random().toString(36).substring(2, 7)}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'burn_audit_logs',
+          table: 'bitacora_auditoria',
         },
         (payload) => {
           callback(payload);
@@ -969,13 +1141,13 @@ export const storageService = {
     }
 
     const channel = supabase
-      .channel(`users_realtime_${Math.random().toString(36).substring(2, 7)}`)
+      .channel(`usuarios_realtime_${Math.random().toString(36).substring(2, 7)}`)
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'users_profiles',
+          table: 'perfiles_usuarios',
         },
         (payload) => {
           callback(payload);
