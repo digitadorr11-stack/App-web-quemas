@@ -410,6 +410,28 @@ export const storageService = {
     }
 
     // 3. Validación de contraseña para usuarios aprobados
+    // Intentar inicio de sesión oficial en Supabase Auth si es correo
+    if (supabase && isSupabaseConfigured && cleanId.includes('@')) {
+      try {
+        const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+          email: cleanId,
+          password: cleanPass,
+        });
+        if (!authErr && authData.user) {
+          if (!user.auth_id) {
+            user.auth_id = authData.user.id;
+            try {
+              await supabase.from('perfiles_usuarios').update({ auth_id: authData.user.id }).eq('id', user.id);
+            } catch (e) {}
+          }
+          this.setActiveUser(user);
+          return user;
+        }
+      } catch (e) {
+        console.warn('Supabase Auth signIn attempt failed, checking fallback', e);
+      }
+    }
+
     const validPassword =
       user.password === cleanPass ||
       user.pin === cleanPass ||
@@ -435,11 +457,46 @@ export const storageService = {
       throw new Error('Ya existe una cuenta registrada con este correo electrónico.');
     }
 
+    let authId: string | undefined = undefined;
+    const origin = isBrowser ? window.location.origin : 'https://quemas.launioncat.com';
+
+    // 1. Registrar usuario en Supabase Auth para disparar correo de confirmación oficial
+    if (supabase && isSupabaseConfigured && cleanEmail && newUser.password) {
+      try {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password: newUser.password,
+          options: {
+            data: {
+              full_name: newUser.full_name,
+              username: newUser.username || cleanEmail.split('@')[0],
+            },
+            emailRedirectTo: `${origin}/login`,
+          },
+        });
+
+        if (authError) {
+          console.warn('Advertencia en Supabase Auth SignUp:', authError);
+          // Si ya existe en auth.users pero no en perfiles
+          if (authError.message.toLowerCase().includes('already registered')) {
+            throw new Error('Este correo ya está registrado en el sistema. Intente iniciar sesión.');
+          }
+        } else if (authData.user) {
+          authId = authData.user.id;
+        }
+      } catch (err: any) {
+        console.error('Error durante signUp de Supabase', err);
+        throw err;
+      }
+    }
+
+    // 2. Crear registro en perfiles_usuarios vinculado con auth_id
     const user: UserProfile = {
       ...newUser,
-      id: `usr-${Date.now()}`,
+      id: authId ? `usr-${authId.substring(0, 8)}` : `usr-${Date.now()}`,
+      auth_id: authId,
       username: newUser.username || cleanEmail.split('@')[0] || `user_${Date.now()}`,
-      active: false, // Requiere autorización del Administrador
+      active: false, // Requiere autorización del Administrador en el Maestro de Usuarios
       created_at: new Date().toISOString(),
     };
 
@@ -463,7 +520,7 @@ export const storageService = {
       action_type: 'CAMBIO_CREDENCIALES',
       field_name: `Solicitud de Registro: ${user.full_name}`,
       new_value: `Pendiente de Aprobación (${user.role} - ${user.email})`,
-      change_reason: 'Auto-registro desde pantalla de login.',
+      change_reason: 'Auto-registro con envío de correo de confirmación.',
     });
 
     return user;

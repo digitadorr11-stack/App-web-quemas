@@ -153,7 +153,7 @@ export default function LoginPage() {
       setIdentifier(regEmail.trim());
       setPassword(regPassword.trim());
       setIsRegisterMode(false);
-      setSuccessMsg(`¡Solicitud enviada! Su cuenta (${regEmail.trim()}) ha sido registrada. El Administrador o Digitador le asignará su rol y permisos en el Maestro de Usuarios para darte acceso.`);
+      setSuccessMsg(`¡Solicitud enviada! Se ha enviado un correo de confirmación a ${regEmail.trim()}. Por favor revisa tu bandeja (o spam). Una vez confirmada y autorizada por el Administrador, podrás ingresar al sistema.`);
     } catch (err: any) {
       setErrorMsg(err.message || 'Error al procesar el registro.');
     } finally {
