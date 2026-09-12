@@ -502,9 +502,19 @@ export const storageService = {
 
     if (supabase && isSupabaseConfigured) {
       try {
-        await supabase.from('perfiles_usuarios').insert(userToDb(user));
+        const dbData = userToDb(user);
+        // Garantizar que la contraseña real y el nombre ingresados por el usuario se guarden en Supabase
+        const { error: upsertErr } = await supabase.from('perfiles_usuarios').upsert(dbData, { onConflict: 'correo' });
+        if (upsertErr) {
+          await supabase.from('perfiles_usuarios').update({
+            password: newUser.password,
+            nombre_completo: newUser.full_name,
+            auth_id: authId,
+            activo: false,
+          }).eq('correo', cleanEmail);
+        }
       } catch (e) {
-        console.error('Error insertando nuevo usuario en Supabase', e);
+        console.error('Error guardando perfil con contraseña en Supabase', e);
       }
     }
 
