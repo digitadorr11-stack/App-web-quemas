@@ -183,8 +183,8 @@ export default function LoginPage() {
         
         {/* Header Branding */}
         <div className="text-center space-y-2.5">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 shadow-lg shadow-emerald-950/60">
-            <Flame className="w-7 h-7 text-emerald-400 animate-pulse" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-800 to-emerald-600 border border-emerald-400/30 shadow-lg shadow-emerald-900/50">
+            <Flame className="w-8 h-8 text-amber-400 animate-pulse" />
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight text-white">
@@ -290,11 +290,12 @@ export default function LoginPage() {
         </form>
 
         {/* Separador: O CONTINUAR CON */}
-        <div className="relative flex items-center justify-center my-2">
-          <div className="border-t border-slate-800 w-full" />
-          <span className="bg-[#0B121E] px-3 text-[10px] font-black text-slate-500 uppercase tracking-widest relative">
+        <div className="flex items-center gap-3 my-3">
+          <div className="h-[1px] bg-slate-800/90 flex-1" />
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
             O CONTINUAR CON
           </span>
+          <div className="h-[1px] bg-slate-800/90 flex-1" />
         </div>
 
         {/* Botón Oficial: Continuar con Google */}
