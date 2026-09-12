@@ -38,24 +38,12 @@ export default function LoginPage() {
   const [selectedShift, setSelectedShift] = useState<ShiftType>('Turno Día (06:00 - 18:00)');
   const [showHelpModal, setShowHelpModal] = useState(false);
 
-  // Register Modal State
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [regFullName, setRegFullName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regRole, setRegRole] = useState<UserRole>('supervisor_frente');
-  const [regFront, setRegFront] = useState('Frente 15');
-  const [regPhone, setRegPhone] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [registerSuccess, setRegisterSuccess] = useState(false);
-
   useEffect(() => {
     // 1. Cargar catálogo de frentes
     storageService.getFronts().then((fList) => {
       setFronts(fList);
       if (fList.length > 0) {
         setSelectedFront(fList[0].name);
-        setRegFront(fList[0].name);
       }
     });
 
@@ -132,34 +120,6 @@ export default function LoginPage() {
       setErrorMsg(err.message || 'Error al iniciar sesión');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Enviar Solicitud de Registro de Usuario
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!regFullName.trim() || !regEmail.trim() || !regPassword.trim()) {
-      setErrorMsg('Complete todos los campos requeridos.');
-      return;
-    }
-
-    try {
-      setIsRegistering(true);
-      setErrorMsg('');
-
-      await storageService.registerUser({
-        full_name: regFullName.trim(),
-        email: regEmail.trim(),
-        password: regPassword.trim(),
-        role: 'supervisor_frente',
-        phone: regPhone.trim() || undefined,
-      });
-
-      setRegisterSuccess(true);
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Error al procesar el registro.');
-    } finally {
-      setIsRegistering(false);
     }
   };
 
@@ -339,21 +299,10 @@ export default function LoginPage() {
           )}
         </button>
 
-        {/* Registro Footer */}
-        <div className="text-center pt-2">
-          <p className="text-xs text-slate-400 font-medium">
-            ¿No tiene cuenta?{' '}
-            <button
-              type="button"
-              onClick={() => {
-                setErrorMsg('');
-                setRegisterSuccess(false);
-                setShowRegisterModal(true);
-              }}
-              className="text-emerald-400 hover:text-emerald-300 font-bold underline underline-offset-4 cursor-pointer"
-            >
-              Regístrese aquí
-            </button>
+        {/* Nota informativa de acceso */}
+        <div className="text-center pt-1">
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Nuevos colaboradores: ingrese su correo y clave directamente para solicitar acceso al Administrador.
           </p>
         </div>
 
@@ -365,151 +314,6 @@ export default function LoginPage() {
         </div>
 
       </div>
-
-      {/* ========================================================================= */}
-      {/* MODAL: REGISTRO DE NUEVA CUENTA (CON APROBACIÓN DE ADMIN)                 */}
-      {/* ========================================================================= */}
-      {showRegisterModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl w-full max-w-md p-6 sm:p-7 shadow-2xl space-y-5">
-            
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-emerald-950 border border-emerald-500/40 text-emerald-400 flex items-center justify-center">
-                  <UserPlus className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-white">Solicitud de Registro</h3>
-                  <p className="text-[11px] text-slate-400">Crear cuenta en el sistema de quemas</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowRegisterModal(false)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {registerSuccess ? (
-              <div className="py-6 text-center space-y-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-900/30 border border-emerald-500 text-emerald-400 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
-                <div>
-                  <h4 className="text-base font-bold text-white">¡Solicitud Enviada con Éxito!</h4>
-                  <p className="text-xs text-slate-300 max-w-xs mx-auto mt-2 leading-relaxed">
-                    Su cuenta ha sido registrada y está <strong>pendiente de aprobación</strong>. El Administrador o Digitador de Turno autorizará su acceso a la brevedad.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowRegisterModal(false);
-                    setRegisterSuccess(false);
-                    setSuccessMsg('Registro enviado. Pendiente de aprobación.');
-                  }}
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition cursor-pointer"
-                >
-                  Regresar al Inicio
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
-                
-                {/* Banner de Aviso de Aprobación */}
-                <div className="p-3 bg-amber-950/40 border border-amber-500/30 rounded-xl text-amber-300 text-xs flex items-start gap-2">
-                  <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <span>Por seguridad, toda nueva cuenta debe ser <strong>autorizada por el Administrador</strong> antes de poder ingresar.</span>
-                </div>
-
-                {/* Nombre Completo */}
-                <div className="space-y-1">
-                  <label className="block text-[10px] font-bold uppercase text-slate-300">
-                    Nombre Completo *
-                  </label>
-                  <input
-                    type="text"
-                    value={regFullName}
-                    onChange={(e) => setRegFullName(e.target.value)}
-                    placeholder="Ej. Juan Carlos Morales"
-                    className="w-full bg-[#EDF2F7] text-slate-900 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    required
-                  />
-                </div>
-
-                {/* Correo Electrónico */}
-                <div className="space-y-1">
-                  <label className="block text-[10px] font-bold uppercase text-slate-300">
-                    Correo Electrónico *
-                  </label>
-                  <input
-                    type="email"
-                    value={regEmail}
-                    onChange={(e) => setRegEmail(e.target.value)}
-                    placeholder="nombre@launion.com o gmail"
-                    className="w-full bg-[#EDF2F7] text-slate-900 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    required
-                  />
-                </div>
-
-                {/* Contraseña */}
-                <div className="space-y-1">
-                  <label className="block text-[10px] font-bold uppercase text-slate-300">
-                    Contraseña Deseada *
-                  </label>
-                  <input
-                    type="password"
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    placeholder="Crea una clave segura"
-                    className="w-full bg-[#EDF2F7] text-slate-900 rounded-xl px-3.5 py-2.5 text-xs font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    required
-                  />
-                </div>
-
-                {/* Teléfono Móvil */}
-                <div className="space-y-1">
-                  <label className="block text-[10px] font-bold uppercase text-slate-300">
-                    Teléfono Móvil (Opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={regPhone}
-                    onChange={(e) => setRegPhone(e.target.value)}
-                    placeholder="+502 ..."
-                    className="w-full bg-[#EDF2F7] text-slate-900 rounded-xl px-3.5 py-2.5 text-xs font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div className="pt-2 flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowRegisterModal(false)}
-                    className="px-4 py-2.5 text-xs text-slate-400 hover:text-white cursor-pointer"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isRegistering}
-                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-2 cursor-pointer disabled:opacity-50"
-                  >
-                    {isRegistering ? (
-                      <span>Registrando...</span>
-                    ) : (
-                      <>
-                        <span>Enviar Solicitud</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
-
-          </div>
-        </div>
       )}
 
       {/* ========================================================================= */}

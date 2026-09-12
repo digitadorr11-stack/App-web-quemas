@@ -347,17 +347,69 @@ export const storageService = {
     const user = users.find((u) => {
       const matchUser = u.username?.toLowerCase() === cleanId;
       const matchEmail = u.email ? u.email.toLowerCase() === cleanId : false;
-      const matchName = u.full_name.toLowerCase().includes(cleanId);
-      const matchRole = u.role.toLowerCase() === cleanId;
-      return matchUser || matchEmail || matchName || matchRole;
+      const matchName = u.full_name.toLowerCase() === cleanId;
+      return matchUser || matchEmail || matchName;
     });
 
-    if (!user) return null;
+    // 1. Si el usuario NO existe aún, lo auto-registramos directamente en estado pendiente
+    if (!user) {
+      const isEmail = cleanId.includes('@');
+      const userPrefix = cleanId.split('@')[0];
+      const displayName = userPrefix
+        .split(/[._-]/)
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .join(' ');
 
-    if (user.active === false) {
-      throw new Error('Su cuenta está pendiente de aprobación por el Administrador / Digitador.');
+      const newProfile: UserProfile = {
+        id: `usr-${Date.now()}`,
+        username: userPrefix,
+        email: isEmail ? cleanId : `${cleanId}@launion.com`,
+        full_name: displayName || userPrefix,
+        password: cleanPass,
+        role: 'supervisor_frente',
+        active: false, // Pendiente de asignación de rol y aprobación por el Administrador
+        created_at: new Date().toISOString(),
+      };
+
+      if (supabase && isSupabaseConfigured) {
+        try {
+          await supabase.from('perfiles_usuarios').insert(userToDb(newProfile));
+        } catch (e) {
+          console.error('Error insertando usuario auto-registrado', e);
+        }
+      }
+
+      if (isBrowser) {
+        const updated = [...users, newProfile];
+        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updated));
+      }
+
+      await this.logAudit({
+        burn_request_id: 'SYSTEM',
+        burn_number: 'N/A',
+        user_id: newProfile.id,
+        user_name: newProfile.full_name,
+        user_role: newProfile.role,
+        action_type: 'CREACION_REGISTRO',
+        field_name: 'auto_registro_login',
+        old_value: 'N/A',
+        new_value: newProfile.email || newProfile.username,
+        change_reason: 'Auto-registro directo desde pantalla de login',
+      });
+
+      throw new Error(
+        `¡Solicitud enviada con éxito! Su cuenta (${newProfile.email}) ha sido registrada y está en espera de que el Administrador o Digitador le asigne su rol y permisos en el Maestro de Usuarios.`
+      );
     }
 
+    // 2. Si el usuario existe pero está inactivo / pendiente de aprobación
+    if (user.active === false) {
+      throw new Error(
+        `Su cuenta (${user.email || user.username}) está registrada pero se encuentra pendiente de aprobación. Comuníquese con el Administrador o Digitador para que le asigne su rol y permisos.`
+      );
+    }
+
+    // 3. Validación de contraseña para usuarios aprobados
     const validPassword =
       user.password === cleanPass ||
       user.pin === cleanPass ||
