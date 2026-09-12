@@ -23,6 +23,7 @@ import {
   Activity,
   Radio,
 } from 'lucide-react';
+import FlameLogo from '@/components/FlameLogo';
 
 interface NavbarProps {
   currentUser?: UserProfile | null;
@@ -158,9 +159,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
         {/* Brand Header */}
         <div className="p-4 border-b border-union-800/80 bg-union-900/50">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-700 to-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-950/50 border border-emerald-400/30">
-              <Flame className="w-6 h-6 text-amber-400 animate-pulse" />
-            </div>
+            <FlameLogo size={42} className="shrink-0" />
             <div>
               <span className="font-black text-sm tracking-tight text-white block">
                 INGENIO LA UNIÓN
@@ -322,9 +321,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentUser }) => {
           <div className="relative w-4/5 max-w-xs bg-union-950 text-white flex flex-col p-4 shadow-2xl border-r border-union-800 z-10">
             <div className="flex items-center justify-between pb-4 border-b border-union-800">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
-                  <Flame className="w-5 h-5 text-amber-400" />
-                </div>
+                <FlameLogo size={36} className="shrink-0" />
                 <div>
                   <span className="font-extrabold text-sm text-white">INGENIO LA UNIÓN</span>
                   <span className="text-[10px] text-emerald-400 block font-medium">Control de Quemas</span>
