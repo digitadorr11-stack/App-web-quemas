@@ -342,10 +342,14 @@ export const storageService = {
       const matchEmail = u.email ? u.email.toLowerCase() === cleanId : false;
       const matchName = u.full_name.toLowerCase().includes(cleanId);
       const matchRole = u.role.toLowerCase() === cleanId;
-      return (matchUser || matchEmail || matchName || matchRole) && (u.active !== false);
+      return matchUser || matchEmail || matchName || matchRole;
     });
 
     if (!user) return null;
+
+    if (user.active === false) {
+      throw new Error('Su cuenta está pendiente de aprobación por el Administrador / Digitador.');
+    }
 
     const validPassword =
       user.password === cleanPass ||
@@ -362,6 +366,48 @@ export const storageService = {
     }
 
     return null;
+  },
+
+  async registerUser(newUser: Omit<UserProfile, 'id' | 'active'>): Promise<UserProfile> {
+    const users = await this.getAllUsers();
+    const cleanEmail = (newUser.email || '').toLowerCase().trim();
+
+    if (cleanEmail && users.some((u) => u.email?.toLowerCase().trim() === cleanEmail)) {
+      throw new Error('Ya existe una cuenta registrada con este correo electrónico.');
+    }
+
+    const user: UserProfile = {
+      ...newUser,
+      id: `usr-${Date.now()}`,
+      username: newUser.username || cleanEmail.split('@')[0] || `user_${Date.now()}`,
+      active: false, // Requiere autorización del Administrador
+      created_at: new Date().toISOString(),
+    };
+
+    if (supabase && isSupabaseConfigured) {
+      try {
+        await supabase.from('perfiles_usuarios').insert(userToDb(user));
+      } catch (e) {
+        console.error('Error insertando nuevo usuario en Supabase', e);
+      }
+    }
+
+    if (isBrowser) {
+      const updated = [...users, user];
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updated));
+    }
+
+    await this.logAudit({
+      user_id: user.id,
+      user_name: user.full_name,
+      user_role: user.role,
+      action_type: 'CAMBIO_CREDENCIALES',
+      field_name: `Solicitud de Registro: ${user.full_name}`,
+      new_value: `Pendiente de Aprobación (${user.role} - ${user.email})`,
+      change_reason: 'Auto-registro desde pantalla de login.',
+    });
+
+    return user;
   },
 
   // ==========================================

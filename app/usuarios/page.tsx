@@ -252,6 +252,49 @@ export default function UsuariosPage() {
           </div>
         </div>
 
+        {/* Banner de Usuarios Pendientes de Aprobación */}
+        {users.filter((u) => !u.active).length > 0 && (
+          <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 mb-6 shadow-sm">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-800">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-amber-900">
+                    Solicitudes de Registro Pendientes ({users.filter((u) => !u.active).length})
+                  </h3>
+                  <p className="text-xs text-amber-700">
+                    Nuevos colaboradores que se registraron y están esperando tu autorización para poder ingresar.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {users.filter((u) => !u.active).map((pendingUser) => (
+                <div key={pendingUser.id} className="bg-white p-3 rounded-xl border border-amber-200 shadow-xs flex items-center justify-between">
+                  <div className="min-w-0">
+                    <div className="font-bold text-gray-900 text-xs truncate">{pendingUser.full_name}</div>
+                    <div className="text-[10px] text-gray-500 truncate">{pendingUser.email || pendingUser.username} · <span className="font-semibold text-amber-800">{ROLE_DETAILS[pendingUser.role]?.label}</span></div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      await storageService.updateUserCredentials(pendingUser.id, { active: true }, currentUser);
+                      await loadData();
+                      showToast(`¡Usuario ${pendingUser.full_name} aprobado y habilitado!`);
+                    }}
+                    className="ml-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1 cursor-pointer shrink-0 transition"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Aprobar</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Users Table */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
@@ -276,7 +319,14 @@ export default function UsuariosPage() {
                       
                       {/* Name & Role */}
                       <td className="py-3.5 px-4">
-                        <div className="font-bold text-gray-900 text-sm">{u.full_name}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="font-bold text-gray-900 text-sm">{u.full_name}</div>
+                          {!u.active && (
+                            <span className="text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-full">
+                              ⏳ Pendiente
+                            </span>
+                          )}
+                        </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border inline-block mt-0.5 ${roleMeta.badgeColor}`}>
                           {roleMeta.label}
                         </span>
