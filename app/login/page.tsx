@@ -1,29 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { storageService } from '@/lib/storageService';
-import { UserProfile, Front, ShiftType, UserRole } from '@/lib/types';
-import {
-  Flame,
-  Lock,
-  User,
-  ArrowRight,
-  ShieldCheck,
-  AlertCircle,
-  Eye,
-  EyeOff,
-  Layers,
-  CheckCircle2,
-  HelpCircle,
-  X,
-  Phone,
-  UserPlus,
-  Mail,
-  ShieldAlert,
-} from 'lucide-react';
+import { Flame, Lock, User, ArrowRight, AlertCircle, Eye, EyeOff, CheckCircle2, Mail } from 'lucide-react';
 
 export default function LoginPage() {
-  const [fronts, setFronts] = useState<Front[]>([]);
+  const router = useRouter();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -32,53 +15,34 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  // Form Mode: Login vs Registro Directo
+  // Form Mode: Login vs Registro
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [regFullName, setRegFullName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Shift & Front Configuration Modal for Supervisors
-  const [configuringSupervisor, setConfiguringSupervisor] = useState<UserProfile | null>(null);
-  const [selectedFront, setSelectedFront] = useState('Frente 15');
-  const [selectedShift, setSelectedShift] = useState<ShiftType>('Turno Día (06:00 - 18:00)');
-  const [showHelpModal, setShowHelpModal] = useState(false);
-
   useEffect(() => {
-    // 1. Cargar catálogo de frentes
-    storageService.getFronts().then((fList) => {
-      setFronts(fList);
-      if (fList.length > 0) {
-        setSelectedFront(fList[0].name);
-      }
-    });
-
-    // 2. Verificar sesión de Google OAuth
-    const checkAuthSession = async () => {
+    // Verificar si ya viene de retorno de sesión de Google OAuth
+    const checkSession = async () => {
       try {
         const user = await storageService.handleAuthSession();
         if (user) {
           if (user.active === false) {
-            setErrorMsg(`Hola ${user.full_name}, tu cuenta (${user.email}) ha sido registrada y está pendiente de aprobación. Comunícate con el Administrador o Digitador para que te habilite y te asigne tu rol en el Maestro de Usuarios.`);
+            setErrorMsg(`Hola ${user.full_name}, tu cuenta (${user.email}) ha sido registrada y está pendiente de aprobación por el Administrador.`);
             return;
           }
-          if (user.role === 'supervisor_frente' && !user.assigned_front) {
-            setConfiguringSupervisor(user);
-          } else if (user.role) {
-            window.location.href = '/';
-          }
+          router.push('/');
         }
       } catch (e: any) {
-        console.warn('Error checking session', e);
-        setErrorMsg(e.message || 'Error al validar sesión');
+        console.warn('Error verificando sesión inicial:', e);
       }
     };
 
-    checkAuthSession();
-  }, []);
+    checkSession();
+  }, [router]);
 
-  // Iniciar sesión con Google (Supabase Auth)
+  // Iniciar sesión con Google
   const handleGoogleLogin = async () => {
     try {
       setIsGoogleLoading(true);
@@ -90,11 +54,11 @@ export default function LoginPage() {
     }
   };
 
-  // Form Submit Login con Correo / Credenciales
+  // Iniciar sesión con Correo / Contraseña
   const handleFormLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!identifier.trim() || !password.trim()) {
-      setErrorMsg('Por favor ingrese su correo o usuario y contraseña.');
+      setErrorMsg('Por favor ingrese su correo y contraseña.');
       return;
     }
 
@@ -105,23 +69,12 @@ export default function LoginPage() {
 
       if (user) {
         if (user.active === false) {
-          setErrorMsg(`Su cuenta (${user.email || user.username}) está pendiente de aprobación. El Administrador debe asignarle rol y activarla en el Maestro de Usuarios.`);
+          setErrorMsg(`Su cuenta (${user.email}) está registrada pero pendiente de aprobación por el Administrador.`);
           return;
         }
-        if (user.role === 'supervisor_frente') {
-          setConfiguringSupervisor(user);
-          setSelectedFront(user.assigned_front || 'Frente 15');
-          setSelectedShift(
-            user.current_shift ||
-              (user.is_relief_supervisor
-                ? 'Relevo / Cobertura de Descanso'
-                : 'Turno Día (06:00 - 18:00)')
-          );
-        } else {
-          window.location.href = '/';
-        }
+        router.push('/');
       } else {
-        setErrorMsg('Credenciales incorrectas. Verifique su correo y contraseña.');
+        setErrorMsg('Credenciales incorrectas.');
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Error al iniciar sesión');
@@ -130,11 +83,11 @@ export default function LoginPage() {
     }
   };
 
-  // Form Submit Registro de Nuevo Usuario Directo en Tarjeta
+  // Registro de nuevo usuario
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regFullName.trim() || !regEmail.trim() || !regPassword.trim()) {
-      setErrorMsg('Por favor complete todos los campos obligatorios (*).');
+      setErrorMsg('Por favor complete todos los campos requeridos.');
       return;
     }
 
@@ -147,13 +100,12 @@ export default function LoginPage() {
         full_name: regFullName.trim(),
         email: regEmail.trim(),
         password: regPassword.trim(),
-        role: 'supervisor_frente',
       });
 
       setIdentifier(regEmail.trim());
       setPassword(regPassword.trim());
       setIsRegisterMode(false);
-      setSuccessMsg(`¡Solicitud enviada! Se ha enviado un correo de confirmación a ${regEmail.trim()}. Por favor revisa tu bandeja (o spam). Una vez confirmada y autorizada por el Administrador, podrás ingresar al sistema.`);
+      setSuccessMsg(`¡Registro recibido para ${regEmail.trim()}! El Administrador debe activar su cuenta.`);
     } catch (err: any) {
       setErrorMsg(err.message || 'Error al procesar el registro.');
     } finally {
@@ -161,54 +113,38 @@ export default function LoginPage() {
     }
   };
 
-  // Confirm Front and Shift for Supervisor
-  const handleConfirmShiftAndEnter = () => {
-    if (!configuringSupervisor) return;
-    setIsLoading(true);
-
-    const updatedUser: UserProfile = {
-      ...configuringSupervisor,
-      assigned_front: selectedFront,
-      current_shift: selectedShift,
-    };
-
-    storageService.setActiveUser(updatedUser);
-    window.location.href = '/';
-  };
-
   return (
     <div className="min-h-screen bg-[#070C14] text-slate-100 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans">
-      
       {/* Background Decorative Gradients */}
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Main Login / Register Card - Exact Match to Reference Design */}
+      {/* Main Login / Register Card */}
       <div className="w-full max-w-[420px] bg-[#0B121E] border border-slate-800/80 rounded-3xl p-7 sm:p-9 shadow-2xl relative z-10 space-y-6">
         
         {/* Header Branding */}
         <div className="text-center space-y-2.5">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-800 to-emerald-600 border border-emerald-400/30 shadow-lg shadow-emerald-900/50">
-            <Flame className="w-8 h-8 text-amber-400 animate-pulse" />
+            <Flame className="w-8 h-8 text-amber-400" />
           </div>
           <div>
             <h1 className="text-2xl font-black tracking-tight text-white">
               Ingenio La Unión
             </h1>
             <p className="text-xs uppercase tracking-widest font-extrabold text-emerald-400 mt-1">
-              {isRegisterMode ? 'SOLICITUD DE REGISTRO' : 'CONTROL DE QUEMAS PROGRAMADAS'}
+              {isRegisterMode ? 'SOLICITUD DE REGISTRO' : 'CONTROL DE QUEMAS'}
             </p>
           </div>
           <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
             {isRegisterMode
-              ? 'Complete sus datos para solicitar acceso. El Administrador asignará su rol en el sistema.'
-              : 'Acceso seguro en tiempo real a la plataforma operativa.'}
+              ? 'Complete sus datos para solicitar acceso.'
+              : 'Acceso seguro al sistema de control operativo.'}
           </p>
         </div>
 
         {/* Error Alert Box */}
         {errorMsg && (
-          <div className="p-3.5 bg-rose-950/70 border border-rose-500/40 rounded-2xl text-rose-300 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in">
+          <div className="p-3.5 bg-rose-950/70 border border-rose-500/40 rounded-2xl text-rose-300 text-xs font-semibold flex items-center gap-2.5">
             <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -216,20 +152,16 @@ export default function LoginPage() {
 
         {/* Success Alert Box */}
         {successMsg && (
-          <div className="p-3.5 bg-emerald-950/70 border border-emerald-500/40 rounded-2xl text-emerald-300 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in">
+          <div className="p-3.5 bg-emerald-950/70 border border-emerald-500/40 rounded-2xl text-emerald-300 text-xs font-semibold flex items-center gap-2.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{successMsg}</span>
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* FORMULARIO DINÁMICO: LOGIN O REGISTRO EN LA MISMA TARJETA                */}
-        {/* ========================================================================= */}
+        {/* Formulario Dinámico */}
         {!isRegisterMode ? (
           /* MODO LOGIN */
           <form onSubmit={handleFormLogin} className="space-y-4">
-            
-            {/* Campo: Correo Electrónico */}
             <div className="space-y-1.5">
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
                 CORREO ELECTRÓNICO
@@ -240,7 +172,7 @@ export default function LoginPage() {
                   type="text"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="oscar.morales o correo"
+                  placeholder="usuario@launion.com"
                   className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3.5 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
                   required
                   autoComplete="username"
@@ -248,27 +180,17 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Campo: Contraseña */}
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                  CONTRASEÑA
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowHelpModal(true)}
-                  className="text-[11px] text-emerald-400 hover:text-emerald-300 font-bold cursor-pointer"
-                >
-                  ¿Olvidó su clave?
-                </button>
-              </div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                CONTRASEÑA
+              </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••"
+                  placeholder="••••••••"
                   className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-11 py-3.5 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
                   required
                   autoComplete="current-password"
@@ -283,7 +205,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Botón Principal: Iniciar con Credenciales */}
             <button
               type="submit"
               disabled={isLoading}
@@ -293,17 +214,15 @@ export default function LoginPage() {
                 <span>Validando acceso...</span>
               ) : (
                 <>
-                  <span>Iniciar con Credenciales</span>
+                  <span>Iniciar Sesión</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
         ) : (
-          /* MODO REGISTRO EN LA MISMA TARJETA */
-          <form onSubmit={handleRegisterSubmit} className="space-y-3.5 animate-in fade-in duration-200">
-            
-            {/* Campo: Nombre Completo */}
+          /* MODO REGISTRO */
+          <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
             <div className="space-y-1">
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
                 NOMBRE COMPLETO *
@@ -321,7 +240,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Campo: Correo Electrónico */}
             <div className="space-y-1">
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
                 CORREO ELECTRÓNICO *
@@ -332,17 +250,16 @@ export default function LoginPage() {
                   type="email"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
-                  placeholder="nombre@launion.com o gmail"
+                  placeholder="nombre@launion.com"
                   className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
                   required
                 />
               </div>
             </div>
 
-            {/* Campo: Contraseña Deseada */}
             <div className="space-y-1">
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                CONTRASEÑA DESEADA *
+                CONTRASEÑA *
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
@@ -364,7 +281,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Botón Principal: Enviar Solicitud de Registro */}
             <button
               type="submit"
               disabled={isRegistering}
@@ -374,7 +290,7 @@ export default function LoginPage() {
                 <span>Enviando solicitud...</span>
               ) : (
                 <>
-                  <span>Enviar Solicitud de Registro</span>
+                  <span>Enviar Registro</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -382,7 +298,7 @@ export default function LoginPage() {
           </form>
         )}
 
-        {/* Separador: O CONTINUAR CON */}
+        {/* Separador */}
         <div className="flex items-center gap-3 my-3">
           <div className="h-[1px] bg-slate-800/90 flex-1" />
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
@@ -391,7 +307,7 @@ export default function LoginPage() {
           <div className="h-[1px] bg-slate-800/90 flex-1" />
         </div>
 
-        {/* Botón Oficial: Continuar con Google */}
+        {/* Botón: Continuar con Google */}
         <button
           type="button"
           onClick={handleGoogleLogin}
@@ -425,7 +341,7 @@ export default function LoginPage() {
           )}
         </button>
 
-        {/* Toggle Footer: Login <-> Registro */}
+        {/* Toggle Login <-> Registro */}
         <div className="text-center pt-2">
           {!isRegisterMode ? (
             <p className="text-xs text-slate-400 font-medium">
@@ -460,146 +376,13 @@ export default function LoginPage() {
           )}
         </div>
 
-        {/* Footer Institucional */}
+        {/* Footer */}
         <div className="pt-3 border-t border-slate-800/80 text-center">
           <p className="text-[11px] text-slate-500 font-medium tracking-wide">
-            Desarrollado por CAT · Ingenio La Unión
+            Ingenio La Unión · Sistema Limpio v2.0
           </p>
         </div>
-
       </div>
-
-      {/* ========================================================================= */}
-      {/* MODAL CONFIGURACIÓN DE FRENTE Y TURNO (SUPERVISORES DE FRENTE)            */}
-      {/* ========================================================================= */}
-      {configuringSupervisor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-5">
-            
-            <div className="text-center space-y-1.5 pb-2 border-b border-slate-800">
-              <div className="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center mx-auto mb-2">
-                <Layers className="w-6 h-6" />
-              </div>
-              <h2 className="text-lg font-black text-white">
-                Configurar Frente y Turno de Hoy
-              </h2>
-              <p className="text-xs text-slate-400">
-                Supervisor: <strong className="text-white">{configuringSupervisor.full_name}</strong>
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              
-              {/* Frente de Cosecha */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
-                  Frente Asignado para Hoy
-                </label>
-                <select
-                  value={selectedFront}
-                  onChange={(e) => setSelectedFront(e.target.value)}
-                  className="w-full bg-[#EDF2F7] text-slate-900 border-none rounded-xl p-3 text-sm font-bold focus:ring-2 focus:ring-blue-500"
-                >
-                  {fronts.map((f) => (
-                    <option key={f.id} value={f.name}>
-                      {f.name} ({f.harvest_type})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Turno */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
-                  Turno Activo
-                </label>
-                <div className="grid grid-cols-1 gap-2">
-                  {[
-                    { val: 'Turno Día (06:00 - 18:00)', label: '☀️ Turno Día (06:00 - 18:00)' },
-                    { val: 'Turno Noche (18:00 - 06:00)', label: '🌙 Turno Noche (18:00 - 06:00)' },
-                    { val: 'Relevo / Cobertura de Descanso', label: '🔄 Relevo / Cobertura de Descanso' },
-                  ].map((t) => (
-                    <button
-                      key={t.val}
-                      type="button"
-                      onClick={() => setSelectedShift(t.val as ShiftType)}
-                      className={`p-3 rounded-xl border text-xs font-bold text-left transition flex items-center justify-between cursor-pointer ${
-                        selectedShift === t.val
-                          ? 'bg-blue-600/20 border-blue-500 text-blue-200 shadow-sm'
-                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
-                      }`}
-                    >
-                      <span>{t.label}</span>
-                      {selectedShift === t.val && <CheckCircle2 className="w-4 h-4 text-blue-400" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-
-            <div className="pt-2 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setConfiguringSupervisor(null)}
-                className="px-4 py-2.5 text-xs text-slate-400 hover:text-white cursor-pointer"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmShiftAndEnter}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-2 cursor-pointer"
-              >
-                <span>Confirmar e Ingresar</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL AYUDA / RESTABLECER CONTRASEÑA                                     */}
-      {/* ========================================================================= */}
-      {showHelpModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl w-full max-w-sm p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <div className="flex items-center gap-2 text-emerald-400">
-                <HelpCircle className="w-5 h-5" />
-                <h3 className="text-sm font-bold text-white">Restablecer Credenciales</h3>
-              </div>
-              <button onClick={() => setShowHelpModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Por protocolo de seguridad del <strong>Ingenio La Unión</strong>, el restablecimiento de contraseñas y códigos de usuario es administrado exclusivamente por el <strong>Digitador de Turno</strong> o la <strong>Jefatura de Cosecha</strong>.
-            </p>
-
-            <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1 text-xs">
-              <p className="font-bold text-white">Digitador Autorizado:</p>
-              <p className="text-slate-400">Oscar Josue Morales Herrera</p>
-              <p className="text-slate-400 flex items-center gap-1 mt-1">
-                <Phone className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Ext. Central Quemas: #402</span>
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowHelpModal(false)}
-              className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition cursor-pointer"
-            >
-              Entendido
-            </button>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
