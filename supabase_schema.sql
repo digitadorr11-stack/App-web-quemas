@@ -340,3 +340,20 @@ INSERT INTO public.catalogo_patrullas (id, nombre, nombre_lider, codigo_vehiculo
 ('pat-3', 'Patrulla Gamma', 'Pedro Ruiz', 'UNI-403', 'DISPONIBLE'),
 ('pat-4', 'Patrulla Delta', 'Hugo Estrada', 'UNI-404', 'DISPONIBLE')
 ON CONFLICT (id) DO NOTHING;
+
+-- ====================================================================
+-- SINCRONIZAR ADMINISTRADORES EXISTENTES DESDE auth.users
+-- ====================================================================
+INSERT INTO public.perfiles_usuarios (id, correo, nombre_completo, rol, activo)
+SELECT 
+    id,
+    LOWER(TRIM(email)),
+    COALESCE(raw_user_meta_data->>'full_name', raw_user_meta_data->>'name', split_part(email, '@', 1)),
+    'admin',
+    TRUE
+FROM auth.users
+WHERE LOWER(TRIM(email)) IN ('digitadorr11@gmail.com', 'oscmo76@gmail.com')
+ON CONFLICT (id) DO UPDATE
+SET rol = 'admin',
+    activo = TRUE;
+
