@@ -298,6 +298,7 @@ RETURNS TRIGGER AS $$
 DECLARE
     correo_clean TEXT;
     nombre_clean TEXT;
+    hay_admin BOOLEAN;
 BEGIN
     correo_clean := LOWER(TRIM(NEW.email));
     nombre_clean := COALESCE(
@@ -306,6 +307,14 @@ BEGIN
         split_part(correo_clean, '@', 1)
     );
 
+    -- Verificar si ya existe al menos un administrador activo en el sistema
+    SELECT EXISTS (
+        SELECT 1 FROM public.perfiles_usuarios WHERE rol = 'admin' AND activo = TRUE
+    ) INTO hay_admin;
+
+    -- Lógica de Rol pura (sin correos quemados):
+    -- Si no existe ningún administrador en el sistema, el primer usuario se convierte en 'admin'.
+    -- Los siguientes usuarios entran como 'pendiente' hasta ser aprobados por un administrador.
     INSERT INTO public.perfiles_usuarios (
         id,
         correo,
@@ -316,14 +325,8 @@ BEGIN
         NEW.id,
         correo_clean,
         nombre_clean,
-        CASE 
-            WHEN correo_clean IN ('digitadorr11@gmail.com', 'oscmo76@gmail.com') THEN 'admin'
-            ELSE 'pendiente'
-        END,
-        CASE 
-            WHEN correo_clean IN ('digitadorr11@gmail.com', 'oscmo76@gmail.com') THEN TRUE
-            ELSE FALSE
-        END
+        CASE WHEN NOT hay_admin THEN 'admin' ELSE 'pendiente' END,
+        CASE WHEN NOT hay_admin THEN TRUE ELSE FALSE END
     )
     ON CONFLICT (id) DO UPDATE
     SET correo = EXCLUDED.correo,
@@ -368,17 +371,32 @@ INSERT INTO public.catalogo_fincas_lotes (finca, lote, area_ha, area_mz, varieda
 ON CONFLICT (finca, lote) DO NOTHING;
 
 -- ====================================================================
--- SINCRONIZAR ADMINISTRADORES EXISTENTES DESDE auth.users
+-- INICIALIZACIÓN DE USUARIOS DE ARRANQUE (SIN CORREOS HARDCODEADOS)
 -- ====================================================================
+-- 1. Si ya existen usuarios registrados en auth.users, el primer usuario registrado
+--    se asigna con rol 'admin' y estado activo.
 INSERT INTO public.perfiles_usuarios (id, correo, nombre_completo, rol, activo)
 SELECT 
-    id,
-    LOWER(TRIM(email)),
-    COALESCE(raw_user_meta_data->>'full_name', raw_user_meta_data->>'name', split_part(email, '@', 1)),
+    u.id,
+    LOWER(TRIM(u.email)),
+    COALESCE(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name', split_part(u.email, '@', 1)),
     'admin',
     TRUE
-FROM auth.users
-WHERE LOWER(TRIM(email)) IN ('digitadorr11@gmail.com', 'oscmo76@gmail.com')
+FROM auth.users u
+ORDER BY u.created_at ASC
+LIMIT 1
 ON CONFLICT (id) DO UPDATE
 SET rol = 'admin',
     activo = TRUE;
+
+-- 2. El resto de usuarios preexistentes se sincronizan en estado 'pendiente' para ser gestionados por el admin
+INSERT INTO public.perfiles_usuarios (id, correo, nombre_completo, rol, activo)
+SELECT 
+    u.id,
+    LOWER(TRIM(u.email)),
+    COALESCE(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name', split_part(u.email, '@', 1)),
+    'pendiente',
+    FALSE
+FROM auth.users u
+OFFSET 1
+ON CONFLICT (id) DO NOTHING;
