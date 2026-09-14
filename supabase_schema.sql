@@ -270,11 +270,23 @@ WITH CHECK (auth.uid() = usuario_id);
 DO $$
 BEGIN
     BEGIN
-        ALTER PUBLICATION supabase_realtime ADD TABLE public.solicitudes_quemas;
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.perfiles_usuarios;
+    EXCEPTION WHEN duplicate_object THEN NULL; END;
+
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.catalogo_frentes;
     EXCEPTION WHEN duplicate_object THEN NULL; END;
     
     BEGIN
         ALTER PUBLICATION supabase_realtime ADD TABLE public.catalogo_patrullas;
+    EXCEPTION WHEN duplicate_object THEN NULL; END;
+
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.catalogo_fincas_lotes;
+    EXCEPTION WHEN duplicate_object THEN NULL; END;
+
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE public.solicitudes_quemas;
     EXCEPTION WHEN duplicate_object THEN NULL; END;
 END $$;
 
