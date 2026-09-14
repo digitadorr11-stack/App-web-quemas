@@ -192,7 +192,8 @@ DROP POLICY IF EXISTS "Lectura frentes" ON public.catalogo_frentes;
 CREATE POLICY "Lectura frentes" ON public.catalogo_frentes FOR SELECT TO authenticated
 USING (public.is_user_active() = TRUE);
 
-DROP POLICY IF EXISTS "Gestion frentes" ON public.catalogo_frentes FOR ALL TO authenticated
+DROP POLICY IF EXISTS "Gestion frentes" ON public.catalogo_frentes;
+CREATE POLICY "Gestion frentes" ON public.catalogo_frentes FOR ALL TO authenticated
 USING (public.current_user_role() IN ('admin', 'digitador'))
 WITH CHECK (public.current_user_role() IN ('admin', 'digitador'));
 
@@ -200,7 +201,8 @@ DROP POLICY IF EXISTS "Lectura patrullas" ON public.catalogo_patrullas;
 CREATE POLICY "Lectura patrullas" ON public.catalogo_patrullas FOR SELECT TO authenticated
 USING (public.is_user_active() = TRUE);
 
-DROP POLICY IF EXISTS "Gestion patrullas" ON public.catalogo_patrullas FOR ALL TO authenticated
+DROP POLICY IF EXISTS "Gestion patrullas" ON public.catalogo_patrullas;
+CREATE POLICY "Gestion patrullas" ON public.catalogo_patrullas FOR ALL TO authenticated
 USING (public.current_user_role() IN ('admin', 'digitador'))
 WITH CHECK (public.current_user_role() IN ('admin', 'digitador'));
 
@@ -208,7 +210,8 @@ DROP POLICY IF EXISTS "Lectura fincas y lotes" ON public.catalogo_fincas_lotes;
 CREATE POLICY "Lectura fincas y lotes" ON public.catalogo_fincas_lotes FOR SELECT TO authenticated
 USING (public.is_user_active() = TRUE);
 
-DROP POLICY IF EXISTS "Gestion fincas y lotes" ON public.catalogo_fincas_lotes FOR ALL TO authenticated
+DROP POLICY IF EXISTS "Gestion fincas y lotes" ON public.catalogo_fincas_lotes;
+CREATE POLICY "Gestion fincas y lotes" ON public.catalogo_fincas_lotes FOR ALL TO authenticated
 USING (public.current_user_role() IN ('admin', 'digitador'))
 WITH CHECK (public.current_user_role() IN ('admin', 'digitador'));
 
