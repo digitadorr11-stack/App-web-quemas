@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { authService } from '@/lib/authService';
 import { UserProfile, ROLES_CONFIG } from '@/lib/types';
-import { Flame, LogOut, User, Sparkles, Shield, Clock, CheckCircle2, ChevronRight, Activity } from 'lucide-react';
+import { Flame, LogOut, User, Sparkles, Shield, Clock, CheckCircle2, ChevronRight, Activity, Users } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
@@ -79,6 +80,16 @@ export default function HomePage() {
 
         {/* User Badge and Logout */}
         <div className="flex items-center gap-4">
+          {(currentUser.rol === 'admin' || currentUser.rol === 'digitador') && (
+            <Link
+              href="/usuarios"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 border border-purple-800/80 text-purple-300 text-xs font-bold transition shadow-sm"
+            >
+              <Users className="w-4 h-4" />
+              <span>Maestro de Usuarios</span>
+            </Link>
+          )}
+
           <div className="hidden sm:flex flex-col text-right">
             <span className="text-xs font-bold text-slate-200">
               {currentUser.nombre_completo}
