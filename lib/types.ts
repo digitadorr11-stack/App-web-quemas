@@ -26,7 +26,6 @@ export interface UserProfile {
   nombre_completo: string;
   rol: UserRole;
   frente_asignado?: string; // Ej: "Frente 15"
-  patrulla_asignada_id?: string;
   activo: boolean;
   created_at?: string;
 }
@@ -54,14 +53,13 @@ export interface BurnRequest {
   tonelaje_estimado?: number;
 
   // 1. Solicitud y Planificación
-  hora_solicitud: string; // Timestamp de cuando se solicita
-  hora_planificada: string; // Timestamp de cuando se desea quemar
+  hora_solicitud: string;
+  hora_planificada: string;
   creado_por_usuario_id: string;
   nombre_supervisor_frente: string;
 
   // 2. Asignación
-  hora_asignacion?: string; // Timestamp de despacho
-  patrulla_asignada_id?: string;
+  hora_asignacion?: string;
   nombre_patrulla_asignada?: string;
   lider_patrulla?: string;
 
@@ -95,9 +93,7 @@ export interface BurnRequest {
 }
 
 export interface FrontCatalog {
-  id: string;
   nombre: string;
-  codigo?: string;
   tipo_cosecha: 'Mecanizada' | 'Manual' | 'Mixta';
   supervisor_turno_a?: string;
   supervisor_turno_b?: string;
@@ -105,7 +101,6 @@ export interface FrontCatalog {
 }
 
 export interface PatrolCatalog {
-  id: string;
   nombre: string;
   nombre_lider: string;
   codigo_vehiculo?: string;

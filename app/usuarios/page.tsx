@@ -101,7 +101,6 @@ export default function UsuariosPage() {
           nombre_completo: u.nombre_completo,
           rol: u.rol as UserRole,
           frente_asignado: u.frente_asignado,
-          patrulla_asignada_id: u.patrulla_asignada_id,
           activo: u.activo,
           created_at: u.created_at,
         }))
@@ -404,7 +403,7 @@ export default function UsuariosPage() {
                             >
                               <option value="">Sin Frente Asignado</option>
                               {fronts.map((f) => (
-                                <option key={f.id} value={f.nombre}>
+                                <option key={f.nombre} value={f.nombre}>
                                   {f.nombre} ({f.tipo_cosecha})
                                 </option>
                               ))}

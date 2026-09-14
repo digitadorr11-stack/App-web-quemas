@@ -98,7 +98,6 @@ export const authService = {
       nombre_completo: profile.nombre_completo,
       rol: profile.rol as UserRole,
       frente_asignado: profile.frente_asignado,
-      patrulla_asignada_id: profile.patrulla_asignada_id,
       activo: profile.activo,
       created_at: profile.created_at,
     };

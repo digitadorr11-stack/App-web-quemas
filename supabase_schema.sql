@@ -6,32 +6,23 @@
 -- 1. EXTENSIONES
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 2. LIMPIEZA PREVIA DE TRIGGERS Y FUNCIONES
+-- 2. LIMPIEZA PREVIA TOTAL DE TABLAS, TRIGGERS Y FUNCIONES
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS public.gestionar_nuevo_usuario_auth() CASCADE;
 DROP FUNCTION IF EXISTS public.current_user_role() CASCADE;
 DROP FUNCTION IF EXISTS public.is_user_active() CASCADE;
 
--- 3. TABLA: PERFILES DE USUARIOS (VINCULADA 1:1 CON auth.users)
-CREATE TABLE IF NOT EXISTS public.perfiles_usuarios (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    correo TEXT UNIQUE NOT NULL,
-    nombre_completo TEXT NOT NULL,
-    rol TEXT NOT NULL DEFAULT 'pendiente' CHECK (
-        rol IN ('admin', 'digitador', 'jefatura', 'supervisor_quemas', 'supervisor_frente', 'patrulla', 'pendiente')
-    ),
-    frente_asignado TEXT,
-    patrulla_asignada_id TEXT,
-    activo BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+DROP TABLE IF EXISTS public.bitacora_auditoria CASCADE;
+DROP TABLE IF EXISTS public.solicitudes_quemas CASCADE;
+DROP TABLE IF EXISTS public.catalogo_patrullas CASCADE;
+DROP TABLE IF EXISTS public.catalogo_frentes CASCADE;
+DROP TABLE IF EXISTS public.catalogo_fincas_lotes CASCADE;
+DROP TABLE IF EXISTS public.catalogo_fincas CASCADE;
+DROP TABLE IF EXISTS public.perfiles_usuarios CASCADE;
 
--- 4. TABLA: CATÁLOGO DE FRENTES DE COSECHA
-CREATE TABLE IF NOT EXISTS public.catalogo_frentes (
-    id TEXT PRIMARY KEY,
-    nombre TEXT NOT NULL UNIQUE,
-    codigo TEXT,
+-- 3. TABLA: CATÁLOGO DE FRENTES DE COSECHA (SIN ID NI CÓDIGO REDUNDANTE)
+CREATE TABLE public.catalogo_frentes (
+    nombre TEXT PRIMARY KEY, -- "Frente 14", "Frente 15", etc.
     tipo_cosecha TEXT NOT NULL DEFAULT 'Mecanizada' CHECK (tipo_cosecha IN ('Mecanizada', 'Manual', 'Mixta')),
     supervisor_turno_a TEXT,
     supervisor_turno_b TEXT,
@@ -39,10 +30,9 @@ CREATE TABLE IF NOT EXISTS public.catalogo_frentes (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. TABLA: CATÁLOGO DE PATRULLAS DE QUEMA
-CREATE TABLE IF NOT EXISTS public.catalogo_patrullas (
-    id TEXT PRIMARY KEY,
-    nombre TEXT NOT NULL UNIQUE,
+-- 4. TABLA: CATÁLOGO DE PATRULLAS DE QUEMA (SIN ID NI TELÉFONO)
+CREATE TABLE public.catalogo_patrullas (
+    nombre TEXT PRIMARY KEY, -- "Patrulla Alfa", "Patrulla Beta", etc.
     nombre_lider TEXT NOT NULL,
     codigo_vehiculo TEXT,
     estado TEXT NOT NULL DEFAULT 'DISPONIBLE' CHECK (estado IN ('DISPONIBLE', 'EN_FRENTE', 'EN_QUEMA')),
@@ -50,8 +40,22 @@ CREATE TABLE IF NOT EXISTS public.catalogo_patrullas (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 5. TABLA: PERFILES DE USUARIOS (VINCULADA 1:1 CON auth.users)
+CREATE TABLE public.perfiles_usuarios (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    correo TEXT UNIQUE NOT NULL,
+    nombre_completo TEXT NOT NULL,
+    rol TEXT NOT NULL DEFAULT 'pendiente' CHECK (
+        rol IN ('admin', 'digitador', 'jefatura', 'supervisor_quemas', 'supervisor_frente', 'patrulla', 'pendiente')
+    ),
+    frente_asignado TEXT REFERENCES public.catalogo_frentes(nombre) ON DELETE SET NULL,
+    activo BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 6. TABLA: CATÁLOGO DE FINCAS Y LOTES
-CREATE TABLE IF NOT EXISTS public.catalogo_fincas_lotes (
+CREATE TABLE public.catalogo_fincas_lotes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     finca TEXT NOT NULL,
     lote TEXT NOT NULL,
@@ -64,12 +68,12 @@ CREATE TABLE IF NOT EXISTS public.catalogo_fincas_lotes (
 );
 
 -- 7. TABLA MAESTRA: SOLICITUDES Y CRONOLOGÍA DE QUEMAS
-CREATE TABLE IF NOT EXISTS public.solicitudes_quemas (
+CREATE TABLE public.solicitudes_quemas (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     numero_quema TEXT NOT NULL UNIQUE,
     
     -- Ubicación y Agronomía
-    numero_frente TEXT NOT NULL,
+    numero_frente TEXT NOT NULL REFERENCES public.catalogo_frentes(nombre),
     nombre_finca TEXT NOT NULL,
     lote_um TEXT NOT NULL,
     area_hectareas NUMERIC(10,2) NOT NULL DEFAULT 0,
@@ -83,10 +87,9 @@ CREATE TABLE IF NOT EXISTS public.solicitudes_quemas (
     creado_por_usuario_id UUID NOT NULL REFERENCES auth.users(id),
     nombre_supervisor_frente TEXT NOT NULL,
 
-    -- 2. Despacho / Asignación
+    -- 2. Despacho / Asignación (Efectividad de Respuesta)
     hora_asignacion TIMESTAMPTZ,
-    patrulla_asignada_id TEXT REFERENCES public.catalogo_patrullas(id),
-    nombre_patrulla_asignada TEXT,
+    nombre_patrulla_asignada TEXT REFERENCES public.catalogo_patrullas(nombre),
     lider_patrulla TEXT,
 
     -- 3. Llegada al Frente y Espera
@@ -94,7 +97,7 @@ CREATE TABLE IF NOT EXISTS public.solicitudes_quemas (
     tiempo_espera_minutos NUMERIC(6,1) DEFAULT 0,
     motivo_espera TEXT,
 
-    -- 4. Revisión Técnica de Seguridad
+    -- 4. Revisión Técnica de Seguridad (Hora Inicio y Hora Fin)
     hora_inicio_revision TIMESTAMPTZ,
     hora_fin_revision TIMESTAMPTZ,
     duracion_revision_minutos NUMERIC(6,1) DEFAULT 0,
@@ -123,7 +126,7 @@ CREATE TABLE IF NOT EXISTS public.solicitudes_quemas (
 );
 
 -- 8. TABLA: BITÁCORA FORENSE DE AUDITORÍA (INMUTABLE)
-CREATE TABLE IF NOT EXISTS public.bitacora_auditoria (
+CREATE TABLE public.bitacora_auditoria (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     solicitud_quema_id UUID REFERENCES public.solicitudes_quemas(id) ON DELETE SET NULL,
     numero_quema TEXT,
@@ -180,7 +183,6 @@ FOR UPDATE
 TO authenticated
 USING (auth.uid() = id OR public.current_user_role() IN ('admin', 'digitador'))
 WITH CHECK (
-    -- Un usuario corriente no puede elevar su rol ni activarse solo
     (auth.uid() = id AND rol = (SELECT rol FROM public.perfiles_usuarios WHERE id = auth.uid()) AND activo = (SELECT activo FROM public.perfiles_usuarios WHERE id = auth.uid()))
     OR public.current_user_role() IN ('admin', 'digitador')
 );
@@ -323,23 +325,24 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW EXECUTE FUNCTION public.gestionar_nuevo_usuario_auth();
 
 -- ====================================================================
--- DATOS MAESTROS SEMILLA: FRENTES Y PATRULLAS DE LA UNIÓN
+-- DATOS MAESTROS SEMILLA: FRENTES Y PATRULLAS (SIN ID NI CÓDIGO)
 -- ====================================================================
-INSERT INTO public.catalogo_frentes (id, nombre, codigo, tipo_cosecha, supervisor_turno_a, supervisor_turno_b) VALUES
-('fr-15', 'Frente 15', 'FR-15', 'Mecanizada', 'Christian Josue Perez Car', 'Oscar Geovany Villalobos Ixcal'),
-('fr-16', 'Frente 16', 'FR-16', 'Mecanizada', 'Moises Elizardo Argueta', 'Marvin Castillo'),
-('fr-17', 'Frente 17', 'FR-17', 'Manual', 'Angel Leonardo Ortega', 'Elio Omar Noguera'),
-('fr-19', 'Frente 19', 'FR-19', 'Manual', 'Leidy Johana Nij Velasquez', 'Marlon Jehu Colorado'),
-('fr-23', 'Frente 23', 'FR-23', 'Mixta', 'Wendy Fabiola Aguirre', 'Rosa Lopez'),
-('fr-25', 'Frente 25', 'FR-25', 'Mecanizada', 'Oslin Corina Mazariegos', 'Milton Pineda Ovalle')
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.catalogo_frentes (nombre, tipo_cosecha, supervisor_turno_a, supervisor_turno_b) VALUES
+('Frente 14', 'Manual', 'Gerber Lopez', NULL),
+('Frente 15', 'Mecanizada', 'Christian Josue Perez Car', 'Oscar Geovany Villalobos Ixcal'),
+('Frente 16', 'Mecanizada', 'Moises Elizardo Argueta', 'Marvin Castillo'),
+('Frente 17', 'Manual', 'Angel Leonardo Ortega', 'Elio Omar Noguera'),
+('Frente 19', 'Manual', 'Leidy Johana Nij Velasquez', 'Marlon Jehu Colorado'),
+('Frente 23', 'Mixta', 'Wendy Fabiola Aguirre', 'Rosa Lopez'),
+('Frente 25', 'Mecanizada', 'Oslin Corina Mazariegos', 'Milton Pineda Ovalle')
+ON CONFLICT (nombre) DO NOTHING;
 
-INSERT INTO public.catalogo_patrullas (id, nombre, nombre_lider, codigo_vehiculo, estado) VALUES
-('pat-1', 'Patrulla Alfa', 'Juan Pérez', 'UNI-401', 'DISPONIBLE'),
-('pat-2', 'Patrulla Beta', 'Luis Morales', 'UNI-402', 'DISPONIBLE'),
-('pat-3', 'Patrulla Gamma', 'Pedro Ruiz', 'UNI-403', 'DISPONIBLE'),
-('pat-4', 'Patrulla Delta', 'Hugo Estrada', 'UNI-404', 'DISPONIBLE')
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.catalogo_patrullas (nombre, nombre_lider, codigo_vehiculo, estado) VALUES
+('Patrulla Alfa', 'Juan Pérez', 'UNI-401', 'DISPONIBLE'),
+('Patrulla Beta', 'Luis Morales', 'UNI-402', 'DISPONIBLE'),
+('Patrulla Gamma', 'Pedro Ruiz', 'UNI-403', 'DISPONIBLE'),
+('Patrulla Delta', 'Hugo Estrada', 'UNI-404', 'DISPONIBLE')
+ON CONFLICT (nombre) DO NOTHING;
 
 -- ====================================================================
 -- SINCRONIZAR ADMINISTRADORES EXISTENTES DESDE auth.users
@@ -356,4 +359,3 @@ WHERE LOWER(TRIM(email)) IN ('digitadorr11@gmail.com', 'oscmo76@gmail.com')
 ON CONFLICT (id) DO UPDATE
 SET rol = 'admin',
     activo = TRUE;
-
