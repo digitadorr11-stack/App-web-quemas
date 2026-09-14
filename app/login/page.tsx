@@ -1,116 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { storageService } from '@/lib/storageService';
-import { Flame, Lock, User, ArrowRight, AlertCircle, Eye, EyeOff, CheckCircle2, Mail } from 'lucide-react';
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { Flame, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  // Form Mode: Login vs Registro
-  const [isRegisterMode, setIsRegisterMode] = useState(false);
-  const [regFullName, setRegFullName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
-
-  useEffect(() => {
-    // Verificar si ya viene de retorno de sesión de Google OAuth
-    const checkSession = async () => {
-      try {
-        const user = await storageService.handleAuthSession();
-        if (user) {
-          if (user.active === false) {
-            setErrorMsg(`Hola ${user.full_name}, tu cuenta (${user.email}) ha sido registrada y está pendiente de aprobación por el Administrador.`);
-            return;
-          }
-          router.push('/');
-        }
-      } catch (e: any) {
-        console.warn('Error verificando sesión inicial:', e);
-      }
-    };
-
-    checkSession();
-  }, [router]);
-
-  // Iniciar sesión con Google
-  const handleGoogleLogin = async () => {
-    try {
-      setIsGoogleLoading(true);
-      setErrorMsg('');
-      await storageService.loginWithGoogle();
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Error al conectar con Google Auth');
-      setIsGoogleLoading(false);
-    }
-  };
-
-  // Iniciar sesión con Correo / Contraseña
-  const handleFormLogin = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!identifier.trim() || !password.trim()) {
-      setErrorMsg('Por favor ingrese su correo y contraseña.');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setErrorMsg('');
-      const user = await storageService.login(identifier, password);
-
-      if (user) {
-        if (user.active === false) {
-          setErrorMsg(`Su cuenta (${user.email}) está registrada pero pendiente de aprobación por el Administrador.`);
-          return;
-        }
-        router.push('/');
-      } else {
-        setErrorMsg('Credenciales incorrectas.');
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Error al iniciar sesión');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Registro de nuevo usuario
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!regFullName.trim() || !regEmail.trim() || !regPassword.trim()) {
-      setErrorMsg('Por favor complete todos los campos requeridos.');
-      return;
-    }
-
-    try {
-      setIsRegistering(true);
-      setErrorMsg('');
-      setSuccessMsg('');
-
-      await storageService.registerUser({
-        full_name: regFullName.trim(),
-        email: regEmail.trim(),
-        password: regPassword.trim(),
-      });
-
-      setIdentifier(regEmail.trim());
-      setPassword(regPassword.trim());
-      setIsRegisterMode(false);
-      setSuccessMsg(`¡Registro recibido para ${regEmail.trim()}! El Administrador debe activar su cuenta.`);
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Error al procesar el registro.');
-    } finally {
-      setIsRegistering(false);
-    }
   };
 
   return (
@@ -119,9 +19,8 @@ export default function LoginPage() {
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Main Login / Register Card */}
+      {/* Main Login Card */}
       <div className="w-full max-w-[420px] bg-[#0B121E] border border-slate-800/80 rounded-3xl p-7 sm:p-9 shadow-2xl relative z-10 space-y-6">
-        
         {/* Header Branding */}
         <div className="text-center space-y-2.5">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-800 to-emerald-600 border border-emerald-400/30 shadow-lg shadow-emerald-900/50">
@@ -132,254 +31,76 @@ export default function LoginPage() {
               Ingenio La Unión
             </h1>
             <p className="text-xs uppercase tracking-widest font-extrabold text-emerald-400 mt-1">
-              {isRegisterMode ? 'SOLICITUD DE REGISTRO' : 'CONTROL DE QUEMAS'}
+              CONTROL DE QUEMAS
             </p>
           </div>
           <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
-            {isRegisterMode
-              ? 'Complete sus datos para solicitar acceso.'
-              : 'Acceso seguro al sistema de control operativo.'}
+            Plataforma operativa base limpia
           </p>
         </div>
 
-        {/* Error Alert Box */}
-        {errorMsg && (
-          <div className="p-3.5 bg-rose-950/70 border border-rose-500/40 rounded-2xl text-rose-300 text-xs font-semibold flex items-center gap-2.5">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>{errorMsg}</span>
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+              CORREO ELECTRÓNICO
+            </label>
+            <div className="relative">
+              <User className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="usuario@launion.com"
+                className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3.5 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                required
+              />
+            </div>
           </div>
-        )}
 
-        {/* Success Alert Box */}
-        {successMsg && (
-          <div className="p-3.5 bg-emerald-950/70 border border-emerald-500/40 rounded-2xl text-emerald-300 text-xs font-semibold flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>{successMsg}</span>
+          <div className="space-y-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+              CONTRASEÑA
+            </label>
+            <div className="relative">
+              <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-11 py-3.5 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 cursor-pointer"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
-        )}
 
-        {/* Formulario Dinámico */}
-        {!isRegisterMode ? (
-          /* MODO LOGIN */
-          <form onSubmit={handleFormLogin} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                CORREO ELECTRÓNICO
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="usuario@launion.com"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3.5 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
-                  required
-                  autoComplete="username"
-                />
-              </div>
-            </div>
+          <button
+            type="submit"
+            className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition duration-200 mt-2 cursor-pointer"
+          >
+            <span>Iniciar Sesión</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </form>
 
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                CONTRASEÑA
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-11 py-3.5 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
-                  required
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 cursor-pointer"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
-            >
-              {isLoading ? (
-                <span>Validando acceso...</span>
-              ) : (
-                <>
-                  <span>Iniciar Sesión</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-        ) : (
-          /* MODO REGISTRO */
-          <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                NOMBRE COMPLETO *
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={regFullName}
-                  onChange={(e) => setRegFullName(e.target.value)}
-                  placeholder="Ej. Oscar Morales"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                CORREO ELECTRÓNICO *
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type="email"
-                  value={regEmail}
-                  onChange={(e) => setRegEmail(e.target.value)}
-                  placeholder="nombre@launion.com"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                CONTRASEÑA *
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={regPassword}
-                  onChange={(e) => setRegPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-11 py-3 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-800 cursor-pointer"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isRegistering}
-              className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
-            >
-              {isRegistering ? (
-                <span>Enviando solicitud...</span>
-              ) : (
-                <>
-                  <span>Enviar Registro</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {/* Separador */}
-        <div className="flex items-center gap-3 my-3">
-          <div className="h-[1px] bg-slate-800/90 flex-1" />
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
-            O CONTINUAR CON
-          </span>
-          <div className="h-[1px] bg-slate-800/90 flex-1" />
-        </div>
-
-        {/* Botón: Continuar con Google */}
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={isGoogleLoading}
-          className="w-full py-3.5 px-4 bg-white hover:bg-slate-100 text-slate-800 font-bold text-sm rounded-2xl shadow-md flex items-center justify-center gap-3 transition duration-200 border border-slate-200 cursor-pointer disabled:opacity-60"
-        >
-          {isGoogleLoading ? (
-            <span>Conectando con Google...</span>
-          ) : (
-            <>
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                />
-              </svg>
-              <span>Continuar con Google</span>
-            </>
-          )}
-        </button>
-
-        {/* Toggle Login <-> Registro */}
         <div className="text-center pt-2">
-          {!isRegisterMode ? (
-            <p className="text-xs text-slate-400 font-medium">
-              ¿No tiene cuenta?{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  setErrorMsg('');
-                  setSuccessMsg('');
-                  setIsRegisterMode(true);
-                }}
-                className="text-emerald-400 hover:text-emerald-300 font-bold underline underline-offset-4 cursor-pointer"
-              >
-                Regístrese aquí
-              </button>
-            </p>
-          ) : (
-            <p className="text-xs text-slate-400 font-medium">
-              ¿Ya tiene una cuenta?{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  setErrorMsg('');
-                  setSuccessMsg('');
-                  setIsRegisterMode(false);
-                }}
-                className="text-emerald-400 hover:text-emerald-300 font-bold underline underline-offset-4 cursor-pointer"
-              >
-                Iniciar sesión aquí
-              </button>
-            </p>
-          )}
+          <Link href="/" className="text-xs text-slate-400 hover:text-emerald-400 underline">
+            Volver a la página principal
+          </Link>
         </div>
 
         {/* Footer */}
         <div className="pt-3 border-t border-slate-800/80 text-center">
           <p className="text-[11px] text-slate-500 font-medium tracking-wide">
-            Ingenio La Unión · Sistema Limpio v2.0
+            Ingenio La Unión · Reinicio Limpio
           </p>
         </div>
       </div>
