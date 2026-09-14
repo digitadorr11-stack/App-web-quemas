@@ -26,6 +26,7 @@ export interface UserProfile {
   nombre_completo: string;
   rol: UserRole;
   frente_asignado?: string; // Ej: "Frente 15"
+  patrulla_asignada?: string; // Ej: "Patrulla Alfa"
   activo: boolean;
   created_at?: string;
 }
@@ -95,26 +96,27 @@ export interface BurnRequest {
 export interface FrontCatalog {
   nombre: string;
   tipo_cosecha: 'Mecanizada' | 'Manual' | 'Mixta';
-  supervisor_turno_a?: string;
-  supervisor_turno_b?: string;
   activo: boolean;
+  created_at?: string;
 }
 
 export interface PatrolCatalog {
   nombre: string;
-  nombre_lider: string;
   codigo_vehiculo?: string;
   estado: 'DISPONIBLE' | 'EN_FRENTE' | 'EN_QUEMA';
   activo: boolean;
+  created_at?: string;
 }
 
 export interface FarmLoteCatalog {
-  id: string;
+  id?: string;
   finca: string;
   lote: string;
   area_ha: number;
   area_mz: number;
   variedad?: string;
+  activo?: boolean;
+  created_at?: string;
 }
 
 export interface AuditLog {

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/lib/authService';
 import { UserProfile, ROLES_CONFIG } from '@/lib/types';
-import { Flame, LogOut, User, Sparkles, Shield, Clock, CheckCircle2, ChevronRight, Activity, Users } from 'lucide-react';
+import { Flame, LogOut, User, Sparkles, Shield, Clock, CheckCircle2, ChevronRight, Activity, Users, Layers, MapPin } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
@@ -79,15 +79,31 @@ export default function HomePage() {
         </div>
 
         {/* User Badge and Logout */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {(currentUser.rol === 'admin' || currentUser.rol === 'digitador') && (
-            <Link
-              href="/usuarios"
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 border border-purple-800/80 text-purple-300 text-xs font-bold transition shadow-sm"
-            >
-              <Users className="w-4 h-4" />
-              <span>Maestro de Usuarios</span>
-            </Link>
+            <nav className="hidden lg:flex items-center gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+              <Link
+                href="/usuarios"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-300 hover:bg-purple-950/60 transition"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>Usuarios</span>
+              </Link>
+              <Link
+                href="/constantes"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-300 hover:bg-emerald-950/60 transition"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Constantes</span>
+              </Link>
+              <Link
+                href="/fincas"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-300 hover:bg-blue-950/60 transition"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span>Fincas & Lotes</span>
+              </Link>
+            </nav>
           )}
 
           <div className="hidden sm:flex flex-col text-right">
@@ -119,73 +135,141 @@ export default function HomePage() {
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/40 border border-emerald-500/40 text-emerald-300 text-xs font-bold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Plataforma Limpia v2.0 · Fase 1 Completada</span>
+              <span>Control Operativo de Zafra · Ingenio La Unión</span>
             </div>
             <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white">
               Bienvenido, {currentUser.nombre_completo}
             </h2>
             <p className="text-xs md:text-sm text-slate-400 leading-relaxed">
-              Sistema de trazabilidad operativa y medición de tiempos en tiempo real para la zafra de Ingenio La Unión.
+              Plataforma en tiempo real para la trazabilidad forense, despacho de patrullas, cronología unificada y medición exacta de tiempos de quema de caña.
             </p>
           </div>
         </div>
 
-        {/* Tarjeta de Perfil y Rol Actual */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 space-y-4">
+        {/* Cuadrícula de Módulos Operativos y Administrativos */}
+        <div className="space-y-4">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Módulos del Sistema
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Tarjeta 1: Gestión de Usuarios */}
+            <Link
+              href="/usuarios"
+              className="bg-[#0B121E] hover:bg-slate-900/60 border border-slate-800 hover:border-purple-500/50 rounded-3xl p-6 transition flex flex-col justify-between group shadow-xl"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-600/20 text-purple-400 border border-purple-500/30 flex items-center justify-center group-hover:scale-105 transition">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">
+                    Accesos & Roles
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-white group-hover:text-purple-300 transition">
+                    Gestión de Usuarios
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Aprobación de cuentas, asignación de roles y vinculación directa con su Frente o Patrulla.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold text-purple-400">
+                <span>Administrar Usuarios</span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+              </div>
+            </Link>
+
+            {/* Tarjeta 2: Constantes Operativas */}
+            <Link
+              href="/constantes"
+              className="bg-[#0B121E] hover:bg-slate-900/60 border border-slate-800 hover:border-emerald-500/50 rounded-3xl p-6 transition flex flex-col justify-between group shadow-xl"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center group-hover:scale-105 transition">
+                    <Layers className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                    Configuración
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-white group-hover:text-emerald-300 transition">
+                    Constantes Operativas
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Catálogo ágil de Frentes de cosecha (mecanizada/manual) y Patrullas de quema con vehículos y estado.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold text-emerald-400">
+                <span>Gestionar Frentes y Patrullas</span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+              </div>
+            </Link>
+
+            {/* Tarjeta 3: Catálogo de Fincas y Lotes */}
+            <Link
+              href="/fincas"
+              className="bg-[#0B121E] hover:bg-slate-900/60 border border-slate-800 hover:border-blue-500/50 rounded-3xl p-6 transition flex flex-col justify-between group shadow-xl"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center group-hover:scale-105 transition">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">
+                    Agronomía
+                  </span>
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-white group-hover:text-blue-300 transition">
+                    Catálogo de Fincas & Lotes
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    Base de datos agronómica de alto volumen: búsqueda por lote, áreas (Ha/Mz), variedades y carga masiva desde Excel.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold text-blue-400">
+                <span>Explorar Fincas y Lotes</span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* Tarjeta de Estado del Usuario */}
+        <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
                 <User className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Tu Perfil</p>
-                <p className="text-sm font-bold text-white">{currentUser.nombre_completo}</p>
+                <p className="text-xs font-bold text-white">{currentUser.nombre_completo}</p>
+                <p className="text-[11px] text-slate-400 font-mono">{currentUser.correo}</p>
               </div>
             </div>
-            <div className="space-y-2 text-xs border-t border-slate-800/80 pt-3">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Correo:</span>
-                <span className="text-slate-200 font-mono text-[11px]">{currentUser.correo}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Rol:</span>
-                <span className="text-emerald-400 font-bold">{roleInfo.label}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Estado:</span>
-                <span className="text-emerald-400 font-bold">Activo / Autorizado</span>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-600/20 text-amber-400 border border-amber-500/30 flex items-center justify-center">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Métricas de Tiempo</p>
-                <p className="text-sm font-bold text-white">Cronología Unificada</p>
-              </div>
+              <span className={`text-xs px-3 py-1 rounded-full font-bold border ${roleInfo.badgeColor}`}>
+                {roleInfo.label}
+              </span>
+              {currentUser.frente_asignado && (
+                <span className="text-xs px-3 py-1 rounded-full font-bold bg-blue-950 text-blue-300 border border-blue-800">
+                  {currentUser.frente_asignado}
+                </span>
+              )}
+              {currentUser.patrulla_asignada && (
+                <span className="text-xs px-3 py-1 rounded-full font-bold bg-orange-950 text-orange-300 border border-orange-800">
+                  {currentUser.patrulla_asignada}
+                </span>
+              )}
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed border-t border-slate-800/80 pt-3">
-              Medición de tiempo de solicitud, hora planificada, asignación de despacho, esperas en frente con motivo, revisión y combustión efectiva.
-            </p>
-          </div>
-
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30 flex items-center justify-center">
-                <Activity className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Próximo Módulo</p>
-                <p className="text-sm font-bold text-white">Fase 2: Maestros</p>
-              </div>
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed border-t border-slate-800/80 pt-3">
-              Gestión de usuarios y asignación de roles para el Digitador, catálogo de fincas, lotes, frentes y cuadrillas de quema.
-            </p>
           </div>
         </div>
 

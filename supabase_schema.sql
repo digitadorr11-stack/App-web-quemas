@@ -20,20 +20,17 @@ DROP TABLE IF EXISTS public.catalogo_fincas_lotes CASCADE;
 DROP TABLE IF EXISTS public.catalogo_fincas CASCADE;
 DROP TABLE IF EXISTS public.perfiles_usuarios CASCADE;
 
--- 3. TABLA: CATÁLOGO DE FRENTES DE COSECHA (SIN ID NI CÓDIGO REDUNDANTE)
+-- 3. TABLA: CATÁLOGO DE FRENTES DE COSECHA (CONSTANTES)
 CREATE TABLE public.catalogo_frentes (
     nombre TEXT PRIMARY KEY, -- "Frente 14", "Frente 15", etc.
     tipo_cosecha TEXT NOT NULL DEFAULT 'Mecanizada' CHECK (tipo_cosecha IN ('Mecanizada', 'Manual', 'Mixta')),
-    supervisor_turno_a TEXT,
-    supervisor_turno_b TEXT,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. TABLA: CATÁLOGO DE PATRULLAS DE QUEMA (SIN ID NI TELÉFONO)
+-- 4. TABLA: CATÁLOGO DE PATRULLAS DE QUEMA (CONSTANTES)
 CREATE TABLE public.catalogo_patrullas (
     nombre TEXT PRIMARY KEY, -- "Patrulla Alfa", "Patrulla Beta", etc.
-    nombre_lider TEXT NOT NULL,
     codigo_vehiculo TEXT,
     estado TEXT NOT NULL DEFAULT 'DISPONIBLE' CHECK (estado IN ('DISPONIBLE', 'EN_FRENTE', 'EN_QUEMA')),
     activo BOOLEAN NOT NULL DEFAULT TRUE,
@@ -49,6 +46,7 @@ CREATE TABLE public.perfiles_usuarios (
         rol IN ('admin', 'digitador', 'jefatura', 'supervisor_quemas', 'supervisor_frente', 'patrulla', 'pendiente')
     ),
     frente_asignado TEXT REFERENCES public.catalogo_frentes(nombre) ON DELETE SET NULL,
+    patrulla_asignada TEXT REFERENCES public.catalogo_patrullas(nombre) ON DELETE SET NULL,
     activo BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -66,6 +64,10 @@ CREATE TABLE public.catalogo_fincas_lotes (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (finca, lote)
 );
+
+CREATE INDEX IF NOT EXISTS idx_fincas_lotes_finca ON public.catalogo_fincas_lotes(finca);
+CREATE INDEX IF NOT EXISTS idx_fincas_lotes_lote ON public.catalogo_fincas_lotes(lote);
+CREATE INDEX IF NOT EXISTS idx_fincas_lotes_activo ON public.catalogo_fincas_lotes(activo);
 
 -- 7. TABLA MAESTRA: SOLICITUDES Y CRONOLOGÍA DE QUEMAS
 CREATE TABLE public.solicitudes_quemas (
@@ -325,24 +327,33 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW EXECUTE FUNCTION public.gestionar_nuevo_usuario_auth();
 
 -- ====================================================================
--- DATOS MAESTROS SEMILLA: FRENTES Y PATRULLAS (SIN ID NI CÓDIGO)
+-- DATOS MAESTROS SEMILLA: FRENTES Y PATRULLAS (CONSTANTES OPERATIVAS)
 -- ====================================================================
-INSERT INTO public.catalogo_frentes (nombre, tipo_cosecha, supervisor_turno_a, supervisor_turno_b) VALUES
-('Frente 14', 'Manual', 'Gerber Lopez', NULL),
-('Frente 15', 'Mecanizada', 'Christian Josue Perez Car', 'Oscar Geovany Villalobos Ixcal'),
-('Frente 16', 'Mecanizada', 'Moises Elizardo Argueta', 'Marvin Castillo'),
-('Frente 17', 'Manual', 'Angel Leonardo Ortega', 'Elio Omar Noguera'),
-('Frente 19', 'Manual', 'Leidy Johana Nij Velasquez', 'Marlon Jehu Colorado'),
-('Frente 23', 'Mixta', 'Wendy Fabiola Aguirre', 'Rosa Lopez'),
-('Frente 25', 'Mecanizada', 'Oslin Corina Mazariegos', 'Milton Pineda Ovalle')
+INSERT INTO public.catalogo_frentes (nombre, tipo_cosecha) VALUES
+('Frente 14', 'Manual'),
+('Frente 15', 'Mecanizada'),
+('Frente 16', 'Mecanizada'),
+('Frente 17', 'Manual'),
+('Frente 19', 'Manual'),
+('Frente 23', 'Mixta'),
+('Frente 25', 'Mecanizada')
 ON CONFLICT (nombre) DO NOTHING;
 
-INSERT INTO public.catalogo_patrullas (nombre, nombre_lider, codigo_vehiculo, estado) VALUES
-('Patrulla Alfa', 'Juan Pérez', 'UNI-401', 'DISPONIBLE'),
-('Patrulla Beta', 'Luis Morales', 'UNI-402', 'DISPONIBLE'),
-('Patrulla Gamma', 'Pedro Ruiz', 'UNI-403', 'DISPONIBLE'),
-('Patrulla Delta', 'Hugo Estrada', 'UNI-404', 'DISPONIBLE')
+INSERT INTO public.catalogo_patrullas (nombre, codigo_vehiculo, estado) VALUES
+('Patrulla Alfa', 'UNI-401', 'DISPONIBLE'),
+('Patrulla Beta', 'UNI-402', 'DISPONIBLE'),
+('Patrulla Gamma', 'UNI-403', 'DISPONIBLE'),
+('Patrulla Delta', 'UNI-404', 'DISPONIBLE')
 ON CONFLICT (nombre) DO NOTHING;
+
+-- DATOS SEMILLA: FINCAS Y LOTES DE EJEMPLO
+INSERT INTO public.catalogo_fincas_lotes (finca, lote, area_ha, area_mz, variedad) VALUES
+('Finca El Baúl', 'Lote 101', 12.50, 17.88, 'CP-72-2086'),
+('Finca El Baúl', 'Lote 102', 15.20, 21.75, 'CG-96-01'),
+('Finca Los Diamantes', 'Lote 01', 8.40, 12.02, 'CP-88-1165'),
+('Finca Los Diamantes', 'Lote 02', 14.00, 20.03, 'CP-72-2086'),
+('Finca San Antonio', 'Lote 05', 18.75, 26.83, 'CG-02-163')
+ON CONFLICT (finca, lote) DO NOTHING;
 
 -- ====================================================================
 -- SINCRONIZAR ADMINISTRADORES EXISTENTES DESDE auth.users

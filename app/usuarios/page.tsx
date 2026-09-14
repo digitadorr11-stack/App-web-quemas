@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/lib/authService';
 import { supabase } from '@/lib/supabaseClient';
-import { UserProfile, UserRole, ROLES_CONFIG, FrontCatalog } from '@/lib/types';
+import { UserProfile, UserRole, ROLES_CONFIG, FrontCatalog, PatrolCatalog } from '@/lib/types';
 import {
   Users,
   Shield,
@@ -20,6 +20,7 @@ import {
   Sparkles,
   Layers,
   AlertCircle,
+  Truck,
 } from 'lucide-react';
 
 export default function UsuariosPage() {
@@ -27,6 +28,7 @@ export default function UsuariosPage() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [fronts, setFronts] = useState<FrontCatalog[]>([]);
+  const [patrols, setPatrols] = useState<PatrolCatalog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
@@ -56,7 +58,7 @@ export default function UsuariosPage() {
         }
 
         setCurrentUser(user);
-        await Promise.all([loadUsers(), loadFronts()]);
+        await Promise.all([loadUsers(), loadFronts(), loadPatrols()]);
       } catch (err) {
         console.error('Error inicializando módulo de usuarios:', err);
         router.push('/');
@@ -101,6 +103,7 @@ export default function UsuariosPage() {
           nombre_completo: u.nombre_completo,
           rol: u.rol as UserRole,
           frente_asignado: u.frente_asignado,
+          patrulla_asignada: u.patrulla_asignada,
           activo: u.activo,
           created_at: u.created_at,
         }))
@@ -121,13 +124,30 @@ export default function UsuariosPage() {
     }
   };
 
+  const loadPatrols = async () => {
+    if (!supabase) return;
+    const { data } = await supabase
+      .from('catalogo_patrullas')
+      .select('*')
+      .eq('activo', true)
+      .order('nombre', { ascending: true });
+
+    if (data) {
+      setPatrols(data);
+    }
+  };
+
   // Cambiar rol de un usuario
   const handleRoleChange = async (targetUserId: string, newRole: UserRole) => {
     if (!supabase) return;
     try {
+      const updatePayload: any = { rol: newRole, updated_at: new Date().toISOString() };
+      if (newRole !== 'supervisor_frente') updatePayload.frente_asignado = null;
+      if (newRole !== 'patrulla') updatePayload.patrulla_asignada = null;
+
       const { error } = await supabase
         .from('perfiles_usuarios')
-        .update({ rol: newRole, updated_at: new Date().toISOString() })
+        .update(updatePayload)
         .eq('id', targetUserId);
 
       if (error) throw error;
@@ -155,6 +175,26 @@ export default function UsuariosPage() {
       loadUsers();
     } catch (err: any) {
       alert(`Error asignando frente: ${err.message}`);
+    }
+  };
+
+  // Cambiar patrulla asignada
+  const handlePatrolChange = async (targetUserId: string, patrolName: string) => {
+    if (!supabase) return;
+    try {
+      const { error } = await supabase
+        .from('perfiles_usuarios')
+        .update({
+          patrulla_asignada: patrolName || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', targetUserId);
+
+      if (error) throw error;
+      showToast(`Patrulla asignada: ${patrolName || 'Ninguna'}`);
+      loadUsers();
+    } catch (err: any) {
+      alert(`Error asignando patrulla: ${err.message}`);
     }
   };
 
@@ -237,7 +277,28 @@ export default function UsuariosPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <nav className="hidden md:flex items-center gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+            <Link
+              href="/usuarios"
+              className="px-3 py-1 rounded-lg text-xs font-bold bg-purple-600 text-white shadow"
+            >
+              Usuarios
+            </Link>
+            <Link
+              href="/constantes"
+              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition"
+            >
+              Constantes
+            </Link>
+            <Link
+              href="/fincas"
+              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition"
+            >
+              Fincas y Lotes
+            </Link>
+          </nav>
+
           <span className="hidden sm:inline text-xs font-bold text-slate-300">
             {currentUser?.nombre_completo}
           </span>
@@ -332,7 +393,7 @@ export default function UsuariosPage() {
                 <tr>
                   <th className="px-5 py-4">Usuario</th>
                   <th className="px-4 py-4">Rol Asignado</th>
-                  <th className="px-4 py-4">Frente Habitual</th>
+                  <th className="px-4 py-4">Asignación Operativa</th>
                   <th className="px-4 py-4 text-center">Estado</th>
                   <th className="px-5 py-4 text-right">Acción</th>
                 </tr>
@@ -393,23 +454,40 @@ export default function UsuariosPage() {
                           </select>
                         </td>
 
-                        {/* Selector de Frente (para supervisor de frente) */}
+                        {/* Asignación Operativa: Frente o Patrulla */}
                         <td className="px-4 py-4">
                           {u.rol === 'supervisor_frente' ? (
-                            <select
-                              value={u.frente_asignado || ''}
-                              onChange={(e) => handleFrontChange(u.id, e.target.value)}
-                              className="bg-[#070C14] border border-slate-800 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-blue-500 cursor-pointer"
-                            >
-                              <option value="">Sin Frente Asignado</option>
-                              {fronts.map((f) => (
-                                <option key={f.nombre} value={f.nombre}>
-                                  {f.nombre} ({f.tipo_cosecha})
-                                </option>
-                              ))}
-                            </select>
+                            <div className="flex items-center gap-1.5">
+                              <select
+                                value={u.frente_asignado || ''}
+                                onChange={(e) => handleFrontChange(u.id, e.target.value)}
+                                className="bg-[#070C14] border border-blue-800/80 text-blue-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-blue-500 cursor-pointer"
+                              >
+                                <option value="">-- Sin Frente --</option>
+                                {fronts.map((f) => (
+                                  <option key={f.nombre} value={f.nombre}>
+                                    {f.nombre} ({f.tipo_cosecha})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          ) : u.rol === 'patrulla' ? (
+                            <div className="flex items-center gap-1.5">
+                              <select
+                                value={u.patrulla_asignada || ''}
+                                onChange={(e) => handlePatrolChange(u.id, e.target.value)}
+                                className="bg-[#070C14] border border-orange-800/80 text-orange-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-orange-500 cursor-pointer"
+                              >
+                                <option value="">-- Sin Patrulla --</option>
+                                {patrols.map((p) => (
+                                  <option key={p.nombre} value={p.nombre}>
+                                    {p.nombre} {p.codigo_vehiculo ? `(${p.codigo_vehiculo})` : ''}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           ) : (
-                            <span className="text-slate-500 italic text-[11px]">No aplica</span>
+                            <span className="text-slate-600 italic text-[11px]">No aplica</span>
                           )}
                         </td>
 
