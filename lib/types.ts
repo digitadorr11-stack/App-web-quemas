@@ -1,4 +1,5 @@
 export type UserRole =
+  | 'pendiente'
   | 'supervisor_frente'
   | 'supervisor_quemas'
   | 'patrulla'
@@ -148,6 +149,11 @@ export interface Patrol {
 }
 
 export const ROLE_DETAILS: Record<UserRole, { label: string; badgeColor: string; description: string }> = {
+  pendiente: {
+    label: 'Pendiente de Aprobación',
+    badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+    description: 'Usuario registrado a la espera de que el Administrador asigne su rol y active el acceso.',
+  },
   supervisor_frente: {
     label: 'Supervisor de Frente',
     badgeColor: 'bg-blue-100 text-blue-800 border-blue-300',

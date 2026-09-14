@@ -110,8 +110,6 @@ function userToDb(u: Partial<UserProfile>): Record<string, any> {
   if (u.id !== undefined) row.id = u.id;
   if (u.auth_id !== undefined) row.auth_id = u.auth_id;
   if (u.username !== undefined) row.nombre_usuario = u.username;
-  if (u.password !== undefined) row.password = u.password;
-  if (u.pin !== undefined) row.pin = u.pin;
   if (u.email !== undefined) row.correo = u.email;
   if (u.full_name !== undefined) row.nombre_completo = u.full_name;
   if (u.role !== undefined) row.rol = u.role;
@@ -131,11 +129,9 @@ function userFromDb(row: Record<string, any>): UserProfile {
     id: row.id,
     auth_id: row.auth_id,
     username: row.nombre_usuario || row.username || '',
-    password: row.password,
-    pin: row.pin,
     email: row.correo || row.email || '',
     full_name: row.nombre_completo || row.full_name || '',
-    role: row.rol || row.role || 'supervisor_frente',
+    role: (row.rol || row.role || 'pendiente') as UserRole,
     phone: row.telefono || row.phone,
     avatar_url: row.avatar_url,
     assigned_front: row.frente_asignado || row.assigned_front,
@@ -143,7 +139,7 @@ function userFromDb(row: Record<string, any>): UserProfile {
     is_relief_supervisor: row.es_supervisor_descanso || row.is_relief_supervisor || false,
     assigned_patrol_id: row.patrulla_asignada_id || row.assigned_patrol_id,
     assigned_patrol_name: row.nombre_patrulla_asignada || row.assigned_patrol_name,
-    active: row.activo !== false,
+    active: Boolean(row.activo), // Si es false o null, queda false
   };
 }
 
@@ -307,32 +303,27 @@ export const storageService = {
 
       if (!error && profiles && profiles.length > 0) {
         const profile = userFromDb(profiles[0]);
-        if (profile.active === false) {
+        // Si no está activo o está pendiente, retornarlo para que login muestre el bloqueo
+        if (!profile.active || profile.role === 'pendiente') {
           return profile;
         }
         this.setActiveUser(profile);
         return profile;
       }
 
-      // Nuevo usuario por Google: registrar como inactivo para autorización del Admin
-      const newProfile: UserProfile = {
+      // Si el trigger de la base de datos aún no se reflejó, crear registro temporal en memoria
+      const pendingProfile: UserProfile = {
         id: `usr-${authUser.id.substring(0, 8)}`,
         auth_id: authUser.id,
         username: userEmail.split('@')[0],
         email: userEmail,
         full_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name || userEmail.split('@')[0],
-        role: 'supervisor_frente',
-        active: false, // Pendiente de asignación de rol y aprobación por Admin en el Maestro de Usuarios
+        role: 'pendiente',
+        active: false, // Requiere aprobación obligatoria del Admin
         created_at: new Date().toISOString(),
       };
 
-      try {
-        await supabase.from('perfiles_usuarios').insert(userToDb(newProfile));
-      } catch (e) {
-        console.error('Error insertando nuevo usuario Google', e);
-      }
-
-      return newProfile;
+      return pendingProfile;
     } catch (e) {
       console.warn('Error fetching auth session', e);
       return this.getActiveUser();
@@ -340,113 +331,59 @@ export const storageService = {
   },
 
   async login(identifier: string, passwordAttempt: string): Promise<UserProfile | null> {
-    const users = await this.getAllUsers();
     const cleanId = identifier.trim().toLowerCase();
     const cleanPass = passwordAttempt.trim();
 
-    const user = users.find((u) => {
-      const matchUser = u.username?.toLowerCase() === cleanId;
-      const matchEmail = u.email ? u.email.toLowerCase() === cleanId : false;
-      const matchName = u.full_name.toLowerCase() === cleanId;
-      return matchUser || matchEmail || matchName;
-    });
-
-    // 1. Si el usuario NO existe aún, lo auto-registramos directamente en estado pendiente
-    if (!user) {
-      const isEmail = cleanId.includes('@');
-      const userPrefix = cleanId.split('@')[0];
-      const displayName = userPrefix
-        .split(/[._-]/)
-        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-        .join(' ');
-
-      const newProfile: UserProfile = {
-        id: `usr-${Date.now()}`,
-        username: userPrefix,
-        email: isEmail ? cleanId : `${cleanId}@launion.com`,
-        full_name: displayName || userPrefix,
+    // 1. Si es inicio por correo, autenticar primero a través de Supabase Auth nativo
+    if (supabase && isSupabaseConfigured && cleanId.includes('@')) {
+      const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+        email: cleanId,
         password: cleanPass,
-        role: 'supervisor_frente',
-        active: false, // Pendiente de asignación de rol y aprobación por el Administrador
-        created_at: new Date().toISOString(),
-      };
-
-      if (supabase && isSupabaseConfigured) {
-        try {
-          await supabase.from('perfiles_usuarios').insert(userToDb(newProfile));
-        } catch (e) {
-          console.error('Error insertando usuario auto-registrado', e);
-        }
-      }
-
-      if (isBrowser) {
-        const updated = [...users, newProfile];
-        localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updated));
-      }
-
-      await this.logAudit({
-        burn_request_id: 'SYSTEM',
-        burn_number: 'N/A',
-        user_id: newProfile.id,
-        user_name: newProfile.full_name,
-        user_role: newProfile.role,
-        action_type: 'CREACION_REGISTRO',
-        field_name: 'auto_registro_login',
-        old_value: 'N/A',
-        new_value: newProfile.email || newProfile.username,
-        change_reason: 'Auto-registro directo desde pantalla de login',
       });
 
-      throw new Error(
-        `¡Solicitud enviada con éxito! Su cuenta (${newProfile.email}) ha sido registrada y está en espera de que el Administrador o Digitador le asigne su rol y permisos en el Maestro de Usuarios.`
-      );
-    }
+      if (authErr) {
+        throw new Error('Credenciales incorrectas. Verifique su correo y contraseña.');
+      }
 
-    // 2. Si el usuario existe pero está inactivo / pendiente de aprobación
-    if (user.active === false) {
-      throw new Error(
-        `Su cuenta (${user.email || user.username}) está registrada pero se encuentra pendiente de aprobación. Comuníquese con el Administrador o Digitador para que le asigne su rol y permisos.`
-      );
-    }
+      if (authData.user) {
+        // Consultar perfil asociado en Supabase
+        const { data: profiles } = await supabase
+          .from('perfiles_usuarios')
+          .select('*')
+          .or(`correo.eq.${cleanId},auth_id.eq.${authData.user.id}`)
+          .limit(1);
 
-    // 3. Validación de contraseña para usuarios aprobados
-    // Intentar inicio de sesión oficial en Supabase Auth si es correo
-    if (supabase && isSupabaseConfigured && cleanId.includes('@')) {
-      try {
-        const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
-          email: cleanId,
-          password: cleanPass,
-        });
-        if (!authErr && authData.user) {
-          if (!user.auth_id) {
-            user.auth_id = authData.user.id;
-            try {
-              await supabase.from('perfiles_usuarios').update({ auth_id: authData.user.id }).eq('id', user.id);
-            } catch (e) {}
+        if (profiles && profiles.length > 0) {
+          const profile = userFromDb(profiles[0]);
+          if (!profile.active || profile.role === 'pendiente') {
+            throw new Error(
+              `Su cuenta (${profile.email}) está registrada pero se encuentra pendiente de aprobación. Comuníquese con el Administrador para que le asigne su rol operativo y active su acceso.`
+            );
           }
-          this.setActiveUser(user);
-          return user;
+          this.setActiveUser(profile);
+          return profile;
         }
-      } catch (e) {
-        console.warn('Supabase Auth signIn attempt failed, checking fallback', e);
       }
     }
 
-    const validPassword =
-      user.password === cleanPass ||
-      user.pin === cleanPass ||
-      cleanPass === '123456' ||
-      cleanPass === 'admin' ||
-      cleanPass === 'frente123' ||
-      cleanPass === 'digitador123' ||
-      cleanPass === 'quemas123';
+    // 2. Si es por nombre de usuario (@usuario)
+    const users = await this.getAllUsers();
+    const user = users.find(
+      (u) => u.username?.toLowerCase() === cleanId || u.email?.toLowerCase() === cleanId
+    );
 
-    if (validPassword) {
-      this.setActiveUser(user);
-      return user;
+    if (!user) {
+      throw new Error('Usuario no encontrado. Regístrese desde la pantalla de inicio.');
     }
 
-    return null;
+    if (!user.active || user.role === 'pendiente') {
+      throw new Error(
+        `Su cuenta (${user.full_name}) está pendiente de aprobación por el Administrador.`
+      );
+    }
+
+    this.setActiveUser(user);
+    return user;
   },
 
   async registerUser(newUser: Omit<UserProfile, 'id' | 'active'>): Promise<UserProfile> {
