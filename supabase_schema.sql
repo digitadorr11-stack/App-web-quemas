@@ -45,8 +45,8 @@ CREATE TABLE public.perfiles_usuarios (
     rol TEXT NOT NULL DEFAULT 'pendiente' CHECK (
         rol IN ('admin', 'digitador', 'jefatura', 'supervisor_quemas', 'supervisor_frente', 'patrulla', 'pendiente')
     ),
-    frente_asignado TEXT REFERENCES public.catalogo_frentes(nombre) ON DELETE SET NULL,
-    patrulla_asignada TEXT REFERENCES public.catalogo_patrullas(nombre) ON DELETE SET NULL,
+    frente_asignado TEXT REFERENCES public.catalogo_frentes(nombre) ON UPDATE CASCADE ON DELETE SET NULL,
+    patrulla_asignada TEXT REFERENCES public.catalogo_patrullas(nombre) ON UPDATE CASCADE ON DELETE SET NULL,
     activo BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -75,7 +75,7 @@ CREATE TABLE public.solicitudes_quemas (
     numero_quema TEXT NOT NULL UNIQUE,
     
     -- Ubicación y Agronomía
-    numero_frente TEXT NOT NULL REFERENCES public.catalogo_frentes(nombre),
+    numero_frente TEXT NOT NULL REFERENCES public.catalogo_frentes(nombre) ON UPDATE CASCADE,
     nombre_finca TEXT NOT NULL,
     lote_um TEXT NOT NULL,
     area_hectareas NUMERIC(10,2) NOT NULL DEFAULT 0,
@@ -91,7 +91,7 @@ CREATE TABLE public.solicitudes_quemas (
 
     -- 2. Despacho / Asignación (Efectividad de Respuesta)
     hora_asignacion TIMESTAMPTZ,
-    nombre_patrulla_asignada TEXT REFERENCES public.catalogo_patrullas(nombre),
+    nombre_patrulla_asignada TEXT REFERENCES public.catalogo_patrullas(nombre) ON UPDATE CASCADE,
     lider_patrulla TEXT,
 
     -- 3. Llegada al Frente y Espera

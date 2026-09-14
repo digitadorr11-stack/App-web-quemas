@@ -21,6 +21,7 @@ import {
   ToggleRight,
   AlertCircle,
   Search,
+  Edit2,
 } from 'lucide-react';
 
 export default function ConstantesPage() {
@@ -43,6 +44,27 @@ export default function ConstantesPage() {
   const [newPatrolName, setNewPatrolName] = useState('');
   const [newPatrolVehicle, setNewPatrolVehicle] = useState('');
   const [isSubmittingPatrol, setIsSubmittingPatrol] = useState(false);
+
+  // Edición Frente
+  const [isEditFrontModalOpen, setIsEditFrontModalOpen] = useState(false);
+  const [editFrontData, setEditFrontData] = useState<{
+    originalNombre: string;
+    nombre: string;
+    tipo_cosecha: 'Mecanizada' | 'Manual' | 'Mixta';
+    activo: boolean;
+  } | null>(null);
+  const [isSubmittingEditFront, setIsSubmittingEditFront] = useState(false);
+
+  // Edición Patrulla
+  const [isEditPatrolModalOpen, setIsEditPatrolModalOpen] = useState(false);
+  const [editPatrolData, setEditPatrolData] = useState<{
+    originalNombre: string;
+    nombre: string;
+    codigo_vehiculo: string;
+    estado: 'DISPONIBLE' | 'EN_FRENTE' | 'EN_QUEMA';
+    activo: boolean;
+  } | null>(null);
+  const [isSubmittingEditPatrol, setIsSubmittingEditPatrol] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -254,6 +276,84 @@ export default function ConstantesPage() {
       loadPatrols();
     } catch (err: any) {
       alert(`Error cambiando estado operativo: ${err.message}`);
+    }
+  };
+
+  // Abrir y Guardar Edición Frente
+  const handleOpenEditFront = (f: FrontCatalog) => {
+    setEditFrontData({
+      originalNombre: f.nombre,
+      nombre: f.nombre,
+      tipo_cosecha: f.tipo_cosecha,
+      activo: f.activo !== false,
+    });
+    setIsEditFrontModalOpen(true);
+  };
+
+  const handleSaveEditFront = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase || !editFrontData || !editFrontData.nombre.trim()) return;
+
+    try {
+      setIsSubmittingEditFront(true);
+      const { error } = await supabase
+        .from('catalogo_frentes')
+        .update({
+          nombre: editFrontData.nombre.trim(),
+          tipo_cosecha: editFrontData.tipo_cosecha,
+          activo: editFrontData.activo,
+        })
+        .eq('nombre', editFrontData.originalNombre);
+
+      if (error) throw error;
+      showToast(`Frente actualizado a: "${editFrontData.nombre}"`);
+      setIsEditFrontModalOpen(false);
+      setEditFrontData(null);
+      loadFronts();
+    } catch (err: any) {
+      alert(`Error actualizando frente: ${err.message}`);
+    } finally {
+      setIsSubmittingEditFront(false);
+    }
+  };
+
+  // Abrir y Guardar Edición Patrulla
+  const handleOpenEditPatrol = (p: PatrolCatalog) => {
+    setEditPatrolData({
+      originalNombre: p.nombre,
+      nombre: p.nombre,
+      codigo_vehiculo: p.codigo_vehiculo || '',
+      estado: p.estado,
+      activo: p.activo !== false,
+    });
+    setIsEditPatrolModalOpen(true);
+  };
+
+  const handleSaveEditPatrol = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase || !editPatrolData || !editPatrolData.nombre.trim()) return;
+
+    try {
+      setIsSubmittingEditPatrol(true);
+      const { error } = await supabase
+        .from('catalogo_patrullas')
+        .update({
+          nombre: editPatrolData.nombre.trim(),
+          codigo_vehiculo: editPatrolData.codigo_vehiculo.trim().toUpperCase() || null,
+          estado: editPatrolData.estado,
+          activo: editPatrolData.activo,
+        })
+        .eq('nombre', editPatrolData.originalNombre);
+
+      if (error) throw error;
+      showToast(`Patrulla actualizada a: "${editPatrolData.nombre}"`);
+      setIsEditPatrolModalOpen(false);
+      setEditPatrolData(null);
+      loadPatrols();
+    } catch (err: any) {
+      alert(`Error actualizando patrulla: ${err.message}`);
+    } finally {
+      setIsSubmittingEditPatrol(false);
     }
   };
 
@@ -491,16 +591,26 @@ export default function ConstantesPage() {
                           </td>
 
                           <td className="px-5 py-4 text-right">
-                            <button
-                              onClick={() => handleToggleFrontActive(f.nombre, f.activo)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
-                                f.activo
-                                  ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
-                                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                              }`}
-                            >
-                              {f.activo ? 'Desactivar' : 'Activar'}
-                            </button>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleOpenEditFront(f)}
+                                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 hover:text-emerald-300 border border-slate-700 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                title="Editar frente"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                                <span>Editar</span>
+                              </button>
+                              <button
+                                onClick={() => handleToggleFrontActive(f.nombre, f.activo)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
+                                  f.activo
+                                    ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
+                                    : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                                }`}
+                              >
+                                {f.activo ? 'Desactivar' : 'Activar'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -639,16 +749,26 @@ export default function ConstantesPage() {
                           </td>
 
                           <td className="px-5 py-4 text-right">
-                            <button
-                              onClick={() => handleTogglePatrolActive(p.nombre, p.activo)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
-                                p.activo
-                                  ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
-                                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                              }`}
-                            >
-                              {p.activo ? 'Desactivar' : 'Activar'}
-                            </button>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleOpenEditPatrol(p)}
+                                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-orange-400 hover:text-orange-300 border border-slate-700 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                title="Editar patrulla"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                                <span>Editar</span>
+                              </button>
+                              <button
+                                onClick={() => handleTogglePatrolActive(p.nombre, p.activo)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
+                                  p.activo
+                                    ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
+                                    : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                                }`}
+                              >
+                                {p.activo ? 'Desactivar' : 'Activar'}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -660,6 +780,222 @@ export default function ConstantesPage() {
           </div>
         )}
       </main>
+
+      {/* MODAL EDITAR FRENTE */}
+      {isEditFrontModalOpen && editFrontData && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-emerald-400" />
+                <span>Editar Frente: {editFrontData.originalNombre}</span>
+              </h3>
+              <button
+                onClick={() => {
+                  setIsEditFrontModalOpen(false);
+                  setEditFrontData(null);
+                }}
+                className="text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditFront} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Nombre del Frente *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editFrontData.nombre}
+                  onChange={(e) =>
+                    setEditFrontData({ ...editFrontData, nombre: e.target.value })
+                  }
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Tipo de Cosecha
+                </label>
+                <select
+                  value={editFrontData.tipo_cosecha}
+                  onChange={(e) =>
+                    setEditFrontData({
+                      ...editFrontData,
+                      tipo_cosecha: e.target.value as 'Mecanizada' | 'Manual' | 'Mixta',
+                    })
+                  }
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                >
+                  <option value="Mecanizada">Mecanizada</option>
+                  <option value="Manual">Manual</option>
+                  <option value="Mixta">Mixta</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Estado
+                </label>
+                <select
+                  value={editFrontData.activo ? 'true' : 'false'}
+                  onChange={(e) =>
+                    setEditFrontData({
+                      ...editFrontData,
+                      activo: e.target.value === 'true',
+                    })
+                  }
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                >
+                  <option value="true">Activo</option>
+                  <option value="false">Inactivo</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditFrontModalOpen(false);
+                    setEditFrontData(null);
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingEditFront}
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-emerald-950/50 cursor-pointer"
+                >
+                  {isSubmittingEditFront ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL EDITAR PATRULLA */}
+      {isEditPatrolModalOpen && editPatrolData && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-orange-400" />
+                <span>Editar Patrulla: {editPatrolData.originalNombre}</span>
+              </h3>
+              <button
+                onClick={() => {
+                  setIsEditPatrolModalOpen(false);
+                  setEditPatrolData(null);
+                }}
+                className="text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditPatrol} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Nombre de la Patrulla *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editPatrolData.nombre}
+                  onChange={(e) =>
+                    setEditPatrolData({ ...editPatrolData, nombre: e.target.value })
+                  }
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Código de Vehículo (opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="UNI-401"
+                  value={editPatrolData.codigo_vehiculo}
+                  onChange={(e) =>
+                    setEditPatrolData({
+                      ...editPatrolData,
+                      codigo_vehiculo: e.target.value,
+                    })
+                  }
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Estado Operativo
+                </label>
+                <select
+                  value={editPatrolData.estado}
+                  onChange={(e) =>
+                    setEditPatrolData({
+                      ...editPatrolData,
+                      estado: e.target.value as any,
+                    })
+                  }
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 cursor-pointer"
+                >
+                  <option value="DISPONIBLE">DISPONIBLE</option>
+                  <option value="EN_FRENTE">EN FRENTE</option>
+                  <option value="EN_QUEMA">EN QUEMA</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Estado
+                </label>
+                <select
+                  value={editPatrolData.activo ? 'true' : 'false'}
+                  onChange={(e) =>
+                    setEditPatrolData({
+                      ...editPatrolData,
+                      activo: e.target.value === 'true',
+                    })
+                  }
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 cursor-pointer"
+                >
+                  <option value="true">Activa</option>
+                  <option value="false">Inactiva</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditPatrolModalOpen(false);
+                    setEditPatrolData(null);
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingEditPatrol}
+                  className="bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-orange-950/50 cursor-pointer"
+                >
+                  {isSubmittingEditPatrol ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

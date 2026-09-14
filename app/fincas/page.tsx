@@ -53,6 +53,17 @@ export default function FincasPage() {
   const [formVariedad, setFormVariedad] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Estado para Edición de Lote
+  const [editingLote, setEditingLote] = useState<FarmLoteCatalog | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editFinca, setEditFinca] = useState('');
+  const [editLote, setEditLote] = useState('');
+  const [editHa, setEditHa] = useState('');
+  const [editMz, setEditMz] = useState('');
+  const [editVariedad, setEditVariedad] = useState('');
+  const [editActivo, setEditActivo] = useState(true);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+
   // Carga Masiva (Texto CSV / Tab)
   const [bulkDataText, setBulkDataText] = useState('');
   const [isProcessingBulk, setIsProcessingBulk] = useState(false);
@@ -62,7 +73,7 @@ export default function FincasPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Convertidor Ha <-> Mz en tiempo real en el formulario
+  // Convertidor Ha <-> Mz en tiempo real en formulario nuevo
   const handleHaChange = (val: string) => {
     setFormHa(val);
     const num = parseFloat(val);
@@ -80,6 +91,76 @@ export default function FincasPage() {
       setFormHa((num * 0.698896).toFixed(2));
     } else {
       setFormHa('');
+    }
+  };
+
+  // Convertidores para formulario de edición
+  const handleEditHaChange = (val: string) => {
+    setEditHa(val);
+    const num = parseFloat(val);
+    if (!isNaN(num) && num > 0) {
+      setEditMz((num * 1.4308).toFixed(2));
+    } else {
+      setEditMz('');
+    }
+  };
+
+  const handleEditMzChange = (val: string) => {
+    setEditMz(val);
+    const num = parseFloat(val);
+    if (!isNaN(num) && num > 0) {
+      setEditHa((num * 0.698896).toFixed(2));
+    } else {
+      setEditHa('');
+    }
+  };
+
+  const handleOpenEdit = (item: FarmLoteCatalog) => {
+    setEditingLote(item);
+    setEditFinca(item.finca);
+    setEditLote(item.lote);
+    setEditHa(item.area_ha ? item.area_ha.toString() : '');
+    setEditMz(item.area_mz ? item.area_mz.toString() : '');
+    setEditVariedad(item.variedad || '');
+    setEditActivo(item.activo !== false);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase || !editingLote?.id || !editFinca.trim() || !editLote.trim()) return;
+
+    try {
+      setIsSubmittingEdit(true);
+      const payload = {
+        finca: editFinca.trim(),
+        lote: editLote.trim(),
+        area_ha: parseFloat(editHa) || 0,
+        area_mz: parseFloat(editMz) || 0,
+        variedad: editVariedad.trim().toUpperCase() || null,
+        activo: editActivo,
+      };
+
+      const { error } = await supabase
+        .from('catalogo_fincas_lotes')
+        .update(payload)
+        .eq('id', editingLote.id);
+
+      if (error) {
+        if (error.code === '23505') {
+          throw new Error(`El lote "${payload.lote}" ya existe en la finca "${payload.finca}".`);
+        }
+        throw error;
+      }
+
+      showToast(`Lote ${payload.finca} - ${payload.lote} actualizado con éxito`);
+      setIsEditModalOpen(false);
+      setEditingLote(null);
+      loadLotes();
+    } catch (err: any) {
+      alert(`Error al actualizar lote: ${err.message}`);
+    } finally {
+      setIsSubmittingEdit(false);
     }
   };
 
@@ -551,16 +632,27 @@ export default function FincasPage() {
                       </td>
 
                       <td className="px-5 py-3.5 text-right">
-                        <button
-                          onClick={() => handleToggleLoteActive(item.id!, item.activo!)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition shadow-sm cursor-pointer ${
-                            item.activo
-                              ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
-                              : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                          }`}
-                        >
-                          {item.activo ? 'Desactivar' : 'Activar'}
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenEdit(item)}
+                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 border border-slate-700 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                            title="Editar datos del lote"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                            <span>Editar</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleToggleLoteActive(item.id!, item.activo!)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition shadow-sm cursor-pointer ${
+                              item.activo
+                                ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
+                                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                            }`}
+                          >
+                            {item.activo ? 'Desactivar' : 'Activar'}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -709,6 +801,134 @@ export default function FincasPage() {
                   className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-blue-950/50"
                 >
                   {isSubmitting ? 'Guardando...' : 'Guardar Lote'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL EDITAR LOTE EXISTENTE */}
+      {isEditModalOpen && editingLote && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-blue-400" />
+                <span>Editar Lote: {editingLote.finca} - {editingLote.lote}</span>
+              </h3>
+              <button
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setEditingLote(null);
+                }}
+                className="text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Nombre de la Finca *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editFinca}
+                  onChange={(e) => setEditFinca(e.target.value)}
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Número / Código de Lote *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editLote}
+                  onChange={(e) => setEditLote(e.target.value)}
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                    Área en Hectáreas (Ha)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="12.50"
+                    value={editHa}
+                    onChange={(e) => handleEditHaChange(e.target.value)}
+                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                    Área en Manzanas (Mz)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="17.88"
+                    value={editMz}
+                    onChange={(e) => handleEditMzChange(e.target.value)}
+                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Variedad de Caña
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: CP-72-2086"
+                  value={editVariedad}
+                  onChange={(e) => setEditVariedad(e.target.value)}
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Estado del Lote
+                </label>
+                <select
+                  value={editActivo ? 'true' : 'false'}
+                  onChange={(e) => setEditActivo(e.target.value === 'true')}
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                >
+                  <option value="true">Activo (Disponible para Quemas)</option>
+                  <option value="false">Inactivo (Deshabilitado)</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditModalOpen(false);
+                    setEditingLote(null);
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingEdit}
+                  className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-blue-950/50 cursor-pointer"
+                >
+                  {isSubmittingEdit ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
               </div>
             </form>
