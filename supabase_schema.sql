@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS public.perfiles_usuarios (
     rol TEXT NOT NULL DEFAULT 'pendiente' CHECK (
         rol IN ('admin', 'digitador', 'jefatura', 'supervisor_quemas', 'supervisor_frente', 'patrulla', 'pendiente')
     ),
-    telefono TEXT,
     frente_asignado TEXT,
     patrulla_asignada_id TEXT,
     activo BOOLEAN NOT NULL DEFAULT FALSE,
@@ -45,7 +44,6 @@ CREATE TABLE IF NOT EXISTS public.catalogo_patrullas (
     id TEXT PRIMARY KEY,
     nombre TEXT NOT NULL UNIQUE,
     nombre_lider TEXT NOT NULL,
-    telefono TEXT NOT NULL,
     codigo_vehiculo TEXT,
     estado TEXT NOT NULL DEFAULT 'DISPONIBLE' CHECK (estado IN ('DISPONIBLE', 'EN_FRENTE', 'EN_QUEMA')),
     activo BOOLEAN NOT NULL DEFAULT TRUE,
@@ -336,9 +334,9 @@ INSERT INTO public.catalogo_frentes (id, nombre, codigo, tipo_cosecha, superviso
 ('fr-25', 'Frente 25', 'FR-25', 'Mecanizada', 'Oslin Corina Mazariegos', 'Milton Pineda Ovalle')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.catalogo_patrullas (id, nombre, nombre_lider, telefono, codigo_vehiculo, estado) VALUES
-('pat-1', 'Patrulla Alfa', 'Juan Pérez', '+502 5555-0301', 'UNI-401', 'DISPONIBLE'),
-('pat-2', 'Patrulla Beta', 'Luis Morales', '+502 5555-0302', 'UNI-402', 'DISPONIBLE'),
-('pat-3', 'Patrulla Gamma', 'Pedro Ruiz', '+502 5555-0303', 'UNI-403', 'DISPONIBLE'),
-('pat-4', 'Patrulla Delta', 'Hugo Estrada', '+502 5555-0304', 'UNI-404', 'DISPONIBLE')
+INSERT INTO public.catalogo_patrullas (id, nombre, nombre_lider, codigo_vehiculo, estado) VALUES
+('pat-1', 'Patrulla Alfa', 'Juan Pérez', 'UNI-401', 'DISPONIBLE'),
+('pat-2', 'Patrulla Beta', 'Luis Morales', 'UNI-402', 'DISPONIBLE'),
+('pat-3', 'Patrulla Gamma', 'Pedro Ruiz', 'UNI-403', 'DISPONIBLE'),
+('pat-4', 'Patrulla Delta', 'Hugo Estrada', 'UNI-404', 'DISPONIBLE')
 ON CONFLICT (id) DO NOTHING;

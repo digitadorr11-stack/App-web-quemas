@@ -17,7 +17,6 @@ export default function LoginPage() {
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [regFullName, setRegFullName] = useState('');
   const [regEmail, setRegEmail] = useState('');
-  const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
 
   // UI status
@@ -99,7 +98,6 @@ export default function LoginPage() {
       await authService.registerUser({
         nombre_completo: regFullName.trim(),
         correo: regEmail.trim(),
-        telefono: regPhone.trim() || undefined,
         password: regPassword.trim(),
       });
 
@@ -252,22 +250,6 @@ export default function LoginPage() {
                   placeholder="nombre@launion.com"
                   className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
                   required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
-                TELÉFONO O EXTENSIÓN
-              </label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={regPhone}
-                  onChange={(e) => setRegPhone(e.target.value)}
-                  placeholder="+502 5555-0000 o Ext. 402"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
                 />
               </div>
             </div>

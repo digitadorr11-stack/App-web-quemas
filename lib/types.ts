@@ -25,7 +25,6 @@ export interface UserProfile {
   correo: string;
   nombre_completo: string;
   rol: UserRole;
-  telefono?: string;
   frente_asignado?: string; // Ej: "Frente 15"
   patrulla_asignada_id?: string;
   activo: boolean;
@@ -109,7 +108,6 @@ export interface PatrolCatalog {
   id: string;
   nombre: string;
   nombre_lider: string;
-  telefono: string;
   codigo_vehiculo?: string;
   estado: 'DISPONIBLE' | 'EN_FRENTE' | 'EN_QUEMA';
   activo: boolean;

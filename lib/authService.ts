@@ -37,11 +37,10 @@ export const authService = {
     nombre_completo: string;
     correo: string;
     password: string;
-    telefono?: string;
   }): Promise<void> {
     if (!supabase) throw new Error('Supabase no está configurado');
 
-    const { nombre_completo, correo, password, telefono } = params;
+    const { nombre_completo, correo, password } = params;
     const cleanEmail = correo.trim().toLowerCase();
 
     const { error } = await supabase.auth.signUp({
@@ -50,7 +49,6 @@ export const authService = {
       options: {
         data: {
           full_name: nombre_completo.trim(),
-          phone: telefono?.trim(),
         },
       },
     });
@@ -99,7 +97,6 @@ export const authService = {
       correo: profile.correo,
       nombre_completo: profile.nombre_completo,
       rol: profile.rol as UserRole,
-      telefono: profile.telefono,
       frente_asignado: profile.frente_asignado,
       patrulla_asignada_id: profile.patrulla_asignada_id,
       activo: profile.activo,
