@@ -21,6 +21,7 @@ import {
   Layers,
   AlertCircle,
   Truck,
+  Edit2,
 } from 'lucide-react';
 
 export default function UsuariosPage() {
@@ -35,9 +36,50 @@ export default function UsuariosPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Edición de usuario
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<UserProfile | null>(null);
+  const [isSubmittingEditUser, setIsSubmittingEditUser] = useState(false);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleOpenEditUser = (user: UserProfile) => {
+    setEditingUser({ ...user });
+    setIsEditUserModalOpen(true);
+  };
+
+  const handleSaveEditUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!supabase || !editingUser) return;
+    try {
+      setIsSubmittingEditUser(true);
+      const updatePayload: any = {
+        nombre_completo: editingUser.nombre_completo.trim(),
+        rol: editingUser.rol,
+        frente_asignado: editingUser.rol === 'supervisor_frente' ? editingUser.frente_asignado : null,
+        patrulla_asignada: editingUser.rol === 'patrulla' ? editingUser.patrulla_asignada : null,
+        activo: editingUser.activo,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('perfiles_usuarios')
+        .update(updatePayload)
+        .eq('id', editingUser.id);
+
+      if (error) throw error;
+      showToast(`Usuario "${editingUser.nombre_completo}" actualizado`);
+      setIsEditUserModalOpen(false);
+      setEditingUser(null);
+      loadUsers();
+    } catch (err: any) {
+      alert(`Error actualizando usuario: ${err.message}`);
+    } finally {
+      setIsSubmittingEditUser(false);
+    }
   };
 
   // Cargar usuario actual, verificar permisos y cargar lista
@@ -514,19 +556,29 @@ export default function UsuariosPage() {
                           </span>
                         </td>
 
-                        {/* Botón de Toggle Activar / Desactivar */}
+                        {/* Botones de Acción: Editar y Activar/Desactivar */}
                         <td className="px-5 py-4 text-right">
-                          <button
-                            onClick={() => handleToggleActive(u.id, u.activo)}
-                            disabled={isSelf}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                              u.activo
-                                ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
-                                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                            }`}
-                          >
-                            {u.activo ? 'Desactivar' : 'Aprobar Acceso'}
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleOpenEditUser(u)}
+                              className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-400 hover:text-purple-300 border border-slate-700 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                              title="Editar datos del usuario"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                              <span>Editar</span>
+                            </button>
+                            <button
+                              onClick={() => handleToggleActive(u.id, u.activo)}
+                              disabled={isSelf}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                                u.activo
+                                  ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
+                                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                              }`}
+                            >
+                              {u.activo ? 'Desactivar' : 'Aprobar Acceso'}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -536,8 +588,160 @@ export default function UsuariosPage() {
             </table>
           </div>
         </div>
-
       </main>
+
+      {/* MODAL EDITAR USUARIO */}
+      {isEditUserModalOpen && editingUser && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-purple-400" />
+                <span>Editar Usuario</span>
+              </h3>
+              <button
+                onClick={() => {
+                  setIsEditUserModalOpen(false);
+                  setEditingUser(null);
+                }}
+                className="text-slate-400 hover:text-white transition cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditUser} className="space-y-3">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Nombre Completo *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingUser.nombre_completo}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, nombre_completo: e.target.value })
+                  }
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Correo Electrónico
+                </label>
+                <input
+                  type="email"
+                  disabled
+                  value={editingUser.correo}
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 font-mono opacity-60 cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Rol Asignado
+                </label>
+                <select
+                  value={editingUser.rol}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, rol: e.target.value as UserRole })
+                  }
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                >
+                  <option value="pendiente">Pendiente de Aprobación</option>
+                  <option value="supervisor_frente">Supervisor de Frente</option>
+                  <option value="supervisor_quemas">Supervisor de Quemas</option>
+                  <option value="patrulla">Patrulla de Quema</option>
+                  <option value="digitador">Digitador</option>
+                  <option value="jefatura">Jefatura</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </div>
+
+              {editingUser.rol === 'supervisor_frente' && (
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                    Frente Asignado
+                  </label>
+                  <select
+                    value={editingUser.frente_asignado || ''}
+                    onChange={(e) =>
+                      setEditingUser({ ...editingUser, frente_asignado: e.target.value || undefined })
+                    }
+                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                  >
+                    <option value="">-- Sin Frente --</option>
+                    {fronts.map((f) => (
+                      <option key={f.nombre} value={f.nombre}>
+                        {f.nombre} ({f.tipo_cosecha})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {editingUser.rol === 'patrulla' && (
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                    Patrulla Asignada
+                  </label>
+                  <select
+                    value={editingUser.patrulla_asignada || ''}
+                    onChange={(e) =>
+                      setEditingUser({ ...editingUser, patrulla_asignada: e.target.value || undefined })
+                    }
+                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                  >
+                    <option value="">-- Sin Patrulla --</option>
+                    {patrols.map((p) => (
+                      <option key={p.nombre} value={p.nombre}>
+                        {p.nombre} {p.codigo_vehiculo ? `(${p.codigo_vehiculo})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Estado de la Cuenta
+                </label>
+                <select
+                  value={editingUser.activo ? 'true' : 'false'}
+                  onChange={(e) =>
+                    setEditingUser({ ...editingUser, activo: e.target.value === 'true' })
+                  }
+                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                >
+                  <option value="true">Activo (Autorizado)</option>
+                  <option value="false">Inactivo / Pendiente</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditUserModalOpen(false);
+                    setEditingUser(null);
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingEditUser}
+                  className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-purple-950/50 cursor-pointer"
+                >
+                  {isSubmittingEditUser ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
