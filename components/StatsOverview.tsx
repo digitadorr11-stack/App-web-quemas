@@ -31,6 +31,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
     sub: string;
     icon: React.ElementType;
     accent: string;
+    tinte: string;
   }[] = [
     {
       id: 'ALL',
@@ -38,7 +39,8 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
       value: total,
       sub: `${totalHa.toFixed(1)} Ha · ${totalMz.toFixed(1)} Mz`,
       icon: Activity,
-      accent: 'text-slate-300',
+      accent: 'text-slate-200',
+      tinte: 'bg-gradient-to-b from-[#121B2A] to-[#0A0F18]',
     },
     {
       id: 'SOLICITADA',
@@ -47,6 +49,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
       sub: 'Esperando patrulla',
       icon: Clock,
       accent: 'text-blue-400',
+      tinte: 'bg-blue-500/[0.05]',
     },
     {
       id: 'EN_CAMINO',
@@ -55,6 +58,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
       sub: 'Desplazándose al frente',
       icon: Truck,
       accent: 'text-amber-400',
+      tinte: 'bg-amber-500/[0.05]',
     },
     {
       id: 'EN_FRENTE_REVISION',
@@ -63,6 +67,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
       sub: 'Inspección técnica en sitio',
       icon: ShieldCheck,
       accent: 'text-orange-400',
+      tinte: 'bg-orange-500/[0.05]',
     },
     {
       id: 'EN_QUEMA',
@@ -71,6 +76,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
       sub: 'Fuego en desarrollo',
       icon: Flame,
       accent: 'text-rose-500',
+      tinte: 'bg-rose-500/[0.07]',
     },
   ];
 
@@ -84,11 +90,11 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
           <button
             key={c.id}
             onClick={() => onFilterChange(c.id)}
-            className={`p-3.5 rounded-lg border text-left transition-colors flex flex-col justify-between cursor-pointer bg-[#0B121E] ${
+            className={`p-3.5 rounded-lg border text-left transition-colors flex flex-col justify-between cursor-pointer ${c.tinte} ${
               isSelected
-                ? 'border-amber-600/70 ring-1 ring-amber-600/60 bg-slate-900'
-                : 'border-slate-800 hover:border-slate-700'
-            } ${isAlert ? 'border-rose-800/60' : ''}`}
+                ? 'border-amber-600/70 ring-1 ring-amber-600/60'
+                : 'border-slate-800/80 hover:border-slate-700'
+            } ${isAlert ? 'border-rose-800/50' : ''}`}
           >
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 truncate">{c.title}</span>

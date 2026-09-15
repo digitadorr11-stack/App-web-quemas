@@ -319,7 +319,13 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070C14] text-slate-100 font-sans">
+    <div
+      className="min-h-screen bg-[#070C14] text-slate-100 font-sans relative"
+      style={{
+        backgroundImage:
+          'radial-gradient(ellipse 1200px 600px at 50% -10%, rgba(30,58,95,0.25), transparent 60%), repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 40px)',
+      }}
+    >
       {toastMessage && (
         <div className="fixed top-4 right-4 z-50 bg-emerald-900/95 border border-emerald-700 text-emerald-100 px-4 py-3 rounded-md shadow-2xl flex items-center gap-2 text-sm font-semibold max-w-sm">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -331,7 +337,7 @@ export default function HomePage() {
 
       <div className={`transition-[padding] duration-200 ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'}`}>
         {/* Barra superior */}
-        <header className="h-14 bg-[#0B121E] border-b border-slate-800/80 px-4 flex items-center gap-3 sticky top-0 z-20">
+        <header className="h-14 bg-gradient-to-b from-[#101928] to-[#0A0F18] border-b border-slate-800/80 px-4 flex items-center gap-3 sticky top-0 z-20">
           <button
             onClick={() => setSidebarOpen((v) => !v)}
             className="w-8 h-8 rounded-md bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-200 transition shrink-0"
@@ -348,7 +354,7 @@ export default function HomePage() {
 
         <main className="max-w-[1600px] w-full mx-auto p-4 sm:p-6 space-y-5">
           {/* Banner operativo */}
-          <div className="bg-[#0B121E] border border-slate-800 rounded-lg p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="bg-gradient-to-b from-[#101928] to-[#0A0F18] border border-slate-800 rounded-lg p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -362,7 +368,7 @@ export default function HomePage() {
               {puedeCrear && (
                 <Link
                   href="/quemas/nueva"
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-md bg-amber-600 hover:bg-amber-500 border border-amber-500/40 text-white text-xs font-bold transition"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-md bg-amber-600 hover:bg-amber-500 border border-amber-500/40 text-white text-xs font-bold transition shadow-[0_0_20px_rgba(217,119,6,0.25)]"
                 >
                   <FilePlus2 className="w-4 h-4" />
                   Nueva Solicitud de Quema
@@ -429,7 +435,7 @@ export default function HomePage() {
 
           {/* Listado */}
           {listaFiltrada.length === 0 ? (
-            <div className="bg-[#0B121E] border border-slate-800 rounded-lg p-10 text-center">
+            <div className="bg-gradient-to-b from-[#101928] to-[#0A0F18] border border-slate-800 rounded-lg p-10 text-center">
               <p className="text-sm text-slate-500">No hay solicitudes que coincidan con este filtro.</p>
             </div>
           ) : vista === 'grid' ? (
@@ -442,7 +448,7 @@ export default function HomePage() {
                 return (
                   <div
                     key={s.id}
-                    className="bg-[#0B121E] border border-slate-800 rounded-md p-3.5 space-y-2.5 hover:border-slate-700 transition cursor-pointer"
+                    className="bg-gradient-to-b from-[#101928] to-[#0A0F18] border border-slate-800 rounded-md p-3.5 space-y-2.5 hover:border-slate-700 transition cursor-pointer"
                     onClick={() => setDetailTarget(s)}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -512,7 +518,7 @@ export default function HomePage() {
               })}
             </div>
           ) : (
-            <div className="bg-[#0B121E] border border-slate-800 rounded-lg overflow-x-auto">
+            <div className="bg-gradient-to-b from-[#101928] to-[#0A0F18] border border-slate-800 rounded-lg overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-slate-800 text-slate-500 uppercase text-[10px] tracking-widest">
@@ -579,7 +585,7 @@ export default function HomePage() {
       {/* Modal Despacho */}
       {dispatchTarget && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-lg p-6 w-full max-w-md space-y-4">
+          <div className="bg-gradient-to-b from-[#101928] to-[#0A0F18] border border-slate-800 rounded-lg p-6 w-full max-w-md space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-white">Despachar Patrulla</h3>
               <button onClick={() => setDispatchTarget(null)} className="text-slate-500 hover:text-slate-300">
@@ -643,7 +649,7 @@ export default function HomePage() {
       {/* Modal Cancelación */}
       {cancelTarget && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-lg p-6 w-full max-w-md space-y-4">
+          <div className="bg-gradient-to-b from-[#101928] to-[#0A0F18] border border-slate-800 rounded-lg p-6 w-full max-w-md space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-white">Cancelar Solicitud</h3>
               <button onClick={() => setCancelTarget(null)} className="text-slate-500 hover:text-slate-300">
@@ -693,7 +699,7 @@ export default function HomePage() {
       {/* Modal Detalle */}
       {detailTarget && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-lg p-6 w-full max-w-lg space-y-4 max-h-[85vh] overflow-y-auto">
+          <div className="bg-gradient-to-b from-[#101928] to-[#0A0F18] border border-slate-800 rounded-lg p-6 w-full max-w-lg space-y-4 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Info className="w-4 h-4 text-amber-500" />

@@ -12,11 +12,11 @@ interface PatrolAvailabilityMonitorProps {
 
 type EstadoPatrulla = 'DISPONIBLE' | 'EN_CAMINO' | 'EN_FRENTE' | 'EN_QUEMA';
 
-const ESTILO_ESTADO: Record<EstadoPatrulla, { label: string; dot: string; text: string; borde: string }> = {
-  DISPONIBLE: { label: 'Disponible', dot: 'bg-emerald-500', text: 'text-emerald-400', borde: 'border-l-emerald-600' },
-  EN_CAMINO: { label: 'En Camino', dot: 'bg-amber-500', text: 'text-amber-400', borde: 'border-l-amber-600' },
-  EN_FRENTE: { label: 'En Frente', dot: 'bg-orange-500', text: 'text-orange-400', borde: 'border-l-orange-600' },
-  EN_QUEMA: { label: 'En Quema', dot: 'bg-rose-500', text: 'text-rose-400', borde: 'border-l-rose-600' },
+const ESTILO_ESTADO: Record<EstadoPatrulla, { label: string; dot: string; text: string; borde: string; tinte: string }> = {
+  DISPONIBLE: { label: 'Disponible', dot: 'bg-emerald-500', text: 'text-emerald-400', borde: 'border-l-emerald-500', tinte: 'bg-emerald-500/[0.05]' },
+  EN_CAMINO: { label: 'En Camino', dot: 'bg-amber-500', text: 'text-amber-400', borde: 'border-l-amber-500', tinte: 'bg-amber-500/[0.06]' },
+  EN_FRENTE: { label: 'En Frente', dot: 'bg-orange-500', text: 'text-orange-400', borde: 'border-l-orange-500', tinte: 'bg-orange-500/[0.07]' },
+  EN_QUEMA: { label: 'En Quema', dot: 'bg-rose-500', text: 'text-rose-400', borde: 'border-l-rose-500', tinte: 'bg-rose-500/[0.09]' },
 };
 
 function minutosDesde(iso: string | undefined, now: Date): number {
@@ -69,7 +69,7 @@ export const PatrolAvailabilityMonitor: React.FC<PatrolAvailabilityMonitorProps>
   const countQuema = estados.filter((e) => e.tipo === 'EN_QUEMA').length;
 
   return (
-    <section className="bg-[#0B121E] border border-slate-800 rounded-lg">
+    <section className="bg-gradient-to-b from-[#111B2C] to-[#0A0F18] border border-slate-800/80 rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 py-4 border-b border-slate-800/80">
         <div className="flex items-center gap-2.5">
           <Radio className="w-3.5 h-3.5 text-amber-500 animate-pulse shrink-0" />
@@ -107,7 +107,7 @@ export const PatrolAvailabilityMonitor: React.FC<PatrolAvailabilityMonitorProps>
             return (
               <div
                 key={patrulla.nombre}
-                className={`bg-slate-900/50 border border-slate-800 border-l-[3px] ${s.borde} rounded-md p-3.5 flex flex-col justify-between`}
+                className={`${s.tinte} border border-slate-800/80 border-l-[3px] ${s.borde} rounded-md p-3.5 flex flex-col justify-between transition-colors hover:border-slate-700`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-1 mb-2">

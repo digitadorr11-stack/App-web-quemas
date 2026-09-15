@@ -41,12 +41,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, open, onClose, on
       {open && <div className="fixed inset-0 bg-black/60 z-30 lg:hidden" onClick={onClose} />}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0B121E] border-r border-slate-800/80 flex flex-col transition-transform duration-200 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-[#111B2C] to-[#080B12] border-r border-slate-800/80 flex flex-col transition-transform duration-200 shadow-[inset_-1px_0_0_rgba(255,255,255,0.02)] ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="h-16 flex items-center gap-2.5 px-4 border-b border-slate-800/80 shrink-0">
-          <div className="w-8 h-8 rounded-md bg-amber-500/10 border border-amber-700/40 flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 rounded-md bg-amber-500/10 border border-amber-700/40 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(245,158,11,0.15)]">
             <Flame className="w-4 h-4 text-amber-500" />
           </div>
           <div className="min-w-0">
