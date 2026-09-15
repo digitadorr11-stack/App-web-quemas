@@ -1,0 +1,492 @@
+'use client';
+
+import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { authService } from '@/lib/authService';
+import { quemasService } from '@/lib/quemasService';
+import { supabase } from '@/lib/supabaseClient';
+import {
+  BurnRequest,
+  PatrolCatalog,
+  UserProfile,
+  BurnStatus,
+  ESTADOS_CONFIG,
+  PRIORIDADES_CONFIG,
+  MOTIVOS_CANCELACION_ESTANDAR,
+} from '@/lib/types';
+import {
+  Flame,
+  ArrowLeft,
+  Truck,
+  Clock,
+  MapPin,
+  Layers,
+  X,
+  CheckCircle2,
+  AlertTriangle,
+  Loader2,
+  Ban,
+  User,
+  Timer,
+} from 'lucide-react';
+
+const ROLES_PERMITIDOS = ['supervisor_quemas', 'digitador', 'admin', 'jefatura', 'supervisor_frente'];
+const ROLES_DESPACHO = ['supervisor_quemas', 'digitador', 'admin'];
+const ROLES_CANCELACION = ['supervisor_frente', 'supervisor_quemas', 'digitador', 'admin'];
+
+function minutosDesde(iso?: string): number {
+  if (!iso) return 0;
+  return Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+}
+
+function formatearMinutos(min: number): string {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${h}h ${m}m`;
+}
+
+function formatearHora(iso?: string): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleTimeString('es-GT', { hour: '2-digit', minute: '2-digit' });
+}
+
+const COLUMNAS: { estados: BurnStatus[]; titulo: string }[] = [
+  { estados: ['SOLICITADA'], titulo: 'Pendientes de Despacho' },
+  { estados: ['PATRULLA_ASIGNADA'], titulo: 'En Camino' },
+  { estados: ['EN_FRENTE', 'EN_REVISION'], titulo: 'En Frente / Revisión' },
+  { estados: ['EN_QUEMA'], titulo: 'En Quema' },
+  { estados: ['FINALIZADA'], titulo: 'Finalizadas Hoy' },
+];
+
+export default function TableroDespachoPage() {
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [solicitudes, setSolicitudes] = useState<BurnRequest[]>([]);
+  const [patrullas, setPatrullas] = useState<PatrolCatalog[]>([]);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [, setTick] = useState(0);
+
+  // Modal de despacho
+  const [dispatchTarget, setDispatchTarget] = useState<BurnRequest | null>(null);
+  const [selectedPatrulla, setSelectedPatrulla] = useState('');
+  const [selectedLider, setSelectedLider] = useState('');
+  const [isDispatching, setIsDispatching] = useState(false);
+
+  // Modal de cancelación
+  const [cancelTarget, setCancelTarget] = useState<BurnRequest | null>(null);
+  const [motivoCancelacion, setMotivoCancelacion] = useState('');
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const loadSolicitudes = async () => {
+    try {
+      const data = await quemasService.listarSolicitudes();
+      setSolicitudes(data);
+    } catch (err) {
+      console.error('Error cargando solicitudes:', err);
+    }
+  };
+
+  const loadPatrullas = async () => {
+    if (!supabase) return;
+    const { data } = await supabase.from('catalogo_patrullas').select('*').eq('activo', true).order('nombre');
+    setPatrullas((data || []) as PatrolCatalog[]);
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        setIsLoading(true);
+        const user = await authService.getCurrentUserProfile();
+        if (!user || !user.activo) {
+          router.push('/login');
+          return;
+        }
+        if (!ROLES_PERMITIDOS.includes(user.rol)) {
+          router.push('/');
+          return;
+        }
+        setCurrentUser(user);
+        await Promise.all([loadSolicitudes(), loadPatrullas()]);
+      } catch (err) {
+        console.error('Error inicializando tablero:', err);
+        router.push('/');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    init();
+
+    if (supabase) {
+      const channelSolicitudes = supabase
+        .channel('realtime_solicitudes_quemas')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'solicitudes_quemas' }, () => loadSolicitudes())
+        .subscribe();
+
+      const channelPatrullas = supabase
+        .channel('realtime_catalogo_patrullas_tablero')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'catalogo_patrullas' }, () => loadPatrullas())
+        .subscribe();
+
+      return () => {
+        supabase?.removeChannel(channelSolicitudes);
+        supabase?.removeChannel(channelPatrullas);
+      };
+    }
+  }, [router]);
+
+  // Reloj para indicadores de tiempo en vivo
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const gruposPorEstado = useMemo(() => {
+    const activas = solicitudes.filter((s) => s.estado !== 'CANCELADA');
+    const map: Record<string, BurnRequest[]> = {};
+    for (const col of COLUMNAS) {
+      map[col.titulo] = activas.filter((s) => col.estados.includes(s.estado));
+    }
+    return map;
+  }, [solicitudes]);
+
+  const canceladas = useMemo(() => solicitudes.filter((s) => s.estado === 'CANCELADA').slice(0, 10), [solicitudes]);
+
+  const patrullasDisponibles = useMemo(() => patrullas.filter((p) => p.estado === 'DISPONIBLE' && p.activo), [patrullas]);
+
+  const puedeDespachar = currentUser ? ROLES_DESPACHO.includes(currentUser.rol) : false;
+  const puedeCancelar = currentUser ? ROLES_CANCELACION.includes(currentUser.rol) : false;
+
+  const abrirDespacho = (solicitud: BurnRequest) => {
+    setErrorMessage(null);
+    setSelectedPatrulla('');
+    setSelectedLider('');
+    setDispatchTarget(solicitud);
+  };
+
+  const confirmarDespacho = async () => {
+    if (!dispatchTarget || !selectedPatrulla) return;
+    try {
+      setIsDispatching(true);
+      await quemasService.despacharPatrulla(dispatchTarget.id, selectedPatrulla, selectedLider.trim() || null);
+      showToast(`Patrulla ${selectedPatrulla} despachada a ${dispatchTarget.numero_quema}`);
+      setDispatchTarget(null);
+      loadSolicitudes();
+      loadPatrullas();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Error al despachar la patrulla');
+    } finally {
+      setIsDispatching(false);
+    }
+  };
+
+  const abrirCancelacion = (solicitud: BurnRequest) => {
+    setErrorMessage(null);
+    setMotivoCancelacion('');
+    setCancelTarget(solicitud);
+  };
+
+  const confirmarCancelacion = async () => {
+    if (!cancelTarget || !motivoCancelacion) return;
+    try {
+      setIsCancelling(true);
+      await quemasService.cancelarSolicitud(cancelTarget.id, motivoCancelacion);
+      showToast(`Solicitud ${cancelTarget.numero_quema} cancelada`);
+      setCancelTarget(null);
+      loadSolicitudes();
+      loadPatrullas();
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Error al cancelar la solicitud');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#070C14] flex flex-col items-center justify-center text-slate-300">
+        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-sm font-semibold tracking-wide">Cargando tablero operativo...</p>
+      </div>
+    );
+  }
+
+  if (!currentUser) return null;
+
+  return (
+    <div className="min-h-screen bg-[#070C14] text-slate-100 font-sans pb-16">
+      {toastMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-emerald-900/95 border border-emerald-500/40 text-emerald-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-sm font-semibold max-w-sm">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      <header className="bg-[#0B121E] border-b border-slate-800/80 px-4 sm:px-6 py-4 flex items-center gap-3 sticky top-0 z-30">
+        <Link
+          href="/"
+          className="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center text-slate-300"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Link>
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-800 to-amber-600 border border-amber-400/30 flex items-center justify-center shadow-lg">
+          <Truck className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <h1 className="text-sm font-black tracking-tight text-white leading-tight">Tablero de Despacho y Monitoreo</h1>
+          <p className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+            {solicitudes.filter((s) => !['FINALIZADA', 'CANCELADA'].includes(s.estado)).length} solicitudes activas
+          </p>
+        </div>
+      </header>
+
+      <main className="max-w-[1600px] mx-auto p-4 sm:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+          {COLUMNAS.map((col) => {
+            const items = gruposPorEstado[col.titulo] || [];
+            return (
+              <div key={col.titulo} className="bg-[#0B121E] border border-slate-800 rounded-3xl p-4 flex flex-col min-h-[200px]">
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">{col.titulo}</h3>
+                  <span className="text-[10px] font-black bg-slate-900 text-slate-300 border border-slate-800 rounded-full px-2 py-0.5">
+                    {items.length}
+                  </span>
+                </div>
+
+                <div className="space-y-3 flex-1">
+                  {items.length === 0 && (
+                    <p className="text-xs text-slate-600 text-center py-8">Sin solicitudes</p>
+                  )}
+                  {items.map((s) => {
+                    const estadoInfo = ESTADOS_CONFIG[s.estado];
+                    const prioridadInfo = PRIORIDADES_CONFIG[s.prioridad];
+                    const tiempoRespuesta = s.hora_asignacion
+                      ? Math.round((new Date(s.hora_asignacion).getTime() - new Date(s.hora_solicitud).getTime()) / 60000)
+                      : minutosDesde(s.hora_solicitud);
+                    const colorTiempo = s.hora_asignacion
+                      ? 'text-emerald-400'
+                      : tiempoRespuesta < 15
+                      ? 'text-emerald-400'
+                      : tiempoRespuesta < 30
+                      ? 'text-amber-400'
+                      : 'text-rose-400';
+
+                    return (
+                      <div
+                        key={s.id}
+                        className="bg-slate-900/70 border border-slate-800 rounded-2xl p-3.5 space-y-2.5 hover:border-slate-700 transition"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="text-xs font-black text-white font-mono">{s.numero_quema}</p>
+                            <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                              <Layers className="w-3 h-3" /> {s.numero_frente}
+                            </p>
+                          </div>
+                          <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold border shrink-0 ${prioridadInfo.badgeColor}`}>
+                            {prioridadInfo.label}
+                          </span>
+                        </div>
+
+                        <p className="text-[11px] text-slate-300 flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
+                          <span className="truncate">{s.nombre_finca} · {s.lote_um}</span>
+                        </p>
+
+                        <div className="flex items-center justify-between text-[11px] text-slate-400">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> Plan: {formatearHora(s.hora_planificada)}
+                          </span>
+                          <span className={`flex items-center gap-1 font-bold ${colorTiempo}`}>
+                            <Timer className="w-3 h-3" /> {formatearMinutos(tiempoRespuesta)}
+                          </span>
+                        </div>
+
+                        {s.nombre_patrulla_asignada && (
+                          <p className="text-[11px] text-orange-300 flex items-center gap-1">
+                            <Truck className="w-3 h-3" /> {s.nombre_patrulla_asignada}
+                            {s.lider_patrulla ? ` · ${s.lider_patrulla}` : ''}
+                          </p>
+                        )}
+
+                        {s.motivo_espera && s.estado !== 'FINALIZADA' && (
+                          <p className="text-[10px] text-amber-400/90 bg-amber-950/40 border border-amber-900/50 rounded-lg px-2 py-1">
+                            En espera: {s.motivo_espera}
+                          </p>
+                        )}
+
+                        <div className="flex items-center justify-between pt-1">
+                          <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold border ${estadoInfo.badgeColor}`}>
+                            {estadoInfo.label}
+                          </span>
+
+                          <div className="flex items-center gap-1.5">
+                            {s.estado === 'SOLICITADA' && puedeDespachar && (
+                              <button
+                                onClick={() => abrirDespacho(s)}
+                                className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-blue-950 text-blue-300 border border-blue-800 hover:bg-blue-900 transition"
+                              >
+                                Despachar
+                              </button>
+                            )}
+                            {puedeCancelar && !['FINALIZADA', 'CANCELADA'].includes(s.estado) && (
+                              <button
+                                onClick={() => abrirCancelacion(s)}
+                                className="text-[10px] font-bold p-1.5 rounded-lg bg-rose-950/60 text-rose-400 border border-rose-900 hover:bg-rose-950 transition"
+                                title="Cancelar solicitud"
+                              >
+                                <Ban className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {canceladas.length > 0 && (
+          <div className="mt-6 bg-[#0B121E] border border-slate-800 rounded-3xl p-5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Canceladas Recientes</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {canceladas.map((s) => (
+                <div key={s.id} className="bg-slate-900/50 border border-slate-800/80 rounded-xl px-3 py-2.5 text-[11px] text-slate-500">
+                  <p className="font-mono font-bold text-slate-400">{s.numero_quema}</p>
+                  <p className="truncate">{s.nombre_finca} · {s.lote_um}</p>
+                  <p className="text-rose-500/80 truncate">{s.motivo_cancelacion}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Modal Despacho */}
+      {dispatchTarget && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-white">Despachar Patrulla</h3>
+              <button onClick={() => setDispatchTarget(null)} className="text-slate-500 hover:text-slate-300">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-300">
+              <p className="font-mono font-bold text-white">{dispatchTarget.numero_quema}</p>
+              <p>{dispatchTarget.nombre_finca} · {dispatchTarget.lote_um} · {dispatchTarget.numero_frente}</p>
+            </div>
+
+            {errorMessage && (
+              <div className="bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl p-3 text-xs flex items-start gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {errorMessage}
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-semibold text-slate-500">Patrulla Disponible</span>
+              <select
+                value={selectedPatrulla}
+                onChange={(e) => setSelectedPatrulla(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Seleccione una patrulla...</option>
+                {patrullasDisponibles.map((p) => (
+                  <option key={p.nombre} value={p.nombre}>
+                    {p.nombre} {p.codigo_vehiculo ? `(${p.codigo_vehiculo})` : ''}
+                  </option>
+                ))}
+              </select>
+              {patrullasDisponibles.length === 0 && (
+                <p className="text-[11px] text-amber-400">No hay patrullas disponibles en este momento.</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-semibold text-slate-500">Líder de Patrulla (opcional)</span>
+              <input
+                type="text"
+                value={selectedLider}
+                onChange={(e) => setSelectedLider(e.target.value)}
+                placeholder="Nombre del encargado"
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <button
+              onClick={confirmarDespacho}
+              disabled={!selectedPatrulla || isDispatching}
+              className="w-full flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-white font-bold text-sm py-3.5 rounded-xl transition"
+            >
+              {isDispatching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />}
+              Confirmar Despacho
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Cancelación */}
+      {cancelTarget && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-black text-white">Cancelar Solicitud</h3>
+              <button onClick={() => setCancelTarget(null)} className="text-slate-500 hover:text-slate-300">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-300">
+              <p className="font-mono font-bold text-white">{cancelTarget.numero_quema}</p>
+              <p>{cancelTarget.nombre_finca} · {cancelTarget.lote_um}</p>
+            </div>
+
+            {errorMessage && (
+              <div className="bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl p-3 text-xs flex items-start gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {errorMessage}
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-semibold text-slate-500">Motivo de Cancelación</span>
+              <select
+                value={motivoCancelacion}
+                onChange={(e) => setMotivoCancelacion(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-rose-500"
+              >
+                <option value="">Seleccione un motivo...</option>
+                {MOTIVOS_CANCELACION_ESTANDAR.map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={confirmarCancelacion}
+              disabled={!motivoCancelacion || isCancelling}
+              className="w-full flex items-center justify-center gap-2 bg-rose-800 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-sm py-3.5 rounded-xl transition"
+            >
+              {isCancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
+              Confirmar Cancelación
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

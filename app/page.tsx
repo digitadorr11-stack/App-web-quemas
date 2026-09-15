@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/lib/authService';
 import { UserProfile, ROLES_CONFIG } from '@/lib/types';
-import { Flame, LogOut, User, Sparkles, Shield, Clock, CheckCircle2, ChevronRight, Activity, Users, Layers, MapPin } from 'lucide-react';
+import { Flame, LogOut, User, Sparkles, Shield, Clock, CheckCircle2, ChevronRight, Activity, Users, Layers, MapPin, Truck, FilePlus2, Smartphone } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
@@ -80,31 +80,60 @@ export default function HomePage() {
 
         {/* User Badge and Logout */}
         <div className="flex items-center gap-3">
-          {(currentUser.rol === 'admin' || currentUser.rol === 'digitador') && (
-            <nav className="hidden lg:flex items-center gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+          <nav className="hidden lg:flex items-center gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+            {['supervisor_frente', 'supervisor_quemas', 'digitador', 'admin'].includes(currentUser.rol) && (
               <Link
-                href="/usuarios"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-300 hover:bg-purple-950/60 transition"
+                href="/quemas/nueva"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-orange-300 hover:bg-orange-950/60 transition"
               >
-                <Users className="w-3.5 h-3.5" />
-                <span>Usuarios</span>
+                <FilePlus2 className="w-3.5 h-3.5" />
+                <span>Nueva Solicitud</span>
               </Link>
+            )}
+            {['supervisor_quemas', 'digitador', 'admin', 'jefatura', 'supervisor_frente'].includes(currentUser.rol) && (
               <Link
-                href="/constantes"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-300 hover:bg-emerald-950/60 transition"
+                href="/quemas"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-300 hover:bg-amber-950/60 transition"
               >
-                <Layers className="w-3.5 h-3.5" />
-                <span>Constantes</span>
+                <Truck className="w-3.5 h-3.5" />
+                <span>Despacho</span>
               </Link>
+            )}
+            {['patrulla', 'supervisor_quemas', 'digitador', 'admin'].includes(currentUser.rol) && (
               <Link
-                href="/fincas"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-300 hover:bg-blue-950/60 transition"
+                href="/campo"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-300 hover:bg-rose-950/60 transition"
               >
-                <MapPin className="w-3.5 h-3.5" />
-                <span>Fincas & Lotes</span>
+                <Smartphone className="w-3.5 h-3.5" />
+                <span>Campo</span>
               </Link>
-            </nav>
-          )}
+            )}
+            {(currentUser.rol === 'admin' || currentUser.rol === 'digitador') && (
+              <>
+                <Link
+                  href="/usuarios"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-300 hover:bg-purple-950/60 transition"
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Usuarios</span>
+                </Link>
+                <Link
+                  href="/constantes"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-300 hover:bg-emerald-950/60 transition"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Constantes</span>
+                </Link>
+                <Link
+                  href="/fincas"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-300 hover:bg-blue-950/60 transition"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>Fincas & Lotes</span>
+                </Link>
+              </>
+            )}
+          </nav>
 
           <div className="hidden sm:flex flex-col text-right">
             <span className="text-xs font-bold text-slate-200">
@@ -145,6 +174,107 @@ export default function HomePage() {
             </p>
           </div>
         </div>
+
+        {/* Operación en Tiempo Real de Zafra */}
+        {(['supervisor_frente', 'supervisor_quemas', 'digitador', 'admin', 'jefatura', 'patrulla'].includes(currentUser.rol)) && (
+          <div className="space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Operación en Tiempo Real
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {['supervisor_frente', 'supervisor_quemas', 'digitador', 'admin'].includes(currentUser.rol) && (
+                <Link
+                  href="/quemas/nueva"
+                  className="bg-[#0B121E] hover:bg-slate-900/60 border border-slate-800 hover:border-orange-500/50 rounded-3xl p-6 transition flex flex-col justify-between group shadow-xl"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="w-12 h-12 rounded-2xl bg-orange-600/20 text-orange-400 border border-orange-500/30 flex items-center justify-center group-hover:scale-105 transition">
+                        <FilePlus2 className="w-6 h-6" />
+                      </div>
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-orange-950 text-orange-300 border border-orange-800">
+                        Solicitud
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-white group-hover:text-orange-300 transition">
+                        Nueva Solicitud de Quema
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Registro de solicitud de quema con finca, lote, hora planificada y prioridad.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold text-orange-400">
+                    <span>Solicitar Quema</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+                  </div>
+                </Link>
+              )}
+
+              {['supervisor_quemas', 'digitador', 'admin', 'jefatura', 'supervisor_frente'].includes(currentUser.rol) && (
+                <Link
+                  href="/quemas"
+                  className="bg-[#0B121E] hover:bg-slate-900/60 border border-slate-800 hover:border-amber-500/50 rounded-3xl p-6 transition flex flex-col justify-between group shadow-xl"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-600/20 text-amber-400 border border-amber-500/30 flex items-center justify-center group-hover:scale-105 transition">
+                        <Truck className="w-6 h-6" />
+                      </div>
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">
+                        Despacho
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-white group-hover:text-amber-300 transition">
+                        Tablero de Despacho
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Monitoreo en tiempo real, asignación de patrullas y tiempos de respuesta.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold text-amber-400">
+                    <span>Ver Tablero</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+                  </div>
+                </Link>
+              )}
+
+              {['patrulla', 'supervisor_quemas', 'digitador', 'admin'].includes(currentUser.rol) && (
+                <Link
+                  href="/campo"
+                  className="bg-[#0B121E] hover:bg-slate-900/60 border border-slate-800 hover:border-rose-500/50 rounded-3xl p-6 transition flex flex-col justify-between group shadow-xl"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="w-12 h-12 rounded-2xl bg-rose-600/20 text-rose-400 border border-rose-500/30 flex items-center justify-center group-hover:scale-105 transition">
+                        <Smartphone className="w-6 h-6" />
+                      </div>
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800">
+                        Campo
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="text-base font-bold text-white group-hover:text-rose-300 transition">
+                        Vista de Campo
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Ejecución móvil: llegada, espera, revisión y cierre de la quema asignada.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold text-rose-400">
+                    <span>Abrir Vista de Campo</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+                  </div>
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Cuadrícula de Módulos Operativos y Administrativos */}
         <div className="space-y-4">

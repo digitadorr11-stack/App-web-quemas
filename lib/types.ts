@@ -20,6 +20,8 @@ export type BurnStatus =
   | 'FINALIZADA'
   | 'CANCELADA';
 
+export type Prioridad = 'NORMAL' | 'ALTA' | 'URGENTE';
+
 export interface UserProfile {
   id: string; // UUID de auth.users
   correo: string;
@@ -52,6 +54,9 @@ export interface BurnRequest {
   area_manzanas: number;
   variedad_cana?: string;
   tonelaje_estimado?: number;
+  tipo_cosecha: 'Mecanizada' | 'Manual' | 'Mixta';
+  observaciones_solicitud?: string;
+  prioridad: Prioridad;
 
   // 1. Solicitud y Planificación
   hora_solicitud: string;
@@ -189,4 +194,66 @@ export const ROLES_CONFIG: Record<UserRole, { label: string; badgeColor: string;
     badgeColor: 'bg-slate-900 text-slate-400 border-slate-700',
     description: 'Cuenta registrada en espera de activación por el Administrador.',
   },
+};
+
+export const PRIORIDADES_CONFIG: Record<Prioridad, { label: string; badgeColor: string }> = {
+  NORMAL: { label: 'Normal', badgeColor: 'bg-slate-800 text-slate-300 border-slate-700' },
+  ALTA: { label: 'Alta', badgeColor: 'bg-amber-950 text-amber-300 border-amber-800' },
+  URGENTE: { label: 'Urgente', badgeColor: 'bg-rose-950 text-rose-300 border-rose-800' },
+};
+
+export const ESTADOS_CONFIG: Record<BurnStatus, { label: string; badgeColor: string; dotColor: string }> = {
+  SOLICITADA: {
+    label: 'Solicitada',
+    badgeColor: 'bg-slate-800 text-slate-300 border-slate-700',
+    dotColor: 'bg-slate-400',
+  },
+  PATRULLA_ASIGNADA: {
+    label: 'Patrulla Asignada',
+    badgeColor: 'bg-blue-950 text-blue-300 border-blue-800',
+    dotColor: 'bg-blue-400',
+  },
+  EN_FRENTE: {
+    label: 'En Frente',
+    badgeColor: 'bg-orange-950 text-orange-300 border-orange-800',
+    dotColor: 'bg-orange-400',
+  },
+  EN_REVISION: {
+    label: 'En Revisión',
+    badgeColor: 'bg-amber-950 text-amber-300 border-amber-800',
+    dotColor: 'bg-amber-400',
+  },
+  EN_QUEMA: {
+    label: 'En Quema',
+    badgeColor: 'bg-rose-950 text-rose-300 border-rose-800',
+    dotColor: 'bg-rose-400',
+  },
+  FINALIZADA: {
+    label: 'Finalizada',
+    badgeColor: 'bg-emerald-950 text-emerald-300 border-emerald-800',
+    dotColor: 'bg-emerald-400',
+  },
+  CANCELADA: {
+    label: 'Cancelada',
+    badgeColor: 'bg-slate-900 text-slate-500 border-slate-800',
+    dotColor: 'bg-slate-600',
+  },
+};
+
+export const CHECKLIST_REVISION_LABELS: Record<keyof ReviewChecklist, string> = {
+  guardarrayas_limpias: 'Guardarrayas limpias',
+  humedad_adecuada: 'Humedad adecuada',
+  viento_favorable: 'Viento favorable',
+  cultivos_vecinos_protegidos: 'Cultivos vecinos protegidos',
+  equipo_extincion_listo: 'Equipo de extinción listo',
+  cisterna_disponible: 'Cisterna disponible',
+};
+
+export const CHECKLIST_REVISION_DEFAULT: ReviewChecklist = {
+  guardarrayas_limpias: false,
+  humedad_adecuada: false,
+  viento_favorable: false,
+  cultivos_vecinos_protegidos: false,
+  equipo_extincion_listo: false,
+  cisterna_disponible: false,
 };
