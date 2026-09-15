@@ -30,8 +30,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
     value: number;
     sub: string;
     icon: React.ElementType;
-    color: string;
-    activeColor: string;
+    accent: string;
   }[] = [
     {
       id: 'ALL',
@@ -39,8 +38,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
       value: total,
       sub: `${totalHa.toFixed(1)} Ha · ${totalMz.toFixed(1)} Mz`,
       icon: Activity,
-      color: 'bg-[#0B121E] border-slate-800 text-slate-300 hover:border-slate-600',
-      activeColor: 'ring-2 ring-slate-400 bg-slate-900',
+      accent: 'text-slate-300',
     },
     {
       id: 'SOLICITADA',
@@ -48,8 +46,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
       value: solicitadas,
       sub: 'Esperando patrulla',
       icon: Clock,
-      color: 'bg-blue-950/30 border-blue-900/70 text-blue-300 hover:border-blue-600',
-      activeColor: 'ring-2 ring-blue-500 bg-blue-950/70',
+      accent: 'text-blue-400',
     },
     {
       id: 'EN_CAMINO',
@@ -57,8 +54,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
       value: enCamino,
       sub: 'Desplazándose al frente',
       icon: Truck,
-      color: 'bg-amber-950/30 border-amber-900/70 text-amber-300 hover:border-amber-600',
-      activeColor: 'ring-2 ring-amber-500 bg-amber-950/70',
+      accent: 'text-amber-400',
     },
     {
       id: 'EN_FRENTE_REVISION',
@@ -66,8 +62,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
       value: enFrenteRevision,
       sub: 'Inspección técnica en sitio',
       icon: ShieldCheck,
-      color: 'bg-orange-950/30 border-orange-900/70 text-orange-300 hover:border-orange-600',
-      activeColor: 'ring-2 ring-orange-500 bg-orange-950/70',
+      accent: 'text-orange-400',
     },
     {
       id: 'EN_QUEMA',
@@ -75,31 +70,33 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ solicitudes, activ
       value: enQuema,
       sub: 'Fuego en desarrollo',
       icon: Flame,
-      color: 'bg-rose-950/30 border-rose-900/70 text-rose-300 hover:border-rose-600',
-      activeColor: `ring-2 ring-rose-500 bg-rose-950/70 ${enQuema > 0 ? 'animate-pulse' : ''}`,
+      accent: 'text-rose-500',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
       {cards.map((c) => {
         const Icon = c.icon;
         const isSelected = activeFilter === c.id;
+        const isAlert = c.id === 'EN_QUEMA' && c.value > 0;
         return (
           <button
             key={c.id}
             onClick={() => onFilterChange(c.id)}
-            className={`p-3.5 rounded-2xl border text-left transition-all hover:scale-[1.02] shadow-sm flex flex-col justify-between cursor-pointer ${c.color} ${
-              isSelected ? c.activeColor : ''
-            }`}
+            className={`p-3.5 rounded-lg border text-left transition-colors flex flex-col justify-between cursor-pointer bg-[#0B121E] ${
+              isSelected
+                ? 'border-amber-600/70 ring-1 ring-amber-600/60 bg-slate-900'
+                : 'border-slate-800 hover:border-slate-700'
+            } ${isAlert ? 'border-rose-800/60' : ''}`}
           >
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider opacity-90 truncate">{c.title}</span>
-              <Icon className="w-4 h-4 opacity-80 shrink-0" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 truncate">{c.title}</span>
+              <Icon className={`w-3.5 h-3.5 shrink-0 ${c.accent} ${isAlert ? 'animate-pulse' : ''}`} />
             </div>
-            <div className="mt-2.5">
-              <div className="text-2xl font-black tracking-tight text-white">{c.value}</div>
-              <div className="text-[10px] opacity-80 font-medium truncate mt-0.5">{c.sub}</div>
+            <div className="mt-2">
+              <div className={`text-2xl font-bold tracking-tight ${c.accent}`}>{c.value}</div>
+              <div className="text-[10px] text-slate-500 font-medium truncate mt-0.5">{c.sub}</div>
             </div>
           </button>
         );
