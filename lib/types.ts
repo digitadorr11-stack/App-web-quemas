@@ -161,82 +161,82 @@ export const MOTIVOS_CANCELACION_ESTANDAR = [
 export const ROLES_CONFIG: Record<UserRole, { label: string; badgeColor: string; description: string }> = {
   admin: {
     label: 'Administrador del Sistema',
-    badgeColor: 'bg-rose-950 text-rose-300 border-rose-800',
+    badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
     description: 'Control total de configuración, seguridad y usuarios.',
   },
   digitador: {
     label: 'Digitador de Quemas',
-    badgeColor: 'bg-purple-950 text-purple-300 border-purple-800',
+    badgeColor: 'bg-violet-50 text-violet-700 border-violet-200',
     description: 'Administración de usuarios, catálogos maestros y auditoría.',
   },
   jefatura: {
     label: 'Jefatura / Gerencia',
-    badgeColor: 'bg-emerald-950 text-emerald-300 border-emerald-800',
+    badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     description: 'Supervisión ejecutiva, indicadores y reportes a Excel.',
   },
   supervisor_quemas: {
     label: 'Supervisor de Quemas',
-    badgeColor: 'bg-amber-950 text-amber-300 border-amber-800',
+    badgeColor: 'bg-amber-50 text-amber-700 border-amber-200',
     description: 'Monitoreo de solicitudes y despacho/asignación de patrullas.',
   },
   supervisor_frente: {
     label: 'Supervisor de Frente',
-    badgeColor: 'bg-blue-950 text-blue-300 border-blue-800',
+    badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
     description: 'Creación de solicitudes con hora planificada para su frente.',
   },
   patrulla: {
     label: 'Patrulla de Quema',
-    badgeColor: 'bg-orange-950 text-orange-300 border-orange-800',
+    badgeColor: 'bg-orange-50 text-orange-700 border-orange-200',
     description: 'Ejecución en campo: llegada, esperas, revisión, quema y cierre.',
   },
   pendiente: {
     label: 'Pendiente de Aprobación',
-    badgeColor: 'bg-slate-900 text-slate-400 border-slate-700',
+    badgeColor: 'bg-slate-100 text-slate-500 border-slate-200',
     description: 'Cuenta registrada en espera de activación por el Administrador.',
   },
 };
 
 export const PRIORIDADES_CONFIG: Record<Prioridad, { label: string; badgeColor: string }> = {
-  NORMAL: { label: 'Normal', badgeColor: 'bg-slate-800 text-slate-300 border-slate-700' },
-  ALTA: { label: 'Alta', badgeColor: 'bg-amber-950 text-amber-300 border-amber-800' },
-  URGENTE: { label: 'Urgente', badgeColor: 'bg-rose-950 text-rose-300 border-rose-800' },
+  NORMAL: { label: 'Normal', badgeColor: 'bg-slate-100 text-slate-600 border-slate-200' },
+  ALTA: { label: 'Alta', badgeColor: 'bg-amber-50 text-amber-800 border-amber-200' },
+  URGENTE: { label: 'Urgente', badgeColor: 'bg-rose-50 text-rose-800 border-rose-200 font-bold' },
 };
 
 export const ESTADOS_CONFIG: Record<BurnStatus, { label: string; badgeColor: string; dotColor: string }> = {
   SOLICITADA: {
     label: 'Solicitada',
-    badgeColor: 'bg-slate-800 text-slate-300 border-slate-700',
-    dotColor: 'bg-slate-400',
+    badgeColor: 'bg-blue-50 text-blue-800 border-blue-200',
+    dotColor: 'bg-blue-500',
   },
   PATRULLA_ASIGNADA: {
-    label: 'Patrulla Asignada',
-    badgeColor: 'bg-blue-950 text-blue-300 border-blue-800',
-    dotColor: 'bg-blue-400',
+    label: 'En Camino',
+    badgeColor: 'bg-amber-50 text-amber-800 border-amber-200',
+    dotColor: 'bg-amber-500',
   },
   EN_FRENTE: {
     label: 'En Frente',
-    badgeColor: 'bg-orange-950 text-orange-300 border-orange-800',
-    dotColor: 'bg-orange-400',
+    badgeColor: 'bg-orange-50 text-orange-800 border-orange-200',
+    dotColor: 'bg-orange-500',
   },
   EN_REVISION: {
     label: 'En Revisión',
-    badgeColor: 'bg-amber-950 text-amber-300 border-amber-800',
-    dotColor: 'bg-amber-400',
+    badgeColor: 'bg-orange-50 text-orange-800 border-orange-200',
+    dotColor: 'bg-orange-500',
   },
   EN_QUEMA: {
     label: 'En Quema',
-    badgeColor: 'bg-rose-950 text-rose-300 border-rose-800',
-    dotColor: 'bg-rose-400',
+    badgeColor: 'bg-rose-50 text-rose-800 border-rose-200 font-bold animate-pulse',
+    dotColor: 'bg-rose-600',
   },
   FINALIZADA: {
     label: 'Finalizada',
-    badgeColor: 'bg-emerald-950 text-emerald-300 border-emerald-800',
-    dotColor: 'bg-emerald-400',
+    badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    dotColor: 'bg-emerald-500',
   },
   CANCELADA: {
     label: 'Cancelada',
-    badgeColor: 'bg-slate-900 text-slate-500 border-slate-800',
-    dotColor: 'bg-slate-600',
+    badgeColor: 'bg-slate-100 text-slate-500 border-slate-200',
+    dotColor: 'bg-slate-400',
   },
 };
 

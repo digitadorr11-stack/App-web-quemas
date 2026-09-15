@@ -279,7 +279,7 @@ export default function UsuariosPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#070C14] flex flex-col items-center justify-center text-slate-300">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-600">
         <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm font-semibold tracking-wide">Cargando Maestro de Usuarios...</p>
       </div>
@@ -287,40 +287,40 @@ export default function UsuariosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070C14] text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-emerald-950/90 border border-emerald-500/50 text-emerald-300 px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="fixed top-5 right-5 z-50 bg-emerald-50 border border-emerald-300 text-emerald-700 px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Header */}
-      <header className="bg-[#0B121E] border-b border-slate-800/80 px-6 py-4 flex items-center justify-between shadow-md">
+      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-slate-700 transition"
+            className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:border-slate-300 transition"
             title="Volver al Inicio"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-800 to-purple-600 border border-purple-400/30 flex items-center justify-center shadow-lg shadow-purple-950/50">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-800 to-purple-600 border border-purple-400/30 flex items-center justify-center shadow-lg shadow-purple-200">
             <Users className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-black tracking-tight text-white leading-tight">
+            <h1 className="text-base font-black tracking-tight text-slate-900 leading-tight">
               Maestro de Usuarios & Roles
             </h1>
-            <p className="text-[10px] uppercase font-bold text-purple-400 tracking-wider">
+            <p className="text-[10px] uppercase font-bold text-purple-600 tracking-wider">
               Control de Accesos y Frentes
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <nav className="hidden md:flex items-center gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+          <nav className="hidden md:flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
             <Link
               href="/usuarios"
               className="px-3 py-1 rounded-lg text-xs font-bold bg-purple-600 text-white shadow"
@@ -329,22 +329,22 @@ export default function UsuariosPage() {
             </Link>
             <Link
               href="/constantes"
-              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition"
+              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
             >
               Constantes
             </Link>
             <Link
               href="/fincas"
-              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition"
+              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
             >
               Fincas y Lotes
             </Link>
           </nav>
 
-          <span className="hidden sm:inline text-xs font-bold text-slate-300">
+          <span className="hidden sm:inline text-xs font-bold text-slate-600">
             {currentUser?.nombre_completo}
           </span>
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-purple-950 text-purple-300 border border-purple-800">
+          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-purple-50 text-purple-700 border border-purple-200">
             {currentUser?.rol.toUpperCase()}
           </span>
         </div>
@@ -355,39 +355,39 @@ export default function UsuariosPage() {
         
         {/* KPI Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
             <div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Registrados</p>
-              <p className="text-2xl font-black text-white mt-0.5">{totalUsers}</p>
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Registrados</p>
+              <p className="text-2xl font-black text-slate-900 mt-0.5">{totalUsers}</p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-xl bg-blue-600/10 border border-blue-500/20 text-blue-600 flex items-center justify-center">
               <Users className="w-5 h-5" />
             </div>
           </div>
 
-          <div className="bg-[#0B121E] border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
             <div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Usuarios Activos</p>
-              <p className="text-2xl font-black text-emerald-400 mt-0.5">{activeCount}</p>
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Usuarios Activos</p>
+              <p className="text-2xl font-black text-emerald-600 mt-0.5">{activeCount}</p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-xl bg-emerald-600/10 border border-emerald-500/20 text-emerald-600 flex items-center justify-center">
               <UserCheck className="w-5 h-5" />
             </div>
           </div>
 
-          <div className="bg-[#0B121E] border border-slate-800 rounded-2xl p-4 flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
             <div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pendientes de Aprobación</p>
-              <p className="text-2xl font-black text-amber-400 mt-0.5">{pendingCount}</p>
+              <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pendientes de Aprobación</p>
+              <p className="text-2xl font-black text-amber-600 mt-0.5">{pendingCount}</p>
             </div>
-            <div className="w-11 h-11 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-400 flex items-center justify-center">
+            <div className="w-11 h-11 rounded-xl bg-amber-600/10 border border-amber-500/20 text-amber-600 flex items-center justify-center">
               <Clock className="w-5 h-5" />
             </div>
           </div>
         </div>
 
         {/* Filters & Search Bar */}
-        <div className="bg-[#0B121E] border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
@@ -395,7 +395,7 @@ export default function UsuariosPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por nombre o correo..."
-              className="w-full bg-[#070C14] border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-purple-500 transition"
             />
           </div>
 
@@ -403,7 +403,7 @@ export default function UsuariosPage() {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-purple-500"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-600 focus:outline-none focus:border-purple-500"
             >
               <option value="ALL">Todos los Roles</option>
               <option value="pendiente">Pendiente</option>
@@ -418,7 +418,7 @@ export default function UsuariosPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-purple-500"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-600 focus:outline-none focus:border-purple-500"
             >
               <option value="ALL">Todos los Estados</option>
               <option value="ACTIVE">Solo Activos</option>
@@ -428,10 +428,10 @@ export default function UsuariosPage() {
         </div>
 
         {/* Users Table */}
-        <div className="bg-[#0B121E] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-[#070C14] border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <tr>
                   <th className="px-5 py-4">Usuario</th>
                   <th className="px-4 py-4">Rol Asignado</th>
@@ -440,7 +440,7 @@ export default function UsuariosPage() {
                   <th className="px-5 py-4 text-right">Acción</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-slate-200">
                 {filteredUsers.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="text-center py-10 text-slate-500">
@@ -453,25 +453,25 @@ export default function UsuariosPage() {
                     const isSelf = currentUser?.id === u.id;
 
                     return (
-                      <tr key={u.id} className="hover:bg-slate-900/40 transition">
+                      <tr key={u.id} className="hover:bg-slate-50 transition">
                         {/* Datos de Usuario */}
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-white text-xs shrink-0">
+                            <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-300 flex items-center justify-center font-bold text-slate-900 text-xs shrink-0">
                               {u.nombre_completo.charAt(0).toUpperCase()}
                             </div>
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-white text-xs">
+                                <span className="font-bold text-slate-900 text-xs">
                                   {u.nombre_completo}
                                 </span>
                                 {isSelf && (
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
                                     Tú
                                   </span>
                                 )}
                               </div>
-                              <span className="text-[11px] text-slate-400 font-mono">
+                              <span className="text-[11px] text-slate-500 font-mono">
                                 {u.correo}
                               </span>
                             </div>
@@ -484,7 +484,7 @@ export default function UsuariosPage() {
                             value={u.rol}
                             disabled={isSelf}
                             onChange={(e) => handleRoleChange(u.id, e.target.value as UserRole)}
-                            className={`bg-[#070C14] border rounded-xl px-2.5 py-1.5 text-xs font-bold focus:outline-none transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${roleCfg.badgeColor}`}
+                            className={`bg-slate-50 border rounded-xl px-2.5 py-1.5 text-xs font-bold focus:outline-none transition cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${roleCfg.badgeColor}`}
                           >
                             <option value="pendiente">Pendiente de Aprobación</option>
                             <option value="supervisor_frente">Supervisor de Frente</option>
@@ -503,7 +503,7 @@ export default function UsuariosPage() {
                               <select
                                 value={u.frente_asignado || ''}
                                 onChange={(e) => handleFrontChange(u.id, e.target.value)}
-                                className="bg-[#070C14] border border-blue-800/80 text-blue-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-blue-500 cursor-pointer"
+                                className="bg-slate-50 border border-blue-200 text-blue-800 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-blue-500 cursor-pointer"
                               >
                                 <option value="">-- Sin Frente --</option>
                                 {fronts.map((f) => (
@@ -518,7 +518,7 @@ export default function UsuariosPage() {
                               <select
                                 value={u.patrulla_asignada || ''}
                                 onChange={(e) => handlePatrolChange(u.id, e.target.value)}
-                                className="bg-[#070C14] border border-orange-800/80 text-orange-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-orange-500 cursor-pointer"
+                                className="bg-slate-50 border border-orange-200 text-orange-800 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-orange-500 cursor-pointer"
                               >
                                 <option value="">-- Sin Patrulla --</option>
                                 {patrols.map((p) => (
@@ -529,7 +529,7 @@ export default function UsuariosPage() {
                               </select>
                             </div>
                           ) : (
-                            <span className="text-slate-600 italic text-[11px]">No aplica</span>
+                            <span className="text-slate-400 italic text-[11px]">No aplica</span>
                           )}
                         </td>
 
@@ -538,18 +538,18 @@ export default function UsuariosPage() {
                           <span
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                               u.activo
-                                ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                                : 'bg-amber-950 text-amber-300 border-amber-800'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-amber-50 text-amber-700 border-amber-200'
                             }`}
                           >
                             {u.activo ? (
                               <>
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                 <span>Activo</span>
                               </>
                             ) : (
                               <>
-                                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                                <Clock className="w-3.5 h-3.5 text-amber-600" />
                                 <span>Inactivo</span>
                               </>
                             )}
@@ -561,7 +561,7 @@ export default function UsuariosPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleOpenEditUser(u)}
-                              className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-400 hover:text-purple-300 border border-slate-700 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-purple-600 hover:text-purple-700 border border-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                               title="Editar datos del usuario"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
@@ -572,7 +572,7 @@ export default function UsuariosPage() {
                               disabled={isSelf}
                               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
                                 u.activo
-                                  ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
+                                  ? 'bg-rose-50 hover:bg-rose-900 border border-rose-200 text-rose-700'
                                   : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                               }`}
                             >
@@ -593,10 +593,10 @@ export default function UsuariosPage() {
       {/* MODAL EDITAR USUARIO */}
       {isEditUserModalOpen && editingUser && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Edit2 className="w-4 h-4 text-purple-400" />
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-purple-600" />
                 <span>Editar Usuario</span>
               </h3>
               <button
@@ -604,7 +604,7 @@ export default function UsuariosPage() {
                   setIsEditUserModalOpen(false);
                   setEditingUser(null);
                 }}
-                className="text-slate-400 hover:text-white transition cursor-pointer"
+                className="text-slate-500 hover:text-slate-900 transition cursor-pointer"
               >
                 ✕
               </button>
@@ -612,7 +612,7 @@ export default function UsuariosPage() {
 
             <form onSubmit={handleSaveEditUser} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Nombre Completo *
                 </label>
                 <input
@@ -622,24 +622,24 @@ export default function UsuariosPage() {
                   onChange={(e) =>
                     setEditingUser({ ...editingUser, nombre_completo: e.target.value })
                   }
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Correo Electrónico
                 </label>
                 <input
                   type="email"
                   disabled
                   value={editingUser.correo}
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-400 font-mono opacity-60 cursor-not-allowed"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-500 font-mono opacity-60 cursor-not-allowed"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Rol Asignado
                 </label>
                 <select
@@ -647,7 +647,7 @@ export default function UsuariosPage() {
                   onChange={(e) =>
                     setEditingUser({ ...editingUser, rol: e.target.value as UserRole })
                   }
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500 cursor-pointer"
                 >
                   <option value="pendiente">Pendiente de Aprobación</option>
                   <option value="supervisor_frente">Supervisor de Frente</option>
@@ -661,7 +661,7 @@ export default function UsuariosPage() {
 
               {editingUser.rol === 'supervisor_frente' && (
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Frente Asignado
                   </label>
                   <select
@@ -669,7 +669,7 @@ export default function UsuariosPage() {
                     onChange={(e) =>
                       setEditingUser({ ...editingUser, frente_asignado: e.target.value || undefined })
                     }
-                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500 cursor-pointer"
                   >
                     <option value="">-- Sin Frente --</option>
                     {fronts.map((f) => (
@@ -683,7 +683,7 @@ export default function UsuariosPage() {
 
               {editingUser.rol === 'patrulla' && (
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Patrulla Asignada
                   </label>
                   <select
@@ -691,7 +691,7 @@ export default function UsuariosPage() {
                     onChange={(e) =>
                       setEditingUser({ ...editingUser, patrulla_asignada: e.target.value || undefined })
                     }
-                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500 cursor-pointer"
                   >
                     <option value="">-- Sin Patrulla --</option>
                     {patrols.map((p) => (
@@ -704,7 +704,7 @@ export default function UsuariosPage() {
               )}
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Estado de la Cuenta
                 </label>
                 <select
@@ -712,28 +712,28 @@ export default function UsuariosPage() {
                   onChange={(e) =>
                     setEditingUser({ ...editingUser, activo: e.target.value === 'true' })
                   }
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-purple-500 cursor-pointer"
                 >
                   <option value="true">Activo (Autorizado)</option>
                   <option value="false">Inactivo / Pendiente</option>
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800/80">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => {
                     setIsEditUserModalOpen(false);
                     setEditingUser(null);
                   }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 transition cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingEditUser}
-                  className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-purple-950/50 cursor-pointer"
+                  className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-purple-200 cursor-pointer"
                 >
                   {isSubmittingEditUser ? 'Guardando...' : 'Guardar Cambios'}
                 </button>

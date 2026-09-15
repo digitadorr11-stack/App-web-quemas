@@ -213,8 +213,8 @@ export default function TableroDespachoPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#070C14] flex flex-col items-center justify-center text-slate-300">
-        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+      <div className="min-h-screen bg-[#f4f6f4] flex flex-col items-center justify-center text-slate-500">
+        <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm font-semibold tracking-wide">Cargando tablero operativo...</p>
       </div>
     );
@@ -223,27 +223,27 @@ export default function TableroDespachoPage() {
   if (!currentUser) return null;
 
   return (
-    <div className="min-h-screen bg-[#070C14] text-slate-100 font-sans pb-16">
+    <div className="min-h-screen bg-[#f4f6f4] text-slate-900 font-sans pb-16">
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-emerald-900/95 border border-emerald-500/40 text-emerald-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-sm font-semibold max-w-sm">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+        <div className="fixed top-4 right-4 z-50 bg-[#165135] text-white px-4 py-3 rounded-xl shadow-panel flex items-center gap-2 text-sm font-semibold max-w-sm">
+          <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      <header className="bg-[#0B121E] border-b border-slate-800/80 px-4 sm:px-6 py-4 flex items-center gap-3 sticky top-0 z-30">
+      <header className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 flex items-center gap-3 sticky top-0 z-30 shadow-card">
         <Link
           href="/"
-          className="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center text-slate-300"
+          className="w-9 h-9 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 shadow-card"
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-800 to-amber-600 border border-amber-400/30 flex items-center justify-center shadow-lg">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center shadow-card">
           <Truck className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h1 className="text-sm font-black tracking-tight text-white leading-tight">Tablero de Despacho y Monitoreo</h1>
-          <p className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+          <h1 className="text-sm font-bold tracking-tight text-slate-900 leading-tight">Tablero de Despacho y Monitoreo</h1>
+          <p className="text-[10px] uppercase font-bold text-amber-700 tracking-wider">
             {solicitudes.filter((s) => !['FINALIZADA', 'CANCELADA'].includes(s.estado)).length} solicitudes activas
           </p>
         </div>
@@ -254,17 +254,17 @@ export default function TableroDespachoPage() {
           {COLUMNAS.map((col) => {
             const items = gruposPorEstado[col.titulo] || [];
             return (
-              <div key={col.titulo} className="bg-[#0B121E] border border-slate-800 rounded-3xl p-4 flex flex-col min-h-[200px]">
+              <div key={col.titulo} className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col min-h-[200px] shadow-card">
                 <div className="flex items-center justify-between mb-3 px-1">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">{col.titulo}</h3>
-                  <span className="text-[10px] font-black bg-slate-900 text-slate-300 border border-slate-800 rounded-full px-2 py-0.5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">{col.titulo}</h3>
+                  <span className="text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 rounded-full px-2 py-0.5 font-mono">
                     {items.length}
                   </span>
                 </div>
 
                 <div className="space-y-3 flex-1">
                   {items.length === 0 && (
-                    <p className="text-xs text-slate-600 text-center py-8">Sin solicitudes</p>
+                    <p className="text-xs text-slate-400 text-center py-8">Sin solicitudes</p>
                   )}
                   {items.map((s) => {
                     const estadoInfo = ESTADOS_CONFIG[s.estado];
@@ -283,12 +283,12 @@ export default function TableroDespachoPage() {
                     return (
                       <div
                         key={s.id}
-                        className="bg-slate-900/70 border border-slate-800 rounded-2xl p-3.5 space-y-2.5 hover:border-slate-700 transition"
+                        className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-2.5 shadow-card hover:shadow-card-hover hover:border-emerald-300 transition"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <p className="text-xs font-black text-white font-mono">{s.numero_quema}</p>
-                            <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
+                            <p className="text-xs font-bold text-slate-900 font-mono">{s.numero_quema}</p>
+                            <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
                               <Layers className="w-3 h-3" /> {s.numero_frente}
                             </p>
                           </div>
@@ -297,12 +297,12 @@ export default function TableroDespachoPage() {
                           </span>
                         </div>
 
-                        <p className="text-[11px] text-slate-300 flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-blue-400 shrink-0" />
+                        <p className="text-[11px] text-slate-600 flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-blue-600 shrink-0" />
                           <span className="truncate">{s.nombre_finca} · {s.lote_um}</span>
                         </p>
 
-                        <div className="flex items-center justify-between text-[11px] text-slate-400">
+                        <div className="flex items-center justify-between text-[11px] text-slate-500">
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" /> Plan: {formatearHora(s.hora_planificada)}
                           </span>
@@ -312,14 +312,14 @@ export default function TableroDespachoPage() {
                         </div>
 
                         {s.nombre_patrulla_asignada && (
-                          <p className="text-[11px] text-orange-300 flex items-center gap-1">
+                          <p className="text-[11px] text-orange-700 font-semibold flex items-center gap-1">
                             <Truck className="w-3 h-3" /> {s.nombre_patrulla_asignada}
                             {s.lider_patrulla ? ` · ${s.lider_patrulla}` : ''}
                           </p>
                         )}
 
                         {s.motivo_espera && s.estado !== 'FINALIZADA' && (
-                          <p className="text-[10px] text-amber-400/90 bg-amber-950/40 border border-amber-900/50 rounded-lg px-2 py-1">
+                          <p className="text-[10px] text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
                             En espera: {s.motivo_espera}
                           </p>
                         )}
@@ -333,7 +333,7 @@ export default function TableroDespachoPage() {
                             {s.estado === 'SOLICITADA' && puedeDespachar && (
                               <button
                                 onClick={() => abrirDespacho(s)}
-                                className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-blue-950 text-blue-300 border border-blue-800 hover:bg-blue-900 transition"
+                                className="text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
                               >
                                 Despachar
                               </button>
@@ -341,7 +341,7 @@ export default function TableroDespachoPage() {
                             {puedeCancelar && !['FINALIZADA', 'CANCELADA'].includes(s.estado) && (
                               <button
                                 onClick={() => abrirCancelacion(s)}
-                                className="text-[10px] font-bold p-1.5 rounded-lg bg-rose-950/60 text-rose-400 border border-rose-900 hover:bg-rose-950 transition"
+                                className="text-[10px] font-bold p-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 transition"
                                 title="Cancelar solicitud"
                               >
                                 <Ban className="w-3 h-3" />
@@ -359,14 +359,14 @@ export default function TableroDespachoPage() {
         </div>
 
         {canceladas.length > 0 && (
-          <div className="mt-6 bg-[#0B121E] border border-slate-800 rounded-3xl p-5">
+          <div className="mt-6 bg-white border border-slate-200 rounded-2xl p-5 shadow-card">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Canceladas Recientes</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
               {canceladas.map((s) => (
-                <div key={s.id} className="bg-slate-900/50 border border-slate-800/80 rounded-xl px-3 py-2.5 text-[11px] text-slate-500">
-                  <p className="font-mono font-bold text-slate-400">{s.numero_quema}</p>
+                <div key={s.id} className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-[11px] text-slate-500">
+                  <p className="font-mono font-bold text-slate-600">{s.numero_quema}</p>
                   <p className="truncate">{s.nombre_finca} · {s.lote_um}</p>
-                  <p className="text-rose-500/80 truncate">{s.motivo_cancelacion}</p>
+                  <p className="text-rose-600/80 truncate">{s.motivo_cancelacion}</p>
                 </div>
               ))}
             </div>
@@ -376,32 +376,32 @@ export default function TableroDespachoPage() {
 
       {/* Modal Despacho */}
       {dispatchTarget && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-white">Despachar Patrulla</h3>
-              <button onClick={() => setDispatchTarget(null)} className="text-slate-500 hover:text-slate-300">
+              <h3 className="text-sm font-bold text-slate-900">Despachar Patrulla</h3>
+              <button onClick={() => setDispatchTarget(null)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-300">
-              <p className="font-mono font-bold text-white">{dispatchTarget.numero_quema}</p>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600">
+              <p className="font-mono font-bold text-slate-900">{dispatchTarget.numero_quema}</p>
               <p>{dispatchTarget.nombre_finca} · {dispatchTarget.lote_um} · {dispatchTarget.numero_frente}</p>
             </div>
 
             {errorMessage && (
-              <div className="bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl p-3 text-xs flex items-start gap-2">
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-xs flex items-start gap-2">
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {errorMessage}
               </div>
             )}
 
             <div className="space-y-1.5">
-              <span className="text-[11px] font-semibold text-slate-500">Patrulla Disponible</span>
+              <span className="text-[11px] font-bold text-slate-700">Patrulla Disponible</span>
               <select
                 value={selectedPatrulla}
                 onChange={(e) => setSelectedPatrulla(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
               >
                 <option value="">Seleccione una patrulla...</option>
                 {patrullasDisponibles.map((p) => (
@@ -411,25 +411,25 @@ export default function TableroDespachoPage() {
                 ))}
               </select>
               {patrullasDisponibles.length === 0 && (
-                <p className="text-[11px] text-amber-400">No hay patrullas disponibles en este momento.</p>
+                <p className="text-[11px] text-amber-700 font-medium">No hay patrullas disponibles en este momento.</p>
               )}
             </div>
 
             <div className="space-y-1.5">
-              <span className="text-[11px] font-semibold text-slate-500">Líder de Patrulla (opcional)</span>
+              <span className="text-[11px] font-bold text-slate-700">Líder de Patrulla (opcional)</span>
               <input
                 type="text"
                 value={selectedLider}
                 onChange={(e) => setSelectedLider(e.target.value)}
                 placeholder="Nombre del encargado"
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-blue-500"
               />
             </div>
 
             <button
               onClick={confirmarDespacho}
               disabled={!selectedPatrulla || isDispatching}
-              className="w-full flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-white font-bold text-sm py-3.5 rounded-xl transition"
+              className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold text-sm py-3.5 rounded-xl transition shadow-card"
             >
               {isDispatching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />}
               Confirmar Despacho
@@ -440,32 +440,32 @@ export default function TableroDespachoPage() {
 
       {/* Modal Cancelación */}
       {cancelTarget && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-white">Cancelar Solicitud</h3>
-              <button onClick={() => setCancelTarget(null)} className="text-slate-500 hover:text-slate-300">
+              <h3 className="text-sm font-bold text-rose-700">Cancelar Solicitud</h3>
+              <button onClick={() => setCancelTarget(null)} className="text-slate-400 hover:text-slate-600">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 text-xs text-slate-300">
-              <p className="font-mono font-bold text-white">{cancelTarget.numero_quema}</p>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600">
+              <p className="font-mono font-bold text-slate-900">{cancelTarget.numero_quema}</p>
               <p>{cancelTarget.nombre_finca} · {cancelTarget.lote_um}</p>
             </div>
 
             {errorMessage && (
-              <div className="bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl p-3 text-xs flex items-start gap-2">
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-3 text-xs flex items-start gap-2">
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {errorMessage}
               </div>
             )}
 
             <div className="space-y-1.5">
-              <span className="text-[11px] font-semibold text-slate-500">Motivo de Cancelación</span>
+              <span className="text-[11px] font-bold text-slate-700">Motivo de Cancelación</span>
               <select
                 value={motivoCancelacion}
                 onChange={(e) => setMotivoCancelacion(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-rose-500"
+                className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-rose-500"
               >
                 <option value="">Seleccione un motivo...</option>
                 {MOTIVOS_CANCELACION_ESTANDAR.map((m) => (
@@ -479,7 +479,7 @@ export default function TableroDespachoPage() {
             <button
               onClick={confirmarCancelacion}
               disabled={!motivoCancelacion || isCancelling}
-              className="w-full flex items-center justify-center gap-2 bg-rose-800 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-sm py-3.5 rounded-xl transition"
+              className="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white font-bold text-sm py-3.5 rounded-xl transition shadow-card"
             >
               {isCancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
               Confirmar Cancelación

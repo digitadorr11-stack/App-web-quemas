@@ -85,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, open, onClose, on
   const pathname = usePathname();
   const roleInfo = ROLES_CONFIG[currentUser.rol] || {
     label: currentUser.rol,
-    badgeColor: 'bg-slate-900 text-slate-300 border-slate-700',
+    badgeColor: 'bg-slate-100 text-slate-600 border-slate-200',
     description: '',
   };
 
@@ -97,15 +97,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, open, onClose, on
       {open && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={onClose} />}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#1B5E3F] flex flex-col transition-transform duration-200 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-[#1B5E3F] via-[#164d34] to-[#0f3826] flex flex-col shadow-panel transition-transform duration-200 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="h-14 flex items-center gap-2.5 px-4 shrink-0">
-          <div className="w-8 h-8 rounded bg-white flex items-center justify-center shrink-0">
-            <Flame className="w-4 h-4 text-amber-500" />
+        <div className="h-16 flex items-center gap-2.5 px-4 shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shrink-0 shadow-card">
+            <Flame className="w-4.5 h-4.5 text-amber-500" />
           </div>
-          <p className="text-[13px] font-bold text-white leading-tight truncate">Ingenio La Unión</p>
+          <div className="min-w-0">
+            <p className="text-[13px] font-bold text-white leading-tight truncate">Ingenio La Unión</p>
+            <p className="text-[10.5px] text-emerald-200/70 truncate">Control de Quemas</p>
+          </div>
           <button onClick={onClose} className="ml-auto lg:hidden text-emerald-200 hover:text-white p-1">
             <X className="w-4 h-4" />
           </button>
@@ -113,8 +116,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, open, onClose, on
 
         <Link
           href="/"
-          className={`flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium border-y border-emerald-900/30 ${
-            pathname === '/' ? 'bg-white text-[#1B5E3F] font-semibold' : 'text-white/90 hover:bg-black/10'
+          className={`flex items-center gap-2.5 mx-3 my-1 px-3.5 py-2.5 rounded-lg text-[13px] font-medium transition ${
+            pathname === '/' ? 'bg-white text-[#1B5E3F] font-semibold shadow-card' : 'text-white/90 hover:bg-black/10'
           }`}
         >
           <Home className="w-4 h-4 shrink-0" />
@@ -129,14 +132,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, open, onClose, on
             const expandido = abierto === section.id;
 
             return (
-              <div key={section.id} className="border-b border-emerald-900/30">
+              <div key={section.id} className="border-b border-white/10">
                 <button
                   onClick={() => setAbierto(expandido ? '' : section.id)}
-                  className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] font-medium transition ${
-                    expandido ? 'bg-black/10 text-white' : 'text-white/90 hover:bg-black/10'
+                  className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-[12.5px] font-semibold uppercase tracking-wide transition ${
+                    expandido ? 'bg-black/10 text-white' : 'text-white/70 hover:bg-black/10 hover:text-white'
                   }`}
                 >
-                  <Icon className="w-4 h-4 shrink-0" />
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
                   <span className="flex-1 text-left">{section.title}</span>
                   <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expandido ? 'rotate-180' : ''}`} />
                 </button>
@@ -165,7 +168,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, open, onClose, on
                           key={item.href}
                           href={item.href}
                           className={`block pl-11 pr-4 py-2 text-[12.5px] transition ${
-                            activo ? 'bg-white text-[#1B5E3F] font-semibold mx-2 rounded' : 'text-white/85 hover:bg-black/10'
+                            activo ? 'bg-white text-[#1B5E3F] font-semibold mx-2 rounded-lg shadow-card' : 'text-white/85 hover:bg-black/10'
                           }`}
                         >
                           {item.label}
@@ -179,8 +182,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, open, onClose, on
           })}
         </nav>
 
-        <div className="border-t border-emerald-900/30 p-3 shrink-0">
-          <div className="flex items-center gap-2.5 px-2 py-2 rounded bg-black/10">
+        <div className="border-t border-white/10 p-3 shrink-0">
+          <div className="flex items-center gap-2.5 px-2 py-2 rounded-lg bg-black/15">
             <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
               {iniciales(currentUser.nombre_completo)}
             </div>

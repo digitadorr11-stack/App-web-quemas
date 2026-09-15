@@ -20,6 +20,15 @@ const config: Config = {
           950: '#022c22',
         },
       },
+      fontFamily: {
+        sans: ['var(--font-sans)', 'sans-serif'],
+        mono: ['var(--font-mono)', 'monospace'],
+      },
+      boxShadow: {
+        card: '0 1px 2px rgba(20,30,20,0.05), 0 1px 1px rgba(20,30,20,0.04)',
+        'card-hover': '0 2px 4px rgba(20,30,20,0.04), 0 8px 20px rgba(20,30,20,0.08)',
+        panel: '0 4px 8px rgba(20,30,20,0.05), 0 20px 40px rgba(20,30,20,0.10)',
+      },
     },
   },
   plugins: [],

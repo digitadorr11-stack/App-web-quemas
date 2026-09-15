@@ -218,8 +218,8 @@ export default function NuevaSolicitudPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#070C14] flex flex-col items-center justify-center text-slate-300">
-        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+      <div className="min-h-screen bg-[#f4f6f4] flex flex-col items-center justify-center text-slate-500">
+        <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm font-semibold tracking-wide">Cargando formulario...</p>
       </div>
     );
@@ -228,28 +228,28 @@ export default function NuevaSolicitudPage() {
   if (!currentUser) return null;
 
   return (
-    <div className="min-h-screen bg-[#070C14] text-slate-100 font-sans pb-16">
+    <div className="min-h-screen bg-[#f4f6f4] text-slate-900 font-sans pb-16">
       {/* Toast */}
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-emerald-900/95 border border-emerald-500/40 text-emerald-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-sm font-semibold max-w-sm">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+        <div className="fixed top-4 right-4 z-50 bg-[#165135] text-white px-4 py-3 rounded-xl shadow-panel flex items-center gap-2 text-sm font-semibold max-w-sm">
+          <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      <header className="bg-[#0B121E] border-b border-slate-800/80 px-4 sm:px-6 py-4 flex items-center gap-3 sticky top-0 z-30">
+      <header className="bg-white border-b border-slate-200 px-4 sm:px-6 py-4 flex items-center gap-3 sticky top-0 z-30 shadow-card">
         <Link
           href="/"
-          className="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 flex items-center justify-center text-slate-300"
+          className="w-9 h-9 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600 shadow-card"
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-800 to-blue-600 border border-blue-400/30 flex items-center justify-center shadow-lg">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-500 flex items-center justify-center shadow-card">
           <Flame className="w-4 h-4 text-amber-300" />
         </div>
         <div>
-          <h1 className="text-sm font-black tracking-tight text-white leading-tight">Nueva Solicitud de Quema</h1>
-          <p className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">
+          <h1 className="text-sm font-bold tracking-tight text-slate-900 leading-tight">Nueva Solicitud de Quema</h1>
+          <p className="text-[10px] uppercase font-bold text-blue-700 tracking-wider">
             {currentUser.frente_asignado ? currentUser.frente_asignado : 'Planificación Operativa'}
           </p>
         </div>
@@ -258,22 +258,22 @@ export default function NuevaSolicitudPage() {
       <main className="max-w-2xl mx-auto p-4 sm:p-6 space-y-5">
         <form onSubmit={handleSubmit} className="space-y-5">
           {errorMessage && (
-            <div className="bg-rose-950/60 border border-rose-800 text-rose-300 rounded-2xl p-4 flex items-start gap-3 text-sm">
+            <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl p-4 flex items-start gap-3 text-sm">
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {/* Frente */}
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-5 space-y-3">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-3 shadow-card">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
               <Layers className="w-3.5 h-3.5" /> Frente de Cosecha
             </label>
             <select
               value={selectedFrente}
               onChange={(e) => setSelectedFrente(e.target.value)}
               disabled={frenteActivo && !!currentUser.frente_asignado}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-500 disabled:opacity-60"
+              className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-500 disabled:opacity-60"
             >
               <option value="">Seleccione un frente...</option>
               {frentes.map((f) => (
@@ -285,14 +285,14 @@ export default function NuevaSolicitudPage() {
           </div>
 
           {/* Finca y Lote */}
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-5 space-y-4">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-4 shadow-card">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5" /> Ubicación Agronómica
             </label>
 
             <div className="relative">
               <div className="relative">
-                <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={fincaQuery}
@@ -306,7 +306,7 @@ export default function NuevaSolicitudPage() {
                   }}
                   onFocus={() => setIsFincaDropdownOpen(true)}
                   placeholder="Buscar finca..."
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-9 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-9 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
                 />
                 {fincaQuery && (
                   <button
@@ -316,7 +316,7 @@ export default function NuevaSolicitudPage() {
                       setSelectedFinca('');
                       setSelectedLoteId('');
                     }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -324,13 +324,13 @@ export default function NuevaSolicitudPage() {
               </div>
 
               {isFincaDropdownOpen && fincasFiltradas.length > 0 && (
-                <div className="absolute z-20 mt-1 w-full bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
+                <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-2xl overflow-hidden max-h-56 overflow-y-auto">
                   {fincasFiltradas.map((finca) => (
                     <button
                       key={finca}
                       type="button"
                       onClick={() => handleSelectFinca(finca)}
-                      className="w-full text-left px-4 py-2.5 text-sm text-slate-200 hover:bg-blue-950/60 hover:text-blue-300 transition"
+                      className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
                     >
                       {finca}
                     </button>
@@ -343,7 +343,7 @@ export default function NuevaSolicitudPage() {
               <select
                 value={selectedLoteId}
                 onChange={(e) => handleSelectLote(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
               >
                 <option value="">Seleccione un lote...</option>
                 {lotesDeFinca.map((l) => (
@@ -356,25 +356,25 @@ export default function NuevaSolicitudPage() {
 
             {selectedLoteId && (
               <div className="grid grid-cols-3 gap-3 pt-1">
-                <div className="bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2.5 text-center">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-center">
                   <p className="text-[10px] uppercase font-bold text-slate-500">Hectáreas</p>
-                  <p className="text-sm font-black text-emerald-400">{areaHa.toFixed(2)}</p>
+                  <p className="text-sm font-bold text-emerald-700">{areaHa.toFixed(2)}</p>
                 </div>
-                <div className="bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2.5 text-center">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-center">
                   <p className="text-[10px] uppercase font-bold text-slate-500">Manzanas</p>
-                  <p className="text-sm font-black text-emerald-400">{areaMz.toFixed(2)}</p>
+                  <p className="text-sm font-bold text-emerald-700">{areaMz.toFixed(2)}</p>
                 </div>
-                <div className="bg-slate-900/60 border border-slate-800 rounded-xl px-3 py-2.5 text-center overflow-hidden">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-center overflow-hidden">
                   <p className="text-[10px] uppercase font-bold text-slate-500">Variedad</p>
-                  <p className="text-sm font-black text-blue-400 truncate">{variedad || '—'}</p>
+                  <p className="text-sm font-bold text-blue-700 truncate">{variedad || '—'}</p>
                 </div>
               </div>
             )}
           </div>
 
           {/* Tipo de cosecha, tonelaje y hora planificada */}
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-5 space-y-4">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <div className="bg-white border border-slate-200 rounded-3xl p-5 space-y-4 shadow-card">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
               <Sprout className="w-3.5 h-3.5" /> Detalle de la Quema
             </label>
 
@@ -384,7 +384,7 @@ export default function NuevaSolicitudPage() {
                 <select
                   value={tipoCosecha}
                   onChange={(e) => setTipoCosecha(e.target.value as 'Mecanizada' | 'Manual' | 'Mixta')}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
                 >
                   <option value="Mecanizada">Mecanizada</option>
                   <option value="Manual">Manual</option>
@@ -401,7 +401,7 @@ export default function NuevaSolicitudPage() {
                   value={tonelaje}
                   onChange={(e) => setTonelaje(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
                 />
               </div>
             </div>
@@ -415,7 +415,7 @@ export default function NuevaSolicitudPage() {
                 required
                 value={horaPlanificada}
                 onChange={(e) => setHoraPlanificada(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-semibold text-white focus:outline-none focus:border-blue-500"
+                className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-blue-500"
               />
             </div>
 
@@ -429,8 +429,8 @@ export default function NuevaSolicitudPage() {
                     onClick={() => setPrioridad(p)}
                     className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition ${
                       prioridad === p
-                        ? PRIORIDADES_CONFIG[p].badgeColor + ' ring-1 ring-white/20'
-                        : 'bg-slate-900 text-slate-500 border-slate-800 hover:border-slate-700'
+                        ? PRIORIDADES_CONFIG[p].badgeColor + ' ring-1 ring-black/5'
+                        : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
                     }`}
                   >
                     {PRIORIDADES_CONFIG[p].label}
@@ -446,7 +446,7 @@ export default function NuevaSolicitudPage() {
                 onChange={(e) => setObservaciones(e.target.value)}
                 rows={3}
                 placeholder="Indicaciones adicionales para la patrulla o el despacho..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 resize-none"
+                className="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-blue-500 resize-none"
               />
             </div>
           </div>
@@ -454,7 +454,7 @@ export default function NuevaSolicitudPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500 disabled:opacity-60 text-white font-bold text-sm py-4 rounded-2xl shadow-xl shadow-blue-950/50 transition"
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 disabled:opacity-60 text-white font-bold text-sm py-4 rounded-2xl shadow-panel transition"
           >
             {isSubmitting ? (
               <>

@@ -359,7 +359,7 @@ export default function ConstantesPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#070C14] flex flex-col items-center justify-center text-slate-300">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-600">
         <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="font-bold text-sm tracking-wide">Cargando Constantes Operativas...</p>
       </div>
@@ -367,43 +367,43 @@ export default function ConstantesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070C14] text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-emerald-950/90 border border-emerald-500/50 text-emerald-300 px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="fixed top-5 right-5 z-50 bg-emerald-50 border border-emerald-300 text-emerald-700 px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Header */}
-      <header className="bg-[#0B121E] border-b border-slate-800/80 px-6 py-4 flex items-center justify-between shadow-md">
+      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-slate-700 transition"
+            className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:border-slate-300 transition"
             title="Volver al Inicio"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-800 to-teal-600 border border-emerald-400/30 flex items-center justify-center shadow-lg shadow-emerald-950/50">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-800 to-teal-600 border border-emerald-400/30 flex items-center justify-center shadow-lg shadow-emerald-200">
             <Layers className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-black tracking-tight text-white leading-tight">
+            <h1 className="text-base font-black tracking-tight text-slate-900 leading-tight">
               Constantes Operativas
             </h1>
-            <p className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+            <p className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">
               Frentes de Cosecha & Patrullas de Quema
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <nav className="hidden md:flex items-center gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+          <nav className="hidden md:flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
             <Link
               href="/usuarios"
-              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition"
+              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
             >
               Usuarios
             </Link>
@@ -415,16 +415,16 @@ export default function ConstantesPage() {
             </Link>
             <Link
               href="/fincas"
-              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition"
+              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
             >
               Fincas y Lotes
             </Link>
           </nav>
 
-          <span className="hidden sm:inline text-xs font-bold text-slate-300">
+          <span className="hidden sm:inline text-xs font-bold text-slate-600">
             {currentUser?.nombre_completo}
           </span>
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
+          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
             {currentUser?.rol.toUpperCase()}
           </span>
         </div>
@@ -433,14 +433,14 @@ export default function ConstantesPage() {
       {/* Main Container */}
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-6">
         {/* Tabs de Selección */}
-        <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
-          <div className="flex items-center gap-2 bg-slate-900/60 p-1 rounded-2xl border border-slate-800">
+        <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+          <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-2xl border border-slate-200">
             <button
               onClick={() => setActiveTab('frentes')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                 activeTab === 'frentes'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/40'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <Layers className="w-4 h-4" />
@@ -451,8 +451,8 @@ export default function ConstantesPage() {
               onClick={() => setActiveTab('patrullas')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                 activeTab === 'patrullas'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/40'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200'
+                  : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <Truck className="w-4 h-4" />
@@ -460,7 +460,7 @@ export default function ConstantesPage() {
             </button>
           </div>
 
-          <div className="text-xs text-slate-400 hidden sm:block">
+          <div className="text-xs text-slate-500 hidden sm:block">
             Sincronización en tiempo real con Supabase
           </div>
         </div>
@@ -469,15 +469,15 @@ export default function ConstantesPage() {
         {activeTab === 'frentes' && (
           <div className="space-y-6 animate-in fade-in duration-200">
             {/* Formulario Agregar Frente */}
-            <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-5 shadow-xl">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2 mb-3">
+            <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xl">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-emerald-600 flex items-center gap-2 mb-3">
                 <Plus className="w-4 h-4" />
                 <span>Registrar Nuevo Frente de Cosecha</span>
               </h2>
 
               <form onSubmit={handleCreateFront} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Nombre del Frente (ej: Frente 18)
                   </label>
                   <input
@@ -486,12 +486,12 @@ export default function ConstantesPage() {
                     placeholder="Frente 18"
                     value={newFrontName}
                     onChange={(e) => setNewFrontName(e.target.value)}
-                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Tipo de Cosecha
                   </label>
                   <select
@@ -499,7 +499,7 @@ export default function ConstantesPage() {
                     onChange={(e) =>
                       setNewFrontType(e.target.value as 'Mecanizada' | 'Manual' | 'Mixta')
                     }
-                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 cursor-pointer"
                   >
                     <option value="Mecanizada">Mecanizada</option>
                     <option value="Manual">Manual</option>
@@ -511,7 +511,7 @@ export default function ConstantesPage() {
                   <button
                     type="submit"
                     disabled={isSubmittingFront}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-lg shadow-emerald-200 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>{isSubmittingFront ? 'Guardando...' : 'Agregar Frente'}</span>
@@ -521,10 +521,10 @@ export default function ConstantesPage() {
             </div>
 
             {/* Lista / Tabla de Frentes */}
-            <div className="bg-[#0B121E] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-300">
-                  <thead className="bg-[#070C14] border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <table className="w-full text-left text-xs text-slate-600">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                     <tr>
                       <th className="px-5 py-4">Frente</th>
                       <th className="px-4 py-4">Tipo de Cosecha</th>
@@ -532,7 +532,7 @@ export default function ConstantesPage() {
                       <th className="px-5 py-4 text-right">Acción</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-200">
                     {fronts.length === 0 ? (
                       <tr>
                         <td colSpan={4} className="text-center py-10 text-slate-500">
@@ -541,13 +541,13 @@ export default function ConstantesPage() {
                       </tr>
                     ) : (
                       fronts.map((f) => (
-                        <tr key={f.nombre} className="hover:bg-slate-900/40 transition">
+                        <tr key={f.nombre} className="hover:bg-slate-50 transition">
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-xl bg-emerald-950/60 border border-emerald-800/60 flex items-center justify-center font-bold text-emerald-300 text-xs">
+                              <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center font-bold text-emerald-700 text-xs">
                                 <Layers className="w-4 h-4" />
                               </div>
-                              <span className="font-bold text-white text-xs">{f.nombre}</span>
+                              <span className="font-bold text-slate-900 text-xs">{f.nombre}</span>
                             </div>
                           </td>
 
@@ -560,7 +560,7 @@ export default function ConstantesPage() {
                                   e.target.value as 'Mecanizada' | 'Manual' | 'Mixta'
                                 )
                               }
-                              className="bg-[#070C14] border border-slate-800 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-emerald-500 cursor-pointer"
+                              className="bg-slate-50 border border-slate-200 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-emerald-500 cursor-pointer"
                             >
                               <option value="Mecanizada">Mecanizada</option>
                               <option value="Manual">Manual</option>
@@ -572,18 +572,18 @@ export default function ConstantesPage() {
                             <span
                               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                                 f.activo
-                                  ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                                  : 'bg-rose-950 text-rose-300 border-rose-800'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : 'bg-rose-50 text-rose-700 border-rose-200'
                               }`}
                             >
                               {f.activo ? (
                                 <>
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                   <span>Activo</span>
                                 </>
                               ) : (
                                 <>
-                                  <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                                  <XCircle className="w-3.5 h-3.5 text-rose-600" />
                                   <span>Inactivo</span>
                                 </>
                               )}
@@ -594,7 +594,7 @@ export default function ConstantesPage() {
                             <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => handleOpenEditFront(f)}
-                                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 hover:text-emerald-300 border border-slate-700 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-emerald-600 hover:text-emerald-700 border border-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                                 title="Editar frente"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
@@ -604,7 +604,7 @@ export default function ConstantesPage() {
                                 onClick={() => handleToggleFrontActive(f.nombre, f.activo)}
                                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
                                   f.activo
-                                    ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
+                                    ? 'bg-rose-50 hover:bg-rose-900 border border-rose-200 text-rose-700'
                                     : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                                 }`}
                               >
@@ -626,15 +626,15 @@ export default function ConstantesPage() {
         {activeTab === 'patrullas' && (
           <div className="space-y-6 animate-in fade-in duration-200">
             {/* Formulario Agregar Patrulla */}
-            <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-5 shadow-xl">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-orange-400 flex items-center gap-2 mb-3">
+            <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xl">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-orange-600 flex items-center gap-2 mb-3">
                 <Plus className="w-4 h-4" />
                 <span>Registrar Nueva Patrulla de Quema</span>
               </h2>
 
               <form onSubmit={handleCreatePatrol} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Nombre de la Patrulla (ej: Patrulla Eco)
                   </label>
                   <input
@@ -643,12 +643,12 @@ export default function ConstantesPage() {
                     placeholder="Patrulla Eco"
                     value={newPatrolName}
                     onChange={(e) => setNewPatrolName(e.target.value)}
-                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-orange-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Código de Vehículo (opcional)
                   </label>
                   <input
@@ -656,7 +656,7 @@ export default function ConstantesPage() {
                     placeholder="UNI-405"
                     value={newPatrolVehicle}
                     onChange={(e) => setNewPatrolVehicle(e.target.value)}
-                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 font-mono"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
                   />
                 </div>
 
@@ -664,7 +664,7 @@ export default function ConstantesPage() {
                   <button
                     type="submit"
                     disabled={isSubmittingPatrol}
-                    className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-lg shadow-orange-950/50 flex items-center justify-center gap-2 cursor-pointer"
+                    className="w-full bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition shadow-lg shadow-orange-200 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>{isSubmittingPatrol ? 'Guardando...' : 'Agregar Patrulla'}</span>
@@ -674,10 +674,10 @@ export default function ConstantesPage() {
             </div>
 
             {/* Lista / Tabla de Patrullas */}
-            <div className="bg-[#0B121E] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl">
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-300">
-                  <thead className="bg-[#070C14] border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <table className="w-full text-left text-xs text-slate-600">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                     <tr>
                       <th className="px-5 py-4">Patrulla</th>
                       <th className="px-4 py-4">Vehículo</th>
@@ -686,7 +686,7 @@ export default function ConstantesPage() {
                       <th className="px-5 py-4 text-right">Acción</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-slate-200">
                     {patrols.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="text-center py-10 text-slate-500">
@@ -695,18 +695,18 @@ export default function ConstantesPage() {
                       </tr>
                     ) : (
                       patrols.map((p) => (
-                        <tr key={p.nombre} className="hover:bg-slate-900/40 transition">
+                        <tr key={p.nombre} className="hover:bg-slate-50 transition">
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-xl bg-orange-950/60 border border-orange-800/60 flex items-center justify-center font-bold text-orange-300 text-xs">
+                              <div className="w-9 h-9 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center font-bold text-orange-700 text-xs">
                                 <Truck className="w-4 h-4" />
                               </div>
-                              <span className="font-bold text-white text-xs">{p.nombre}</span>
+                              <span className="font-bold text-slate-900 text-xs">{p.nombre}</span>
                             </div>
                           </td>
 
-                          <td className="px-4 py-4 font-mono text-slate-300 text-xs">
-                            {p.codigo_vehiculo || <span className="text-slate-600 italic">Sin código</span>}
+                          <td className="px-4 py-4 font-mono text-slate-600 text-xs">
+                            {p.codigo_vehiculo || <span className="text-slate-400 italic">Sin código</span>}
                           </td>
 
                           <td className="px-4 py-4">
@@ -718,7 +718,7 @@ export default function ConstantesPage() {
                                   e.target.value as 'DISPONIBLE' | 'EN_FRENTE' | 'EN_QUEMA'
                                 )
                               }
-                              className="bg-[#070C14] border border-slate-800 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-orange-500 cursor-pointer"
+                              className="bg-slate-50 border border-slate-200 text-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold focus:outline-none focus:border-orange-500 cursor-pointer"
                             >
                               <option value="DISPONIBLE">DISPONIBLE</option>
                               <option value="EN_FRENTE">EN FRENTE</option>
@@ -730,18 +730,18 @@ export default function ConstantesPage() {
                             <span
                               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${
                                 p.activo
-                                  ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                                  : 'bg-rose-950 text-rose-300 border-rose-800'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                  : 'bg-rose-50 text-rose-700 border-rose-200'
                               }`}
                             >
                               {p.activo ? (
                                 <>
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                                   <span>Activa</span>
                                 </>
                               ) : (
                                 <>
-                                  <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                                  <XCircle className="w-3.5 h-3.5 text-rose-600" />
                                   <span>Inactiva</span>
                                 </>
                               )}
@@ -752,7 +752,7 @@ export default function ConstantesPage() {
                             <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => handleOpenEditPatrol(p)}
-                                className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-orange-400 hover:text-orange-300 border border-slate-700 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                                className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-orange-600 hover:text-orange-700 border border-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                                 title="Editar patrulla"
                               >
                                 <Edit2 className="w-3.5 h-3.5" />
@@ -762,7 +762,7 @@ export default function ConstantesPage() {
                                 onClick={() => handleTogglePatrolActive(p.nombre, p.activo)}
                                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
                                   p.activo
-                                    ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
+                                    ? 'bg-rose-50 hover:bg-rose-900 border border-rose-200 text-rose-700'
                                     : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                                 }`}
                               >
@@ -784,10 +784,10 @@ export default function ConstantesPage() {
       {/* MODAL EDITAR FRENTE */}
       {isEditFrontModalOpen && editFrontData && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Edit2 className="w-4 h-4 text-emerald-400" />
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-emerald-600" />
                 <span>Editar Frente: {editFrontData.originalNombre}</span>
               </h3>
               <button
@@ -795,7 +795,7 @@ export default function ConstantesPage() {
                   setIsEditFrontModalOpen(false);
                   setEditFrontData(null);
                 }}
-                className="text-slate-400 hover:text-white transition cursor-pointer"
+                className="text-slate-500 hover:text-slate-900 transition cursor-pointer"
               >
                 ✕
               </button>
@@ -803,7 +803,7 @@ export default function ConstantesPage() {
 
             <form onSubmit={handleSaveEditFront} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Nombre del Frente *
                 </label>
                 <input
@@ -813,12 +813,12 @@ export default function ConstantesPage() {
                   onChange={(e) =>
                     setEditFrontData({ ...editFrontData, nombre: e.target.value })
                   }
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Tipo de Cosecha
                 </label>
                 <select
@@ -829,7 +829,7 @@ export default function ConstantesPage() {
                       tipo_cosecha: e.target.value as 'Mecanizada' | 'Manual' | 'Mixta',
                     })
                   }
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 cursor-pointer"
                 >
                   <option value="Mecanizada">Mecanizada</option>
                   <option value="Manual">Manual</option>
@@ -838,7 +838,7 @@ export default function ConstantesPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Estado
                 </label>
                 <select
@@ -849,28 +849,28 @@ export default function ConstantesPage() {
                       activo: e.target.value === 'true',
                     })
                   }
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 cursor-pointer"
                 >
                   <option value="true">Activo</option>
                   <option value="false">Inactivo</option>
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800/80">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => {
                     setIsEditFrontModalOpen(false);
                     setEditFrontData(null);
                   }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 transition cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingEditFront}
-                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-emerald-950/50 cursor-pointer"
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-emerald-200 cursor-pointer"
                 >
                   {isSubmittingEditFront ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
@@ -883,10 +883,10 @@ export default function ConstantesPage() {
       {/* MODAL EDITAR PATRULLA */}
       {isEditPatrolModalOpen && editPatrolData && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Edit2 className="w-4 h-4 text-orange-400" />
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-orange-600" />
                 <span>Editar Patrulla: {editPatrolData.originalNombre}</span>
               </h3>
               <button
@@ -894,7 +894,7 @@ export default function ConstantesPage() {
                   setIsEditPatrolModalOpen(false);
                   setEditPatrolData(null);
                 }}
-                className="text-slate-400 hover:text-white transition cursor-pointer"
+                className="text-slate-500 hover:text-slate-900 transition cursor-pointer"
               >
                 ✕
               </button>
@@ -902,7 +902,7 @@ export default function ConstantesPage() {
 
             <form onSubmit={handleSaveEditPatrol} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Nombre de la Patrulla *
                 </label>
                 <input
@@ -912,12 +912,12 @@ export default function ConstantesPage() {
                   onChange={(e) =>
                     setEditPatrolData({ ...editPatrolData, nombre: e.target.value })
                   }
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-orange-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Código de Vehículo (opcional)
                 </label>
                 <input
@@ -930,12 +930,12 @@ export default function ConstantesPage() {
                       codigo_vehiculo: e.target.value,
                     })
                   }
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 font-mono"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-orange-500 font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Estado Operativo
                 </label>
                 <select
@@ -946,7 +946,7 @@ export default function ConstantesPage() {
                       estado: e.target.value as any,
                     })
                   }
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-orange-500 cursor-pointer"
                 >
                   <option value="DISPONIBLE">DISPONIBLE</option>
                   <option value="EN_FRENTE">EN FRENTE</option>
@@ -955,7 +955,7 @@ export default function ConstantesPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Estado
                 </label>
                 <select
@@ -966,28 +966,28 @@ export default function ConstantesPage() {
                       activo: e.target.value === 'true',
                     })
                   }
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-orange-500 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-orange-500 cursor-pointer"
                 >
                   <option value="true">Activa</option>
                   <option value="false">Inactiva</option>
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800/80">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => {
                     setIsEditPatrolModalOpen(false);
                     setEditPatrolData(null);
                   }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 transition cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingEditPatrol}
-                  className="bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-orange-950/50 cursor-pointer"
+                  className="bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-orange-200 cursor-pointer"
                 >
                   {isSubmittingEditPatrol ? 'Guardando...' : 'Guardar Cambios'}
                 </button>

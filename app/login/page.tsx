@@ -112,28 +112,28 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070C14] text-slate-100 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#f4f6f4] text-slate-900 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans">
       {/* Background Decorative Gradients */}
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Main Login / Register Card */}
-      <div className="w-full max-w-[420px] bg-[#0B121E] border border-slate-800/80 rounded-3xl p-7 sm:p-9 shadow-2xl relative z-10 space-y-6">
-        
+      <div className="w-full max-w-[420px] bg-white border border-slate-200 rounded-3xl p-7 sm:p-9 shadow-panel relative z-10 space-y-6">
+
         {/* Header Branding */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-800 to-emerald-600 border border-emerald-400/30 shadow-lg shadow-emerald-900/50">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-700 to-emerald-600 shadow-card">
             <Flame className="w-8 h-8 text-amber-400 animate-pulse" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-white">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               Ingenio La Unión
             </h1>
-            <p className="text-[11px] uppercase tracking-widest font-extrabold text-emerald-400 mt-1">
+            <p className="text-[11px] uppercase tracking-widest font-extrabold text-emerald-700 mt-1">
               CONTROL DE QUEMAS PROGRAMADAS
             </p>
           </div>
-          <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+          <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
             {isRegisterMode
               ? 'Complete sus datos para solicitar acceso a la plataforma.'
               : 'Acceso seguro al sistema de trazabilidad operativa.'}
@@ -142,16 +142,16 @@ export default function LoginPage() {
 
         {/* Error Alert Box */}
         {errorMsg && (
-          <div className="p-3.5 bg-rose-950/70 border border-rose-500/40 rounded-2xl text-rose-300 text-xs font-semibold flex items-center gap-2.5">
-            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs font-semibold flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {/* Success Alert Box */}
         {successMsg && (
-          <div className="p-3.5 bg-emerald-950/70 border border-emerald-500/40 rounded-2xl text-emerald-300 text-xs font-semibold flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-700 text-xs font-semibold flex items-center gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{successMsg}</span>
           </div>
         )}
@@ -160,7 +160,7 @@ export default function LoginPage() {
           /* MODO LOGIN */
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
                 CORREO ELECTRÓNICO
               </label>
               <div className="relative">
@@ -178,7 +178,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
                 CONTRASEÑA
               </label>
               <div className="relative">
@@ -205,7 +205,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
+              className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-200 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <span>Validando acceso...</span>
@@ -221,7 +221,7 @@ export default function LoginPage() {
           /* MODO REGISTRO */
           <form onSubmit={handleRegister} className="space-y-3">
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
                 NOMBRE COMPLETO *
               </label>
               <div className="relative">
@@ -238,7 +238,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
                 CORREO ELECTRÓNICO *
               </label>
               <div className="relative">
@@ -255,7 +255,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600">
                 CONTRASEÑA DESEADA *
               </label>
               <div className="relative">
@@ -281,7 +281,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
+              className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-200 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <span>Enviando solicitud...</span>
@@ -297,11 +297,11 @@ export default function LoginPage() {
 
         {/* Separador */}
         <div className="flex items-center gap-3 my-3">
-          <div className="h-[1px] bg-slate-800/90 flex-1" />
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
+          <div className="h-[1px] bg-slate-200 flex-1" />
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">
             O CONTINUAR CON
           </span>
-          <div className="h-[1px] bg-slate-800/90 flex-1" />
+          <div className="h-[1px] bg-slate-200 flex-1" />
         </div>
 
         {/* Botón: Google OAuth */}
@@ -341,7 +341,7 @@ export default function LoginPage() {
         {/* Toggle Login <-> Registro */}
         <div className="text-center pt-2">
           {!isRegisterMode ? (
-            <p className="text-xs text-slate-400 font-medium">
+            <p className="text-xs text-slate-500 font-medium">
               ¿No tiene cuenta?{' '}
               <button
                 type="button"
@@ -350,13 +350,13 @@ export default function LoginPage() {
                   setSuccessMsg('');
                   setIsRegisterMode(true);
                 }}
-                className="text-emerald-400 hover:text-emerald-300 font-bold underline underline-offset-4 cursor-pointer"
+                className="text-emerald-700 hover:text-emerald-600 font-bold underline underline-offset-4 cursor-pointer"
               >
                 Regístrese aquí
               </button>
             </p>
           ) : (
-            <p className="text-xs text-slate-400 font-medium">
+            <p className="text-xs text-slate-500 font-medium">
               ¿Ya tiene una cuenta?{' '}
               <button
                 type="button"
@@ -365,7 +365,7 @@ export default function LoginPage() {
                   setSuccessMsg('');
                   setIsRegisterMode(false);
                 }}
-                className="text-emerald-400 hover:text-emerald-300 font-bold underline underline-offset-4 cursor-pointer"
+                className="text-emerald-700 hover:text-emerald-600 font-bold underline underline-offset-4 cursor-pointer"
               >
                 Iniciar sesión aquí
               </button>
@@ -374,7 +374,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="pt-3 border-t border-slate-800/80 text-center">
+        <div className="pt-3 border-t border-slate-200 text-center">
           <p className="text-[11px] text-slate-500 font-medium tracking-wide">
             Ingenio La Unión · Sistema Integral de Quemas
           </p>

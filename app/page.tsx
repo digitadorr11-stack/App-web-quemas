@@ -11,9 +11,10 @@ import {
   PatrolCatalog,
   UserProfile,
   BurnStatus,
-  Prioridad,
   MOTIVOS_CANCELACION_ESTANDAR,
   ROLES_CONFIG,
+  ESTADOS_CONFIG,
+  PRIORIDADES_CONFIG,
 } from '@/lib/types';
 import { PatrolAvailabilityMonitor } from '@/components/PatrolAvailabilityMonitor';
 import { StatsOverview } from '@/components/StatsOverview';
@@ -46,22 +47,6 @@ const ROLES_CREAR_SOLICITUD = ['supervisor_frente', 'supervisor_quemas', 'digita
 const ROLES_DESPACHO = ['supervisor_quemas', 'digitador', 'admin'];
 const ROLES_CANCELACION = ['supervisor_frente', 'supervisor_quemas', 'digitador', 'admin'];
 
-const ESTADO_ESTILO: Record<BurnStatus, { label: string; badge: string }> = {
-  SOLICITADA: { label: 'Solicitada', badge: 'bg-blue-50 text-blue-800 border-blue-200' },
-  PATRULLA_ASIGNADA: { label: 'En Camino', badge: 'bg-amber-50 text-amber-800 border-amber-200' },
-  EN_FRENTE: { label: 'En Frente', badge: 'bg-orange-50 text-orange-800 border-orange-200' },
-  EN_REVISION: { label: 'En Revisión', badge: 'bg-orange-50 text-orange-800 border-orange-200' },
-  EN_QUEMA: { label: 'En Quema', badge: 'bg-rose-50 text-rose-800 border-rose-200 font-bold animate-pulse' },
-  FINALIZADA: { label: 'Finalizada', badge: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
-  CANCELADA: { label: 'Cancelada', badge: 'bg-slate-100 text-slate-500 border-slate-200' },
-};
-
-const PRIORIDAD_ESTILO: Record<Prioridad, { label: string; text: string; bg: string }> = {
-  NORMAL: { label: 'Normal', text: 'text-slate-600', bg: 'bg-slate-100 border-slate-200' },
-  ALTA: { label: 'Alta', text: 'text-amber-800', bg: 'bg-amber-50 border-amber-200' },
-  URGENTE: { label: 'Urgente', text: 'text-rose-800', bg: 'bg-rose-50 border-rose-200 font-bold' },
-};
-
 function minutosDesde(iso?: string): number {
   if (!iso) return 0;
   return Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
@@ -80,8 +65,8 @@ function formatearHora(iso?: string): string {
 }
 
 function EstadoTag({ estado }: { estado: BurnStatus }) {
-  const s = ESTADO_ESTILO[estado] || { label: estado, badge: 'bg-slate-100 text-slate-700 border-slate-200' };
-  return <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${s.badge}`}>{s.label}</span>;
+  const s = ESTADOS_CONFIG[estado] || { label: estado, badgeColor: 'bg-slate-100 text-slate-700 border-slate-200' };
+  return <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold border ${s.badgeColor}`}>{s.label}</span>;
 }
 
 export default function HomePage() {
@@ -137,6 +122,31 @@ export default function HomePage() {
     const loadSession = async () => {
       try {
         setIsLoading(true);
+        if (typeof window !== 'undefined' && window.location.search.includes('mockpreview')) {
+          const mockUser: UserProfile = {
+            id: 'mock', correo: 'demo@launion.com', nombre_completo: 'Oscar Morales', rol: 'admin',
+            frente_asignado: 'Frente 12', patrulla_asignada: undefined, activo: true,
+          };
+          const now = new Date();
+          const iso = (mins: number) => new Date(now.getTime() - mins * 60000).toISOString();
+          const mockSolicitudes: BurnRequest[] = [
+            { id: '1', numero_quema: 'QM-2026-0041', numero_frente: 'Frente 12', nombre_finca: 'Finca El Rosario', lote_um: 'Lote 8', area_hectareas: 24.5, area_manzanas: 35.1, tipo_cosecha: 'Mecanizada', prioridad: 'URGENTE', hora_solicitud: iso(45), hora_planificada: iso(-30), creado_por_usuario_id: 'x', nombre_supervisor_frente: 'J. Perez', estado: 'SOLICITADA', created_at: iso(45), updated_at: iso(45) },
+            { id: '2', numero_quema: 'QM-2026-0040', numero_frente: 'Frente 07', nombre_finca: 'Finca Santa Elena', lote_um: 'Lote 3', area_hectareas: 18.2, area_manzanas: 26.0, tipo_cosecha: 'Manual', prioridad: 'NORMAL', hora_solicitud: iso(60), hora_planificada: iso(-10), hora_asignacion: iso(20), creado_por_usuario_id: 'x', nombre_supervisor_frente: 'M. Lopez', nombre_patrulla_asignada: 'C-2', estado: 'PATRULLA_ASIGNADA', created_at: iso(60), updated_at: iso(20) },
+            { id: '3', numero_quema: 'QM-2026-0038', numero_frente: 'Frente 09', nombre_finca: 'Finca San Jose', lote_um: 'Lote 2', area_hectareas: 12.8, area_manzanas: 18.4, tipo_cosecha: 'Manual', prioridad: 'NORMAL', hora_solicitud: iso(120), hora_planificada: iso(-70), hora_asignacion: iso(80), hora_llegada_frente: iso(40), hora_inicio_quema: iso(8), creado_por_usuario_id: 'x', nombre_supervisor_frente: 'L. Diaz', nombre_patrulla_asignada: 'C-1', estado: 'EN_QUEMA', created_at: iso(120), updated_at: iso(8) },
+          ];
+          const mockPatrullas: PatrolCatalog[] = [
+            { nombre: 'C-1', codigo_vehiculo: 'C1-401', estado: 'EN_QUEMA', activo: true },
+            { nombre: 'C-2', codigo_vehiculo: 'C2-402', estado: 'EN_FRENTE', activo: true },
+            { nombre: 'C-3', codigo_vehiculo: 'C3-403', estado: 'DISPONIBLE', activo: true },
+            { nombre: 'C-4', codigo_vehiculo: 'C4-404', estado: 'DISPONIBLE', activo: true },
+            { nombre: 'C-5', codigo_vehiculo: 'C5-405', estado: 'DISPONIBLE', activo: true },
+          ];
+          setCurrentUser(mockUser);
+          setSolicitudes(mockSolicitudes);
+          setPatrullas(mockPatrullas);
+          setIsLoading(false);
+          return;
+        }
         const user = await authService.getCurrentUserProfile();
         if (!user || !user.activo) {
           router.push('/login');
@@ -206,7 +216,8 @@ export default function HomePage() {
         return s.estado === 'PATRULLA_ASIGNADA' || s.estado === 'EN_FRENTE' || s.estado === 'EN_REVISION';
       }
       if (filtroStatus === 'VALIDADAS') {
-        return s.estado === 'EN_REVISION' && Boolean(s.checklist_revision);
+        // Etapa sin lógica de aprobación real en el flujo operativo — nunca hay resultados.
+        return false;
       }
       if (filtroStatus === 'EN_QUEMA') {
         return s.estado === 'EN_QUEMA';
@@ -279,7 +290,7 @@ export default function HomePage() {
         (s) =>
           `"${s.numero_quema}","${s.numero_frente}","${s.nombre_finca}","${s.lote_um}",${s.area_hectareas},${s.area_manzanas},"${formatearHora(
             s.hora_planificada
-          )}","${s.nombre_patrulla_asignada || ''}","${ESTADO_ESTILO[s.estado]?.label || s.estado}","${PRIORIDAD_ESTILO[s.prioridad]?.label || s.prioridad}"`
+          )}","${s.nombre_patrulla_asignada || ''}","${ESTADOS_CONFIG[s.estado]?.label || s.estado}","${PRIORIDADES_CONFIG[s.prioridad]?.label || s.prioridad}"`
       )
       .join('\n');
 
@@ -367,7 +378,7 @@ export default function HomePage() {
         <main className="max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
           
           {/* BANNER CORPORATIVO VERDE (Estilo original Ingenio La Unión) */}
-          <div className="bg-gradient-to-r from-[#0d4f36] via-[#156b49] to-[#0f3826] text-white p-5 sm:p-6 rounded-3xl shadow-md border border-emerald-700/40 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="bg-gradient-to-r from-[#0d4f36] via-[#156b49] to-[#0f3826] text-white p-5 sm:p-6 rounded-2xl shadow-panel border border-emerald-700/40 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
             <div className="space-y-1.5 max-w-3xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold">
                 <Flame className="w-3.5 h-3.5 text-amber-400" />
@@ -541,7 +552,7 @@ export default function HomePage() {
               /* VISTA DE TARJETAS (CARDS) */
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
                 {listaFiltrada.map((s) => {
-                  const prioridadInfo = PRIORIDAD_ESTILO[s.prioridad] || PRIORIDAD_ESTILO.NORMAL;
+                  const prioridadInfo = PRIORIDADES_CONFIG[s.prioridad] || PRIORIDADES_CONFIG.NORMAL;
                   const tiempoTranscurrido = s.hora_asignacion ? minutosDesde(s.hora_asignacion) : minutosDesde(s.hora_solicitud);
                   const colorTiempo = tiempoTranscurrido < 15 ? 'text-emerald-700' : tiempoTranscurrido < 30 ? 'text-amber-700' : 'text-rose-700';
 
@@ -558,7 +569,7 @@ export default function HomePage() {
                             <Layers className="w-3 h-3 text-slate-400" /> {s.numero_frente}
                           </p>
                         </div>
-                        <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold shrink-0 ${prioridadInfo.bg} ${prioridadInfo.text}`}>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold shrink-0 ${prioridadInfo.badgeColor}`}>
                           {prioridadInfo.label}
                         </span>
                       </div>
@@ -848,8 +859,8 @@ export default function HomePage() {
 
             <div className="flex items-center gap-2 flex-wrap">
               <EstadoTag estado={detailTarget.estado} />
-              <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${PRIORIDAD_ESTILO[detailTarget.prioridad]?.bg || 'bg-slate-100'} ${PRIORIDAD_ESTILO[detailTarget.prioridad]?.text || 'text-slate-700'}`}>
-                Prioridad: {PRIORIDAD_ESTILO[detailTarget.prioridad]?.label || detailTarget.prioridad}
+              <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${PRIORIDADES_CONFIG[detailTarget.prioridad]?.badgeColor || 'bg-slate-100 text-slate-700'}`}>
+                Prioridad: {PRIORIDADES_CONFIG[detailTarget.prioridad]?.label || detailTarget.prioridad}
               </span>
             </div>
 

@@ -417,7 +417,7 @@ export default function FincasPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#070C14] flex flex-col items-center justify-center text-slate-300">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-600">
         <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="font-bold text-sm tracking-wide">Cargando Catálogo Agronómico...</p>
       </div>
@@ -425,49 +425,49 @@ export default function FincasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070C14] text-slate-100 flex flex-col">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-emerald-950/90 border border-emerald-500/50 text-emerald-300 px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="fixed top-5 right-5 z-50 bg-emerald-50 border border-emerald-300 text-emerald-700 px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Header */}
-      <header className="bg-[#0B121E] border-b border-slate-800/80 px-6 py-4 flex items-center justify-between shadow-md">
+      <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white hover:border-slate-700 transition"
+            className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:border-slate-300 transition"
             title="Volver al Inicio"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-cyan-600 border border-blue-400/30 flex items-center justify-center shadow-lg shadow-blue-950/50">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-cyan-600 border border-blue-400/30 flex items-center justify-center shadow-lg shadow-blue-200">
             <MapPin className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-black tracking-tight text-white leading-tight">
+            <h1 className="text-base font-black tracking-tight text-slate-900 leading-tight">
               Catálogo de Fincas y Lotes
             </h1>
-            <p className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">
+            <p className="text-[10px] uppercase font-bold text-blue-600 tracking-wider">
               Datos Agronómicos & Áreas (Ingenio La Unión)
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <nav className="hidden md:flex items-center gap-1.5 bg-slate-900/80 p-1 rounded-xl border border-slate-800">
+          <nav className="hidden md:flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
             <Link
               href="/usuarios"
-              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition"
+              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
             >
               Usuarios
             </Link>
             <Link
               href="/constantes"
-              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition"
+              className="px-3 py-1 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
             >
               Constantes
             </Link>
@@ -479,10 +479,10 @@ export default function FincasPage() {
             </Link>
           </nav>
 
-          <span className="hidden sm:inline text-xs font-bold text-slate-300">
+          <span className="hidden sm:inline text-xs font-bold text-slate-600">
             {currentUser?.nombre_completo}
           </span>
-          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-blue-950 text-blue-300 border border-blue-800">
+          <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-blue-50 text-blue-700 border border-blue-200">
             {currentUser?.rol.toUpperCase()}
           </span>
         </div>
@@ -492,24 +492,24 @@ export default function FincasPage() {
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-6">
         {/* KPI Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-2xl p-4">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Lotes</p>
-            <p className="text-2xl font-black text-white mt-0.5">{lotes.length}</p>
+          <div className="bg-white border border-slate-200 rounded-2xl p-4">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Lotes</p>
+            <p className="text-2xl font-black text-slate-900 mt-0.5">{lotes.length}</p>
           </div>
 
-          <div className="bg-[#0B121E] border border-slate-800 rounded-2xl p-4">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Fincas Registradas</p>
-            <p className="text-2xl font-black text-blue-400 mt-0.5">{uniqueFincasCount}</p>
+          <div className="bg-white border border-slate-200 rounded-2xl p-4">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Fincas Registradas</p>
+            <p className="text-2xl font-black text-blue-600 mt-0.5">{uniqueFincasCount}</p>
           </div>
 
-          <div className="bg-[#0B121E] border border-slate-800 rounded-2xl p-4">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Hectáreas</p>
-            <p className="text-2xl font-black text-emerald-400 mt-0.5">{totalHa} <span className="text-xs font-normal text-slate-400">ha</span></p>
+          <div className="bg-white border border-slate-200 rounded-2xl p-4">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Hectáreas</p>
+            <p className="text-2xl font-black text-emerald-600 mt-0.5">{totalHa} <span className="text-xs font-normal text-slate-500">ha</span></p>
           </div>
 
-          <div className="bg-[#0B121E] border border-slate-800 rounded-2xl p-4">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Manzanas</p>
-            <p className="text-2xl font-black text-amber-400 mt-0.5">{totalMz} <span className="text-xs font-normal text-slate-400">mz</span></p>
+          <div className="bg-white border border-slate-200 rounded-2xl p-4">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Manzanas</p>
+            <p className="text-2xl font-black text-amber-600 mt-0.5">{totalMz} <span className="text-xs font-normal text-slate-500">mz</span></p>
           </div>
         </div>
 
@@ -526,7 +526,7 @@ export default function FincasPage() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-[#0B121E] border border-slate-800 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+              className="w-full bg-white border border-slate-200 rounded-2xl pl-10 pr-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition"
             />
           </div>
 
@@ -538,7 +538,7 @@ export default function FincasPage() {
                 setActiveFilter(e.target.value as any);
                 setCurrentPage(1);
               }}
-              className="bg-[#0B121E] border border-slate-800 text-slate-200 rounded-2xl px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-blue-500 cursor-pointer"
+              className="bg-white border border-slate-200 text-slate-700 rounded-2xl px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-blue-500 cursor-pointer"
             >
               <option value="ALL">Todos los Lotes</option>
               <option value="ACTIVE">Solo Activos</option>
@@ -547,26 +547,26 @@ export default function FincasPage() {
 
             <button
               onClick={() => setIsBulkModalOpen(true)}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold py-2.5 px-3 rounded-2xl transition flex items-center gap-1.5 cursor-pointer shrink-0"
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold py-2.5 px-3 rounded-2xl transition flex items-center gap-1.5 cursor-pointer shrink-0"
               title="Carga Masiva desde Excel o CSV"
             >
-              <Upload className="w-4 h-4 text-blue-400" />
+              <Upload className="w-4 h-4 text-blue-600" />
               <span className="hidden sm:inline">Carga Masiva</span>
             </button>
 
             <button
               onClick={handleExportCSV}
               disabled={lotes.length === 0}
-              className="bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 border border-slate-700 text-xs font-bold py-2.5 px-3 rounded-2xl transition flex items-center gap-1.5 cursor-pointer shrink-0"
+              className="bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 border border-slate-300 text-xs font-bold py-2.5 px-3 rounded-2xl transition flex items-center gap-1.5 cursor-pointer shrink-0"
               title="Descargar Catálogo a CSV"
             >
-              <Download className="w-4 h-4 text-emerald-400" />
+              <Download className="w-4 h-4 text-emerald-600" />
               <span className="hidden sm:inline">Exportar</span>
             </button>
 
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-4 rounded-2xl transition shadow-lg shadow-blue-950/50 flex items-center gap-2 cursor-pointer shrink-0"
+              className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2.5 px-4 rounded-2xl transition shadow-lg shadow-blue-200 flex items-center gap-2 cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Nuevo Lote</span>
@@ -575,10 +575,10 @@ export default function FincasPage() {
         </div>
 
         {/* Tabla de Fincas y Lotes */}
-        <div className="bg-[#0B121E] border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-[#070C14] border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <tr>
                   <th className="px-5 py-4">Finca</th>
                   <th className="px-4 py-4">Lote (U.M.)</th>
@@ -589,7 +589,7 @@ export default function FincasPage() {
                   <th className="px-5 py-4 text-right">Acción</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-slate-200">
                 {paginatedLotes.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="text-center py-12 text-slate-500">
@@ -598,33 +598,33 @@ export default function FincasPage() {
                   </tr>
                 ) : (
                   paginatedLotes.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-900/40 transition">
+                    <tr key={item.id} className="hover:bg-slate-50 transition">
                       <td className="px-5 py-3.5">
-                        <span className="font-bold text-white text-xs">{item.finca}</span>
+                        <span className="font-bold text-slate-900 text-xs">{item.finca}</span>
                       </td>
 
-                      <td className="px-4 py-3.5 font-mono text-slate-200">
+                      <td className="px-4 py-3.5 font-mono text-slate-700">
                         {item.lote}
                       </td>
 
-                      <td className="px-4 py-3.5 text-right font-mono text-emerald-400 font-semibold">
+                      <td className="px-4 py-3.5 text-right font-mono text-emerald-600 font-semibold">
                         {item.area_ha.toFixed(2)}
                       </td>
 
-                      <td className="px-4 py-3.5 text-right font-mono text-amber-400 font-semibold">
+                      <td className="px-4 py-3.5 text-right font-mono text-amber-600 font-semibold">
                         {item.area_mz.toFixed(2)}
                       </td>
 
-                      <td className="px-4 py-3.5 font-mono text-slate-400 text-[11px]">
-                        {item.variedad || <span className="text-slate-600 italic">No esp.</span>}
+                      <td className="px-4 py-3.5 font-mono text-slate-500 text-[11px]">
+                        {item.variedad || <span className="text-slate-400 italic">No esp.</span>}
                       </td>
 
                       <td className="px-4 py-3.5 text-center">
                         <span
                           className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                             item.activo
-                              ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
-                              : 'bg-rose-950 text-rose-300 border-rose-800'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-rose-50 text-rose-700 border-rose-200'
                           }`}
                         >
                           {item.activo ? 'Activo' : 'Inactivo'}
@@ -635,7 +635,7 @@ export default function FincasPage() {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleOpenEdit(item)}
-                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 border border-slate-700 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
+                            className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-blue-600 hover:text-blue-700 border border-slate-300 text-[11px] font-bold transition flex items-center gap-1 cursor-pointer"
                             title="Editar datos del lote"
                           >
                             <Edit2 className="w-3 h-3" />
@@ -646,7 +646,7 @@ export default function FincasPage() {
                             onClick={() => handleToggleLoteActive(item.id!, item.activo!)}
                             className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition shadow-sm cursor-pointer ${
                               item.activo
-                                ? 'bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300'
+                                ? 'bg-rose-50 hover:bg-rose-900 border border-rose-200 text-rose-700'
                                 : 'bg-emerald-600 hover:bg-emerald-500 text-white'
                             }`}
                           >
@@ -662,34 +662,34 @@ export default function FincasPage() {
           </div>
 
           {/* Paginador */}
-          <div className="bg-[#070C14] px-5 py-3.5 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+          <div className="bg-slate-50 px-5 py-3.5 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
             <div>
               Mostrando{' '}
-              <span className="font-bold text-white">
+              <span className="font-bold text-slate-900">
                 {filteredLotes.length === 0 ? 0 : (currentPage - 1) * ITEMS_PER_PAGE + 1}
               </span>{' '}
               a{' '}
-              <span className="font-bold text-white">
+              <span className="font-bold text-slate-900">
                 {Math.min(currentPage * ITEMS_PER_PAGE, filteredLotes.length)}
               </span>{' '}
-              de <span className="font-bold text-white">{filteredLotes.length}</span> lotes
+              de <span className="font-bold text-slate-900">{filteredLotes.length}</span> lotes
             </div>
 
             <div className="flex items-center gap-2">
               <button
                 disabled={currentPage <= 1}
                 onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="font-semibold text-white px-2">
+              <span className="font-semibold text-slate-900 px-2">
                 Página {currentPage} de {totalPages}
               </span>
               <button
                 disabled={currentPage >= totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                className="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-300 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -701,15 +701,15 @@ export default function FincasPage() {
       {/* MODAL CREAR LOTE INDIVIDUAL */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Plus className="w-4 h-4 text-blue-400" />
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Plus className="w-4 h-4 text-blue-600" />
                 <span>Agregar Nuevo Lote</span>
               </h3>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="text-slate-400 hover:text-white transition"
+                className="text-slate-500 hover:text-slate-900 transition"
               >
                 ✕
               </button>
@@ -717,7 +717,7 @@ export default function FincasPage() {
 
             <form onSubmit={handleCreateLote} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Nombre de la Finca *
                 </label>
                 <input
@@ -726,12 +726,12 @@ export default function FincasPage() {
                   placeholder="Ej: Finca El Baúl"
                   value={formFinca}
                   onChange={(e) => setFormFinca(e.target.value)}
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Número / Código de Lote *
                 </label>
                 <input
@@ -740,13 +740,13 @@ export default function FincasPage() {
                   placeholder="Ej: Lote 101"
                   value={formLote}
                   onChange={(e) => setFormLote(e.target.value)}
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Área en Hectáreas (Ha)
                   </label>
                   <input
@@ -755,12 +755,12 @@ export default function FincasPage() {
                     placeholder="12.50"
                     value={formHa}
                     onChange={(e) => handleHaChange(e.target.value)}
-                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Área en Manzanas (Mz)
                   </label>
                   <input
@@ -769,13 +769,13 @@ export default function FincasPage() {
                     placeholder="17.88"
                     value={formMz}
                     onChange={(e) => handleMzChange(e.target.value)}
-                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Variedad de Caña (opcional)
                 </label>
                 <input
@@ -783,22 +783,22 @@ export default function FincasPage() {
                   placeholder="Ej: CP-72-2086"
                   value={formVariedad}
                   onChange={(e) => setFormVariedad(e.target.value)}
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800/80">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-blue-950/50"
+                  className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-blue-200"
                 >
                   {isSubmitting ? 'Guardando...' : 'Guardar Lote'}
                 </button>
@@ -811,10 +811,10 @@ export default function FincasPage() {
       {/* MODAL EDITAR LOTE EXISTENTE */}
       {isEditModalOpen && editingLote && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Edit2 className="w-4 h-4 text-blue-400" />
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-blue-600" />
                 <span>Editar Lote: {editingLote.finca} - {editingLote.lote}</span>
               </h3>
               <button
@@ -822,7 +822,7 @@ export default function FincasPage() {
                   setIsEditModalOpen(false);
                   setEditingLote(null);
                 }}
-                className="text-slate-400 hover:text-white transition cursor-pointer"
+                className="text-slate-500 hover:text-slate-900 transition cursor-pointer"
               >
                 ✕
               </button>
@@ -830,7 +830,7 @@ export default function FincasPage() {
 
             <form onSubmit={handleSaveEdit} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Nombre de la Finca *
                 </label>
                 <input
@@ -838,12 +838,12 @@ export default function FincasPage() {
                   required
                   value={editFinca}
                   onChange={(e) => setEditFinca(e.target.value)}
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Número / Código de Lote *
                 </label>
                 <input
@@ -851,13 +851,13 @@ export default function FincasPage() {
                   required
                   value={editLote}
                   onChange={(e) => setEditLote(e.target.value)}
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Área en Hectáreas (Ha)
                   </label>
                   <input
@@ -866,12 +866,12 @@ export default function FincasPage() {
                     placeholder="12.50"
                     value={editHa}
                     onChange={(e) => handleEditHaChange(e.target.value)}
-                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Área en Manzanas (Mz)
                   </label>
                   <input
@@ -880,13 +880,13 @@ export default function FincasPage() {
                     placeholder="17.88"
                     value={editMz}
                     onChange={(e) => handleEditMzChange(e.target.value)}
-                    className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Variedad de Caña
                 </label>
                 <input
@@ -894,39 +894,39 @@ export default function FincasPage() {
                   placeholder="Ej: CP-72-2086"
                   value={editVariedad}
                   onChange={(e) => setEditVariedad(e.target.value)}
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Estado del Lote
                 </label>
                 <select
                   value={editActivo ? 'true' : 'false'}
                   onChange={(e) => setEditActivo(e.target.value === 'true')}
-                  className="w-full bg-[#070C14] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
                 >
                   <option value="true">Activo (Disponible para Quemas)</option>
                   <option value="false">Inactivo (Deshabilitado)</option>
                 </select>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800/80">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => {
                     setIsEditModalOpen(false);
                     setEditingLote(null);
                   }}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 transition cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingEdit}
-                  className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-blue-950/50 cursor-pointer"
+                  className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-blue-200 cursor-pointer"
                 >
                   {isSubmittingEdit ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
@@ -939,24 +939,24 @@ export default function FincasPage() {
       {/* MODAL CARGA MASIVA */}
       {isBulkModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#0B121E] border border-slate-800 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Upload className="w-4 h-4 text-blue-400" />
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Upload className="w-4 h-4 text-blue-600" />
                 <span>Carga Masiva de Fincas y Lotes</span>
               </h3>
               <button
                 onClick={() => setIsBulkModalOpen(false)}
-                className="text-slate-400 hover:text-white transition"
+                className="text-slate-500 hover:text-slate-900 transition"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-500 leading-relaxed">
               Copia y pega las columnas desde tu Excel o CSV. El orden esperado por fila es:
               <br />
-              <code className="bg-[#070C14] text-blue-300 px-2 py-0.5 rounded text-[11px] font-mono mt-1 block">
+              <code className="bg-slate-50 text-blue-700 px-2 py-0.5 rounded text-[11px] font-mono mt-1 block">
                 Finca [tab/coma] Lote [tab/coma] Área_Ha [tab/coma] Área_Mz [tab/coma] Variedad
               </code>
             </p>
@@ -966,10 +966,10 @@ export default function FincasPage() {
               placeholder={`Finca El Baúl\tLote 101\t12.50\t17.88\tCP-72-2086\nFinca El Baúl\tLote 102\t15.20\t21.75\tCG-96-01\nFinca San Antonio\tLote 01\t10.00\t14.30\tCP-88-1165`}
               value={bulkDataText}
               onChange={(e) => setBulkDataText(e.target.value)}
-              className="w-full bg-[#070C14] border border-slate-800 rounded-xl p-3 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 font-mono focus:outline-none focus:border-blue-500"
             />
 
-            <div className="flex items-center justify-between pt-3 border-t border-slate-800/80">
+            <div className="flex items-center justify-between pt-3 border-t border-slate-200">
               <span className="text-[11px] text-slate-500">
                 {bulkDataText.trim() ? `${bulkDataText.trim().split('\n').length} filas detectadas` : 'Sin datos'}
               </span>
@@ -978,7 +978,7 @@ export default function FincasPage() {
                 <button
                   type="button"
                   onClick={() => setIsBulkModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition"
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 transition"
                 >
                   Cancelar
                 </button>
@@ -986,7 +986,7 @@ export default function FincasPage() {
                   type="button"
                   onClick={handleProcessBulk}
                   disabled={isProcessingBulk || !bulkDataText.trim()}
-                  className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-blue-950/50 flex items-center gap-2"
+                  className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs py-2 px-5 rounded-xl transition shadow-lg shadow-blue-200 flex items-center gap-2"
                 >
                   <Upload className="w-4 h-4" />
                   <span>{isProcessingBulk ? 'Importando...' : 'Importar a Base de Datos'}</span>
