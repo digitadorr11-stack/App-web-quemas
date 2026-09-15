@@ -69,7 +69,7 @@ export const PatrolAvailabilityMonitor: React.FC<PatrolAvailabilityMonitorProps>
   const countQuema = estados.filter((e) => e.tipo === 'EN_QUEMA').length;
 
   return (
-    <section className="bg-white border border-slate-200 rounded-xl shadow-sm">
+    <section className="bg-white border border-slate-200 rounded">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-5 py-4 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
           <Radio className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -108,7 +108,7 @@ export const PatrolAvailabilityMonitor: React.FC<PatrolAvailabilityMonitorProps>
             return (
               <div
                 key={patrulla.nombre}
-                className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 transition"
+                className="bg-white border border-slate-200 rounded p-4 flex flex-col justify-between hover:border-slate-300 transition"
               >
                 <div>
                   <div className="flex items-start justify-between gap-1 mb-2.5">

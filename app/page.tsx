@@ -48,7 +48,7 @@ const ESTADO_ESTILO: Record<BurnStatus, { label: string; badge: string }> = {
   EN_REVISION: { label: 'En Revisión', badge: 'bg-orange-100 text-orange-700 border-orange-300' },
   EN_QUEMA: { label: 'En Quema', badge: 'bg-rose-100 text-rose-700 border-rose-300' },
   FINALIZADA: { label: 'Finalizada', badge: 'bg-emerald-100 text-emerald-700 border-emerald-300' },
-  CANCELADA: { label: 'Cancelada', badge: 'bg-slate-100 text-slate-400 border-slate-200' },
+  CANCELADA: { label: 'Cancelada', badge: 'bg-slate-100 text-slate-400 border-slate-300' },
 };
 
 const PRIORIDAD_ESTILO: Record<Prioridad, { label: string; text: string; bg: string }> = {
@@ -281,9 +281,9 @@ export default function HomePage() {
   if (!currentUser) return null;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans">
+    <div className="min-h-screen bg-white text-slate-800 font-sans">
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-emerald-700 text-white px-4 py-3 rounded-lg shadow-2xl flex items-center gap-2 text-sm font-semibold max-w-sm">
+        <div className="fixed top-4 right-4 z-50 bg-[#1B5E3F] text-white px-4 py-3 rounded flex items-center gap-2 text-sm font-semibold max-w-sm">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{toastMessage}</span>
         </div>
@@ -291,25 +291,19 @@ export default function HomePage() {
 
       <Sidebar currentUser={currentUser} open={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
 
-      <div className={`transition-[padding] duration-200 ${sidebarOpen ? 'lg:pl-72' : 'lg:pl-0'}`}>
-        {/* Banner superior */}
-        <div className="bg-[#064e3b] px-5 sm:px-8 py-5 flex items-center gap-4">
+      <div className={`transition-[padding] duration-200 ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'}`}>
+        {/* Encabezado tipo breadcrumb */}
+        <div className="border-b border-slate-300 px-5 sm:px-8 py-4 flex items-center gap-3">
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className="w-9 h-9 rounded-lg bg-emerald-900/40 hover:bg-emerald-900/70 border border-emerald-700/40 flex items-center justify-center text-emerald-200 transition shrink-0"
+            className="w-8 h-8 rounded border border-slate-300 hover:bg-slate-50 flex items-center justify-center text-slate-500 transition shrink-0"
           >
             <Menu className="w-4 h-4" />
           </button>
-          <div className="w-11 h-11 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
-            <Flame className="w-5 h-5 text-amber-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-300">Módulo Activo</p>
-            <h1 className="text-lg font-bold text-white leading-tight">Quemas Programadas</h1>
-            <p className="text-[12px] text-emerald-200/80 mt-0.5 hidden sm:block">
-              Registro y control de quemas programadas, despacho de patrullas y bitácora en tiempo real.
-            </p>
-          </div>
+          <h1 className="text-xl text-slate-800">
+            <span className="text-slate-400">Quemas</span> <span className="text-slate-400">/</span>{' '}
+            <span className="font-semibold">Panel de Control</span>
+          </h1>
         </div>
 
         <main className="max-w-[1600px] w-full mx-auto p-4 sm:p-6 space-y-5">
@@ -318,7 +312,7 @@ export default function HomePage() {
             {puedeCrear && (
               <Link
                 href="/quemas/nueva"
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold shadow-sm transition"
+                className="flex items-center gap-1.5 px-4 py-2 rounded bg-[#1B5E3F] hover:bg-[#164d33] text-white text-xs font-bold transition"
               >
                 <FilePlus2 className="w-4 h-4" />
                 Nueva Solicitud de Quema
@@ -326,10 +320,10 @@ export default function HomePage() {
             )}
             <button
               onClick={() => setMostrarFinalizadas((v) => !v)}
-              className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-lg border text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded border text-xs font-bold transition ${
                 mostrarFinalizadas
-                  ? 'bg-emerald-600 border-emerald-600 text-white'
-                  : 'bg-white border-slate-200 text-emerald-700 hover:border-emerald-300'
+                  ? 'bg-[#1B5E3F] border-[#1B5E3F] text-white'
+                  : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50'
               }`}
             >
               <CheckCircle2 className="w-4 h-4" />
@@ -337,14 +331,14 @@ export default function HomePage() {
             </button>
             <button
               onClick={exportarExcel}
-              className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold transition"
+              className="flex items-center gap-1.5 px-3 py-2 rounded bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-bold transition"
             >
               <FileSpreadsheet className="w-4 h-4" />
               Excel
             </button>
             <button
               onClick={exportarPDF}
-              className="flex items-center gap-1.5 px-3 py-2.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold transition"
+              className="flex items-center gap-1.5 px-3 py-2 rounded bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-bold transition"
             >
               <FileText className="w-4 h-4" />
               PDF
@@ -359,7 +353,7 @@ export default function HomePage() {
             <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">
               {listaFiltrada.length} solicitud{listaFiltrada.length === 1 ? '' : 'es'} {mostrarFinalizadas ? 'finalizadas hoy' : 'activas'}
             </p>
-            <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-slate-200">
+            <div className="flex items-center gap-1 bg-white p-1 rounded border border-slate-300">
               <button
                 onClick={() => setVista('grid')}
                 className={`p-1.5 rounded transition ${vista === 'grid' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-400 hover:text-slate-600'}`}
@@ -377,7 +371,7 @@ export default function HomePage() {
 
           {/* Listado */}
           {listaFiltrada.length === 0 ? (
-            <div className="bg-white border border-slate-200 rounded-xl p-10 text-center shadow-sm">
+            <div className="bg-white border border-slate-300 rounded p-10 text-center">
               <p className="text-sm text-slate-400">No hay solicitudes que coincidan con este filtro.</p>
             </div>
           ) : vista === 'grid' ? (
@@ -390,7 +384,7 @@ export default function HomePage() {
                 return (
                   <div
                     key={s.id}
-                    className="bg-white border border-slate-200 rounded-xl p-4 space-y-2.5 hover:border-emerald-300 shadow-sm transition cursor-pointer"
+                    className="bg-white border border-slate-300 rounded p-4 space-y-2.5 hover:border-emerald-300 transition cursor-pointer"
                     onClick={() => setDetailTarget(s)}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -460,10 +454,10 @@ export default function HomePage() {
               })}
             </div>
           ) : (
-            <div className="bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm">
+            <div className="bg-white border border-slate-300 rounded overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500 uppercase text-[10px] tracking-wide bg-slate-50">
+                  <tr className="border-b border-slate-300 text-slate-500 uppercase text-[10px] tracking-wide bg-slate-50">
                     <th className="text-left font-bold px-4 py-3">Quema</th>
                     <th className="text-left font-bold px-4 py-3">Frente</th>
                     <th className="text-left font-bold px-4 py-3">Finca / Lote</th>
@@ -527,7 +521,7 @@ export default function HomePage() {
       {/* Modal Despacho */}
       {dispatchTarget && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+          <div className="bg-white border border-slate-300 rounded p-6 w-full max-w-md space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900">Despachar Patrulla</h3>
               <button onClick={() => setDispatchTarget(null)} className="text-slate-400 hover:text-slate-600">
@@ -535,13 +529,13 @@ export default function HomePage() {
               </button>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600">
+            <div className="bg-slate-50 border border-slate-300 rounded p-3 text-xs text-slate-600">
               <p className="font-mono font-bold text-slate-900">{dispatchTarget.numero_quema}</p>
               <p>{dispatchTarget.nombre_finca} · {dispatchTarget.lote_um} · {dispatchTarget.numero_frente}</p>
             </div>
 
             {errorMessage && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-lg p-3 text-xs flex items-start gap-2">
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded p-3 text-xs flex items-start gap-2">
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {errorMessage}
               </div>
             )}
@@ -551,7 +545,7 @@ export default function HomePage() {
               <select
                 value={selectedPatrulla}
                 onChange={(e) => setSelectedPatrulla(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-white border border-slate-300 rounded px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-emerald-500"
               >
                 <option value="">Seleccione una patrulla...</option>
                 {patrullasDisponibles.map((p) => (
@@ -572,14 +566,14 @@ export default function HomePage() {
                 value={selectedLider}
                 onChange={(e) => setSelectedLider(e.target.value)}
                 placeholder="Nombre del encargado"
-                className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-white border border-slate-300 rounded px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-emerald-500"
               />
             </div>
 
             <button
               onClick={confirmarDespacho}
               disabled={!selectedPatrulla || isDispatching}
-              className="w-full flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold text-sm py-3 rounded-lg transition"
+              className="w-full flex items-center justify-center gap-2 bg-[#1B5E3F] hover:bg-[#164d33] disabled:opacity-50 text-white font-bold text-sm py-3 rounded transition"
             >
               {isDispatching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />}
               Confirmar Despacho
@@ -591,7 +585,7 @@ export default function HomePage() {
       {/* Modal Cancelación */}
       {cancelTarget && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+          <div className="bg-white border border-slate-300 rounded p-6 w-full max-w-md space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900">Cancelar Solicitud</h3>
               <button onClick={() => setCancelTarget(null)} className="text-slate-400 hover:text-slate-600">
@@ -599,13 +593,13 @@ export default function HomePage() {
               </button>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600">
+            <div className="bg-slate-50 border border-slate-300 rounded p-3 text-xs text-slate-600">
               <p className="font-mono font-bold text-slate-900">{cancelTarget.numero_quema}</p>
               <p>{cancelTarget.nombre_finca} · {cancelTarget.lote_um}</p>
             </div>
 
             {errorMessage && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-lg p-3 text-xs flex items-start gap-2">
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded p-3 text-xs flex items-start gap-2">
                 <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" /> {errorMessage}
               </div>
             )}
@@ -615,7 +609,7 @@ export default function HomePage() {
               <select
                 value={motivoCancelacion}
                 onChange={(e) => setMotivoCancelacion(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-rose-500"
+                className="w-full bg-white border border-slate-300 rounded px-4 py-3 text-sm font-semibold text-slate-800 focus:outline-none focus:border-rose-500"
               >
                 <option value="">Seleccione un motivo...</option>
                 {MOTIVOS_CANCELACION_ESTANDAR.map((m) => (
@@ -629,7 +623,7 @@ export default function HomePage() {
             <button
               onClick={confirmarCancelacion}
               disabled={!motivoCancelacion || isCancelling}
-              className="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold text-sm py-3 rounded-lg transition"
+              className="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold text-sm py-3 rounded transition"
             >
               {isCancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
               Confirmar Cancelación
@@ -641,7 +635,7 @@ export default function HomePage() {
       {/* Modal Detalle */}
       {detailTarget && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-xl p-6 w-full max-w-lg space-y-4 max-h-[85vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white border border-slate-300 rounded p-6 w-full max-w-lg space-y-4 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Info className="w-4 h-4 text-emerald-600" />
@@ -660,19 +654,19 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <div className="bg-slate-50 border border-slate-300 rounded p-3">
                 <p className="text-slate-400 text-[10px] uppercase font-bold">Frente</p>
                 <p className="text-slate-900 font-semibold mt-0.5">{detailTarget.numero_frente}</p>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <div className="bg-slate-50 border border-slate-300 rounded p-3">
                 <p className="text-slate-400 text-[10px] uppercase font-bold">Finca / Lote</p>
                 <p className="text-slate-900 font-semibold mt-0.5">{detailTarget.nombre_finca} · {detailTarget.lote_um}</p>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <div className="bg-slate-50 border border-slate-300 rounded p-3">
                 <p className="text-slate-400 text-[10px] uppercase font-bold">Área</p>
                 <p className="text-slate-900 font-semibold mt-0.5">{detailTarget.area_hectareas} Ha · {detailTarget.area_manzanas} Mz</p>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
+              <div className="bg-slate-50 border border-slate-300 rounded p-3">
                 <p className="text-slate-400 text-[10px] uppercase font-bold">Patrulla</p>
                 <p className="text-slate-900 font-semibold mt-0.5">{detailTarget.nombre_patrulla_asignada || '—'}</p>
               </div>
@@ -699,14 +693,14 @@ export default function HomePage() {
             </div>
 
             {detailTarget.observaciones_solicitud && (
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-600">
+              <div className="bg-slate-50 border border-slate-300 rounded p-3 text-xs text-slate-600">
                 <p className="text-slate-400 text-[10px] uppercase font-bold mb-1">Observaciones</p>
                 {detailTarget.observaciones_solicitud}
               </div>
             )}
 
             {detailTarget.motivo_cancelacion && (
-              <div className="bg-rose-50 border border-rose-200 rounded-lg p-3 text-xs text-rose-700">
+              <div className="bg-rose-50 border border-rose-200 rounded p-3 text-xs text-rose-700">
                 <p className="text-rose-500 text-[10px] uppercase font-bold mb-1">Motivo de Cancelación</p>
                 {detailTarget.motivo_cancelacion}
               </div>
