@@ -213,7 +213,7 @@ export default function TableroDespachoPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#f4f6f4] flex flex-col items-center justify-center text-slate-500">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-500">
         <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm font-semibold tracking-wide">Cargando tablero operativo...</p>
       </div>
@@ -223,10 +223,10 @@ export default function TableroDespachoPage() {
   if (!currentUser) return null;
 
   return (
-    <div className="min-h-screen bg-[#f4f6f4] text-slate-900 font-sans pb-16">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-16">
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-[#165135] text-white px-4 py-3 rounded-xl shadow-panel flex items-center gap-2 text-sm font-semibold max-w-sm">
-          <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+        <div className="fixed top-4 right-4 z-50 bg-union-900 text-white px-4 py-3 rounded-xl shadow-panel flex items-center gap-2 text-sm font-semibold max-w-sm">
+          <CheckCircle2 className="w-4 h-4 text-union-300 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -238,7 +238,7 @@ export default function TableroDespachoPage() {
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center shadow-card">
+        <div className="w-9 h-9 rounded-md bg-amber-600 flex items-center justify-center shadow-card">
           <Truck className="w-4 h-4 text-white" />
         </div>
         <div>

@@ -112,37 +112,33 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f6f4] text-slate-900 flex flex-col justify-center items-center p-4 relative overflow-hidden font-sans">
-      {/* Background Decorative Gradients */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center items-center p-4 font-sans">
       {/* Main Login / Register Card */}
-      <div className="w-full max-w-[420px] bg-white border border-slate-200 rounded-3xl p-7 sm:p-9 shadow-panel relative z-10 space-y-6">
+      <div className="w-full max-w-[400px] bg-white border border-slate-200 rounded-lg p-7 sm:p-8 shadow-panel space-y-6">
 
         {/* Header Branding */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-700 to-emerald-600 shadow-card">
-            <Flame className="w-8 h-8 text-amber-400 animate-pulse" />
+        <div className="text-center space-y-2.5">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-md bg-union-800 border border-union-900">
+            <Flame className="w-5 h-5 text-amber-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-xl font-semibold tracking-tight text-slate-900">
               Ingenio La Unión
             </h1>
-            <p className="text-[11px] uppercase tracking-widest font-extrabold text-emerald-700 mt-1">
-              CONTROL DE QUEMAS PROGRAMADAS
+            <p className="text-[11px] uppercase tracking-wide font-semibold text-union-700 mt-1">
+              Control de Quemas Programadas
             </p>
           </div>
           <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
             {isRegisterMode
               ? 'Complete sus datos para solicitar acceso a la plataforma.'
-              : 'Acceso seguro al sistema de trazabilidad operativa.'}
+              : 'Acceso al sistema de trazabilidad operativa.'}
           </p>
         </div>
 
         {/* Error Alert Box */}
         {errorMsg && (
-          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs font-semibold flex items-center gap-2.5">
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-md text-rose-700 text-xs font-medium flex items-center gap-2.5">
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{errorMsg}</span>
           </div>
@@ -150,8 +146,8 @@ export default function LoginPage() {
 
         {/* Success Alert Box */}
         {successMsg && (
-          <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-700 text-xs font-semibold flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="p-3 bg-union-50 border border-union-200 rounded-md text-union-800 text-xs font-medium flex items-center gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-union-700 shrink-0" />
             <span>{successMsg}</span>
           </div>
         )}
@@ -170,7 +166,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="ejemplo@launion.com"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3.5 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                  className="w-full bg-slate-100 hover:bg-white focus:bg-white text-slate-900 border border-transparent focus:border-union-400 rounded-md pl-11 pr-4 py-3 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-union-500/30 transition"
                   required
                   autoComplete="username"
                 />
@@ -188,7 +184,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-11 py-3.5 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                  className="w-full bg-slate-100 hover:bg-white focus:bg-white text-slate-900 border border-transparent focus:border-union-400 rounded-md pl-11 pr-11 py-3 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-union-500/30 transition"
                   required
                   autoComplete="current-password"
                 />
@@ -205,7 +201,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-200 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
+              className="w-full bg-union-700 hover:bg-union-800 text-white font-semibold text-sm py-3 px-4 rounded-md flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <span>Validando acceso...</span>
@@ -231,7 +227,7 @@ export default function LoginPage() {
                   value={regFullName}
                   onChange={(e) => setRegFullName(e.target.value)}
                   placeholder="Ej. Oscar Morales"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                  className="w-full bg-slate-100 hover:bg-white focus:bg-white text-slate-900 border border-transparent focus:border-union-400 rounded-md pl-11 pr-4 py-2.5 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-union-500/30 transition"
                   required
                 />
               </div>
@@ -248,7 +244,7 @@ export default function LoginPage() {
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
                   placeholder="nombre@launion.com"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-4 py-3 text-sm font-semibold placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                  className="w-full bg-slate-100 hover:bg-white focus:bg-white text-slate-900 border border-transparent focus:border-union-400 rounded-md pl-11 pr-4 py-2.5 text-sm font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-union-500/30 transition"
                   required
                 />
               </div>
@@ -265,7 +261,7 @@ export default function LoginPage() {
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#EDF2F7] hover:bg-white focus:bg-white text-slate-900 border-none rounded-2xl pl-11 pr-11 py-3 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner transition"
+                  className="w-full bg-slate-100 hover:bg-white focus:bg-white text-slate-900 border border-transparent focus:border-union-400 rounded-md pl-11 pr-11 py-2.5 text-sm font-mono placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-union-500/30 transition"
                   required
                 />
                 <button
@@ -281,7 +277,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#108A58] hover:bg-[#0E7A4E] text-white font-bold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-200 flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
+              className="w-full bg-union-700 hover:bg-union-800 text-white font-semibold text-sm py-3 px-4 rounded-md flex items-center justify-center gap-2 transition duration-200 mt-2 disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? (
                 <span>Enviando solicitud...</span>
@@ -298,7 +294,7 @@ export default function LoginPage() {
         {/* Separador */}
         <div className="flex items-center gap-3 my-3">
           <div className="h-[1px] bg-slate-200 flex-1" />
-          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">
+          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">
             O CONTINUAR CON
           </span>
           <div className="h-[1px] bg-slate-200 flex-1" />
@@ -309,7 +305,7 @@ export default function LoginPage() {
           type="button"
           onClick={handleGoogleLogin}
           disabled={isGoogleLoading}
-          className="w-full py-3.5 px-4 bg-white hover:bg-slate-100 text-slate-800 font-bold text-sm rounded-2xl shadow-md flex items-center justify-center gap-3 transition duration-200 border border-slate-200 cursor-pointer disabled:opacity-60"
+          className="w-full py-3 px-4 bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm rounded-md flex items-center justify-center gap-3 transition duration-200 border border-slate-300 cursor-pointer disabled:opacity-60"
         >
           {isGoogleLoading ? (
             <span>Conectando con Google...</span>
@@ -350,7 +346,7 @@ export default function LoginPage() {
                   setSuccessMsg('');
                   setIsRegisterMode(true);
                 }}
-                className="text-emerald-700 hover:text-emerald-600 font-bold underline underline-offset-4 cursor-pointer"
+                className="text-union-700 hover:text-union-800 font-semibold underline underline-offset-4 cursor-pointer"
               >
                 Regístrese aquí
               </button>
@@ -365,7 +361,7 @@ export default function LoginPage() {
                   setSuccessMsg('');
                   setIsRegisterMode(false);
                 }}
-                className="text-emerald-700 hover:text-emerald-600 font-bold underline underline-offset-4 cursor-pointer"
+                className="text-union-700 hover:text-union-800 font-semibold underline underline-offset-4 cursor-pointer"
               >
                 Iniciar sesión aquí
               </button>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { BurnRequest } from '@/lib/types';
+import { Layers, Clock, Truck, ShieldCheck, Flame, CheckCircle2, XCircle } from 'lucide-react';
 
 interface StatsOverviewProps {
   solicitudes: BurnRequest[];
@@ -41,15 +42,19 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       titulo: 'TOTAL QUEMAS',
       valor: totalQuemas,
       subtitulo: `${totalHa} ha | ${totalMz} mz`,
-      dot: 'bg-[#1B5E3F]',
-      ringActive: 'ring-2 ring-[#1B5E3F]',
+      icon: Layers,
+      border: 'border-slate-200',
+      iconBg: 'bg-slate-100 text-slate-600',
+      ringActive: 'ring-2 ring-slate-400',
     },
     {
       id: 'SOLICITADA',
       titulo: '1. SOLICITADAS',
       valor: solicitadas,
       subtitulo: 'Esperando patrulla',
-      dot: 'bg-blue-500',
+      icon: Clock,
+      border: 'border-blue-200',
+      iconBg: 'bg-blue-100 text-blue-600',
       ringActive: 'ring-2 ring-blue-500',
     },
     {
@@ -57,7 +62,9 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       titulo: '2-4. EN PROCESO',
       valor: enProceso,
       subtitulo: 'Patrullas en campo',
-      dot: 'bg-amber-500',
+      icon: Truck,
+      border: 'border-amber-200',
+      iconBg: 'bg-amber-100 text-amber-600',
       ringActive: 'ring-2 ring-amber-500',
     },
     {
@@ -65,7 +72,9 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       titulo: '5. VALIDADAS',
       valor: validadas,
       subtitulo: 'No funcional — sin aprobación',
-      dot: 'bg-slate-300',
+      icon: ShieldCheck,
+      border: 'border-slate-200',
+      iconBg: 'bg-slate-100 text-slate-400',
       ringActive: '',
       disabled: true,
     },
@@ -74,7 +83,9 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       titulo: '6. QUEMA ACTIVA',
       valor: enQuema,
       subtitulo: 'Fuego en desarrollo',
-      dot: 'bg-rose-600',
+      icon: Flame,
+      border: 'border-rose-200',
+      iconBg: 'bg-rose-100 text-rose-600',
       ringActive: 'ring-2 ring-rose-500',
     },
     {
@@ -82,7 +93,9 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       titulo: '7. FINALIZADAS',
       valor: finalizadas,
       subtitulo: 'Liquidadas con éxito',
-      dot: 'bg-emerald-500',
+      icon: CheckCircle2,
+      border: 'border-emerald-200',
+      iconBg: 'bg-emerald-100 text-emerald-600',
       ringActive: 'ring-2 ring-emerald-500',
     },
     {
@@ -90,7 +103,9 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       titulo: 'CANCELADAS',
       valor: canceladas,
       subtitulo: 'Por clima o riesgo',
-      dot: 'bg-slate-400',
+      icon: XCircle,
+      border: 'border-slate-200',
+      iconBg: 'bg-slate-100 text-slate-500',
       ringActive: 'ring-2 ring-slate-400',
     },
   ];
@@ -100,6 +115,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       {cards.map((card) => {
         const isSelected = filtroActivo === card.id;
         const isDisabled = Boolean(card.disabled);
+        const Icon = card.icon;
 
         return (
           <button
@@ -108,15 +124,17 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
             disabled={isDisabled}
             onClick={() => !isDisabled && onSelectFiltro(card.id)}
             title={isDisabled ? 'Etapa sin lógica de aprobación activa en el flujo operativo' : undefined}
-            className={`p-3.5 rounded-xl border border-slate-200 bg-white text-left transition-all duration-150 shadow-card flex flex-col justify-between ${
+            className={`p-3.5 rounded-md border bg-white text-left transition-all duration-150 shadow-card flex flex-col justify-between ${card.border} ${
               isDisabled ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer'
             } ${isSelected ? card.ringActive : ''}`}
           >
-            <div className="flex items-center justify-between gap-1">
-              <span className="text-[10px] font-bold tracking-wider uppercase text-slate-500 truncate">
+            <div className="flex items-start justify-between gap-1">
+              <span className="text-[10px] font-semibold tracking-wide uppercase text-slate-500 truncate">
                 {card.titulo}
               </span>
-              <span className={`w-2 h-2 rounded-full shrink-0 ${card.dot}`} />
+              <span className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${card.iconBg}`}>
+                <Icon className="w-3.5 h-3.5" />
+              </span>
             </div>
 
             <div className="mt-2">

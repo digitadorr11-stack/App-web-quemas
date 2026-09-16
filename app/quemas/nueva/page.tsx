@@ -218,7 +218,7 @@ export default function NuevaSolicitudPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#f4f6f4] flex flex-col items-center justify-center text-slate-500">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-500">
         <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm font-semibold tracking-wide">Cargando formulario...</p>
       </div>
@@ -228,11 +228,11 @@ export default function NuevaSolicitudPage() {
   if (!currentUser) return null;
 
   return (
-    <div className="min-h-screen bg-[#f4f6f4] text-slate-900 font-sans pb-16">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-16">
       {/* Toast */}
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-[#165135] text-white px-4 py-3 rounded-xl shadow-panel flex items-center gap-2 text-sm font-semibold max-w-sm">
-          <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+        <div className="fixed top-4 right-4 z-50 bg-union-900 text-white px-4 py-3 rounded-xl shadow-panel flex items-center gap-2 text-sm font-semibold max-w-sm">
+          <CheckCircle2 className="w-4 h-4 text-union-300 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -244,7 +244,7 @@ export default function NuevaSolicitudPage() {
         >
           <ArrowLeft className="w-4 h-4" />
         </Link>
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-500 flex items-center justify-center shadow-card">
+        <div className="w-9 h-9 rounded-md bg-blue-600 flex items-center justify-center shadow-card">
           <Flame className="w-4 h-4 text-amber-300" />
         </div>
         <div>
@@ -454,7 +454,7 @@ export default function NuevaSolicitudPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 disabled:opacity-60 text-white font-bold text-sm py-4 rounded-2xl shadow-panel transition"
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold text-sm py-4 rounded-2xl shadow-panel transition"
           >
             {isSubmitting ? (
               <>

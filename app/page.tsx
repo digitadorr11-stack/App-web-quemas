@@ -122,31 +122,6 @@ export default function HomePage() {
     const loadSession = async () => {
       try {
         setIsLoading(true);
-        if (typeof window !== 'undefined' && window.location.search.includes('mockpreview')) {
-          const mockUser: UserProfile = {
-            id: 'mock', correo: 'demo@launion.com', nombre_completo: 'Oscar Morales', rol: 'admin',
-            frente_asignado: 'Frente 12', patrulla_asignada: undefined, activo: true,
-          };
-          const now = new Date();
-          const iso = (mins: number) => new Date(now.getTime() - mins * 60000).toISOString();
-          const mockSolicitudes: BurnRequest[] = [
-            { id: '1', numero_quema: 'QM-2026-0041', numero_frente: 'Frente 12', nombre_finca: 'Finca El Rosario', lote_um: 'Lote 8', area_hectareas: 24.5, area_manzanas: 35.1, tipo_cosecha: 'Mecanizada', prioridad: 'URGENTE', hora_solicitud: iso(45), hora_planificada: iso(-30), creado_por_usuario_id: 'x', nombre_supervisor_frente: 'J. Perez', estado: 'SOLICITADA', created_at: iso(45), updated_at: iso(45) },
-            { id: '2', numero_quema: 'QM-2026-0040', numero_frente: 'Frente 07', nombre_finca: 'Finca Santa Elena', lote_um: 'Lote 3', area_hectareas: 18.2, area_manzanas: 26.0, tipo_cosecha: 'Manual', prioridad: 'NORMAL', hora_solicitud: iso(60), hora_planificada: iso(-10), hora_asignacion: iso(20), creado_por_usuario_id: 'x', nombre_supervisor_frente: 'M. Lopez', nombre_patrulla_asignada: 'C-2', estado: 'PATRULLA_ASIGNADA', created_at: iso(60), updated_at: iso(20) },
-            { id: '3', numero_quema: 'QM-2026-0038', numero_frente: 'Frente 09', nombre_finca: 'Finca San Jose', lote_um: 'Lote 2', area_hectareas: 12.8, area_manzanas: 18.4, tipo_cosecha: 'Manual', prioridad: 'NORMAL', hora_solicitud: iso(120), hora_planificada: iso(-70), hora_asignacion: iso(80), hora_llegada_frente: iso(40), hora_inicio_quema: iso(8), creado_por_usuario_id: 'x', nombre_supervisor_frente: 'L. Diaz', nombre_patrulla_asignada: 'C-1', estado: 'EN_QUEMA', created_at: iso(120), updated_at: iso(8) },
-          ];
-          const mockPatrullas: PatrolCatalog[] = [
-            { nombre: 'C-1', codigo_vehiculo: 'C1-401', estado: 'EN_QUEMA', activo: true },
-            { nombre: 'C-2', codigo_vehiculo: 'C2-402', estado: 'EN_FRENTE', activo: true },
-            { nombre: 'C-3', codigo_vehiculo: 'C3-403', estado: 'DISPONIBLE', activo: true },
-            { nombre: 'C-4', codigo_vehiculo: 'C4-404', estado: 'DISPONIBLE', activo: true },
-            { nombre: 'C-5', codigo_vehiculo: 'C5-405', estado: 'DISPONIBLE', activo: true },
-          ];
-          setCurrentUser(mockUser);
-          setSolicitudes(mockSolicitudes);
-          setPatrullas(mockPatrullas);
-          setIsLoading(false);
-          return;
-        }
         const user = await authService.getCurrentUserProfile();
         if (!user || !user.activo) {
           router.push('/login');
@@ -326,10 +301,10 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-[#165135] text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-sm font-semibold max-w-sm animate-in fade-in slide-in-from-top-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+        <div className="fixed top-4 right-4 z-50 bg-union-900 text-white px-4 py-3 rounded-md shadow-panel flex items-center gap-2 text-sm font-medium max-w-sm animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-4 h-4 text-union-300 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -377,74 +352,76 @@ export default function HomePage() {
 
         <main className="max-w-[1600px] w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
           
-          {/* BANNER CORPORATIVO VERDE (Estilo original Ingenio La Unión) */}
-          <div className="bg-gradient-to-r from-[#0d4f36] via-[#156b49] to-[#0f3826] text-white p-5 sm:p-6 rounded-2xl shadow-panel border border-emerald-700/40 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-            <div className="space-y-1.5 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 border border-emerald-400/30 text-emerald-200 text-xs font-bold">
-                <Flame className="w-3.5 h-3.5 text-amber-400" />
-                <span>MÓDULO ACTIVO · Quemas Programadas</span>
+          {/* ENCABEZADO DE MÓDULO */}
+          <div className="bg-union-900 text-white rounded-md shadow-panel p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+            <div className="flex items-start gap-3.5 max-w-3xl min-w-0">
+              <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                <Flame className="w-5 h-5 text-amber-400" />
               </div>
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-                Registro y Control de Quemas en Tiempo Real
-              </h1>
-              <p className="text-xs sm:text-sm text-emerald-100/85 leading-relaxed">
-                {currentUser.rol === 'supervisor_frente' &&
-                  `Vista de Frente: Administra las solicitudes correspondientes a tu turno/frente (${currentUser.frente_asignado || 'Frente asignado'}).`}
-                {currentUser.rol === 'supervisor_quemas' &&
-                  'Coordinación de Quemas: Monitorea todas las solicitudes entrantes y asigna patrullas de campo con medición de tiempos.'}
-                {currentUser.rol === 'patrulla' &&
-                  `Operación de Patrulla: Registra tus tiempos de llegada, inspección técnica y finalización para tu unidad (${currentUser.patrulla_asignada || 'Patrulla'}).`}
-                {currentUser.rol === 'digitador' &&
-                  'Control Total de Digitador: Supervisión global de todos los frentes, despacho de unidades y administración de catálogos.'}
-                {currentUser.rol === 'admin' &&
-                  'Administración Integral: Control total del flujo de despacho, constantes operativas, fincas, lotes y usuarios.'}
-                {currentUser.rol === 'jefatura' &&
-                  'Supervisión Gerencial: Visión ejecutiva y consolidada de avance de zafra en toda la plantación.'}
-              </p>
+              <div className="space-y-1 min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-union-300">Módulo activo</p>
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                  Quemas Programadas
+                </h1>
+                <p className="text-xs sm:text-sm text-union-100/80 leading-relaxed">
+                  {currentUser.rol === 'supervisor_frente' &&
+                    `Vista de Frente: Administra las solicitudes correspondientes a tu turno/frente (${currentUser.frente_asignado || 'Frente asignado'}).`}
+                  {currentUser.rol === 'supervisor_quemas' &&
+                    'Coordinación de Quemas: Monitorea todas las solicitudes entrantes y asigna patrullas de campo con medición de tiempos.'}
+                  {currentUser.rol === 'patrulla' &&
+                    `Operación de Patrulla: Registra tus tiempos de llegada, inspección técnica y finalización para tu unidad (${currentUser.patrulla_asignada || 'Patrulla'}).`}
+                  {currentUser.rol === 'digitador' &&
+                    'Control Total de Digitador: Supervisión global de todos los frentes, despacho de unidades y administración de catálogos.'}
+                  {currentUser.rol === 'admin' &&
+                    'Administración Integral: Control total del flujo de despacho, constantes operativas, fincas, lotes y usuarios.'}
+                  {currentUser.rol === 'jefatura' &&
+                    'Supervisión Gerencial: Visión ejecutiva y consolidada de avance de zafra en toda la plantación.'}
+                </p>
+              </div>
             </div>
 
-            {/* Acciones rapidas en el banner */}
+            {/* Acciones rapidas del encabezado */}
             <div className="flex flex-wrap items-center gap-2 shrink-0">
               {puedeCrear && (
                 <Link
                   href="/quemas/nueva"
-                  className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-black/20 flex items-center gap-2 transition hover:scale-105 cursor-pointer"
+                  className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs sm:text-sm rounded-md shadow-card flex items-center gap-2 transition cursor-pointer"
                 >
                   <FilePlus2 className="w-4 h-4" />
                   <span>Nueva Solicitud de Quema</span>
                 </Link>
               )}
-              
+
               <button
                 type="button"
                 onClick={() => setFiltroStatus(filtroStatus === 'FINALIZADA' ? 'ALL' : 'FINALIZADA')}
-                className={`px-3.5 py-2.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                className={`px-3.5 py-2.5 rounded-md border text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${
                   filtroStatus === 'FINALIZADA'
-                    ? 'bg-white text-emerald-900 border-white font-black'
-                    : 'bg-black/20 border-white/20 text-white hover:bg-black/30'
+                    ? 'bg-union-700 text-white border-union-700'
+                    : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'
                 }`}
               >
-                <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                <CheckCircle2 className="w-4 h-4" />
                 <span>Finalizadas ({finalizadasCount})</span>
               </button>
 
               <button
                 type="button"
                 onClick={exportarExcel}
-                className="px-3 py-2.5 rounded-xl bg-black/20 hover:bg-black/30 border border-white/20 text-white text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-2.5 rounded-md bg-white hover:bg-slate-50 border border-slate-300 text-slate-600 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
                 title="Descargar reporte en CSV / Excel"
               >
-                <FileSpreadsheet className="w-4 h-4 text-emerald-300" />
+                <FileSpreadsheet className="w-4 h-4" />
                 <span className="hidden sm:inline">Excel</span>
               </button>
 
               <button
                 type="button"
                 onClick={exportarPDF}
-                className="px-3 py-2.5 rounded-xl bg-black/20 hover:bg-black/30 border border-white/20 text-white text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-2.5 rounded-md bg-white hover:bg-slate-50 border border-slate-300 text-slate-600 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
                 title="Imprimir / Exportar a PDF"
               >
-                <FileText className="w-4 h-4 text-amber-300" />
+                <FileText className="w-4 h-4" />
                 <span className="hidden sm:inline">PDF</span>
               </button>
             </div>
@@ -468,7 +445,7 @@ export default function HomePage() {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
               <div>
-                <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider flex items-center gap-2">
                   <span>Listado de Quemas</span>
                   <span className="text-[11px] font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
                     {listaFiltrada.length}
@@ -527,7 +504,7 @@ export default function HomePage() {
                   <Inbox className="w-6 h-6 text-emerald-600" />
                 </div>
                 <div className="max-w-md mx-auto space-y-1">
-                  <h4 className="text-sm font-black text-slate-800">
+                  <h4 className="text-sm font-semibold text-slate-800">
                     No hay solicitudes registradas en este filtro
                   </h4>
                   <p className="text-xs text-slate-500 leading-relaxed">
@@ -564,7 +541,7 @@ export default function HomePage() {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="text-xs font-black text-slate-900 font-mono tracking-tight">{s.numero_quema}</p>
+                          <p className="text-xs font-bold text-slate-900 font-mono tracking-tight">{s.numero_quema}</p>
                           <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
                             <Layers className="w-3 h-3 text-slate-400" /> {s.numero_frente}
                           </p>
@@ -707,7 +684,7 @@ export default function HomePage() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5">
+              <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-blue-600" />
                 <span>Despachar Patrulla a Quema</span>
               </h3>
@@ -785,7 +762,7 @@ export default function HomePage() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-rose-700 flex items-center gap-1.5">
+              <h3 className="text-sm font-semibold text-rose-700 flex items-center gap-1.5">
                 <Ban className="w-4 h-4 text-rose-600" />
                 <span>Cancelar Solicitud de Quema</span>
               </h3>
@@ -850,7 +827,7 @@ export default function HomePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Info className="w-4 h-4 text-emerald-700" />
-                <h3 className="text-sm font-black text-slate-900 font-mono">{detailTarget.numero_quema}</h3>
+                <h3 className="text-sm font-semibold text-slate-900 font-mono">{detailTarget.numero_quema}</h3>
               </div>
               <button onClick={() => setDetailTarget(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                 <X className="w-4 h-4" />
@@ -884,7 +861,7 @@ export default function HomePage() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-[10px] uppercase font-black text-slate-400">Cronología Operativa</p>
+              <p className="text-[10px] uppercase font-semibold text-slate-400">Cronología Operativa</p>
               {[
                 ['Hora Solicitada', detailTarget.hora_solicitud],
                 ['Hora Planificada', detailTarget.hora_planificada],

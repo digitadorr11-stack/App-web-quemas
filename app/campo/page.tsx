@@ -224,7 +224,7 @@ export default function VistaCampoPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#f4f6f4] flex flex-col items-center justify-center text-slate-500">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-500">
         <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-sm font-semibold tracking-wide">Cargando vista de campo...</p>
       </div>
@@ -235,7 +235,7 @@ export default function VistaCampoPage() {
 
   if (currentUser.rol === 'patrulla' && !currentUser.patrulla_asignada) {
     return (
-      <div className="min-h-screen bg-[#f4f6f4] flex flex-col items-center justify-center text-slate-600 p-6 text-center gap-4">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-slate-600 p-6 text-center gap-4">
         <AlertTriangle className="w-10 h-10 text-amber-500" />
         <p className="text-sm font-semibold">Su usuario no tiene una patrulla asignada.</p>
         <p className="text-xs text-slate-500">Solicite al administrador que le asigne una patrulla de quema.</p>
@@ -254,17 +254,17 @@ export default function VistaCampoPage() {
   const revisionCompleta = !!solicitudActiva?.hora_fin_revision;
 
   return (
-    <div className="min-h-screen bg-[#f4f6f4] text-slate-900 font-sans pb-10">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-10">
       {toastMessage && (
-        <div className="fixed top-4 left-4 right-4 z-50 bg-[#165135] text-white px-4 py-3 rounded-xl shadow-panel flex items-center gap-2 text-sm font-semibold justify-center">
-          <CheckCircle2 className="w-4 h-4 text-emerald-300 shrink-0" />
+        <div className="fixed top-4 left-4 right-4 z-50 bg-union-900 text-white px-4 py-3 rounded-xl shadow-panel flex items-center gap-2 text-sm font-semibold justify-center">
+          <CheckCircle2 className="w-4 h-4 text-union-300 shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       <header className="bg-white border-b border-slate-200 px-4 py-4 flex items-center justify-between sticky top-0 z-30 shadow-card">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-orange-600 flex items-center justify-center shadow-card">
+          <div className="w-9 h-9 rounded-md bg-orange-600 flex items-center justify-center shadow-card">
             <Truck className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -355,7 +355,7 @@ export default function VistaCampoPage() {
                 <button
                   onClick={handleLlegada}
                   disabled={isProcessing}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-blue-700 to-blue-600 disabled:opacity-60 text-white font-black text-base py-6 rounded-3xl shadow-xl shadow-blue-950/50"
+                  className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold text-base py-6 rounded-lg shadow-panel"
                 >
                   {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : <Navigation className="w-6 h-6" />}
                   Llegada al Frente
@@ -367,7 +367,7 @@ export default function VistaCampoPage() {
                   <button
                     onClick={handleIniciarRevision}
                     disabled={isProcessing}
-                    className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-amber-700 to-amber-600 disabled:opacity-60 text-white font-black text-base py-6 rounded-3xl shadow-xl shadow-amber-950/50"
+                    className="w-full flex items-center justify-center gap-3 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-bold text-base py-6 rounded-lg shadow-panel"
                   >
                     {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : <ClipboardCheck className="w-6 h-6" />}
                     Iniciar Revisión Técnica
@@ -386,7 +386,7 @@ export default function VistaCampoPage() {
                 <button
                   onClick={() => setIsRevisionOpen(true)}
                   disabled={isProcessing}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-amber-700 to-amber-600 disabled:opacity-60 text-white font-black text-base py-6 rounded-3xl shadow-xl shadow-amber-950/50"
+                  className="w-full flex items-center justify-center gap-3 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white font-bold text-base py-6 rounded-lg shadow-panel"
                 >
                   <ClipboardCheck className="w-6 h-6" /> Completar Checklist
                 </button>
@@ -396,7 +396,7 @@ export default function VistaCampoPage() {
                 <button
                   onClick={handleIniciarQuema}
                   disabled={isProcessing}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-rose-700 to-rose-600 disabled:opacity-60 text-white font-black text-base py-6 rounded-3xl shadow-xl shadow-rose-950/50"
+                  className="w-full flex items-center justify-center gap-3 bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white font-bold text-base py-6 rounded-lg shadow-panel"
                 >
                   {isProcessing ? <Loader2 className="w-6 h-6 animate-spin" /> : <PlayCircle className="w-6 h-6" />}
                   Iniciar Quema
@@ -407,7 +407,7 @@ export default function VistaCampoPage() {
                 <button
                   onClick={() => setIsFinalizarOpen(true)}
                   disabled={isProcessing}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-emerald-700 to-emerald-600 disabled:opacity-60 text-white font-black text-base py-6 rounded-3xl shadow-xl shadow-emerald-950/50"
+                  className="w-full flex items-center justify-center gap-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-bold text-base py-6 rounded-lg shadow-panel"
                 >
                   <Square className="w-6 h-6" /> Finalizar Quema
                 </button>

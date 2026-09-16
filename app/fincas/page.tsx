@@ -428,7 +428,7 @@ export default function FincasPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-emerald-50 border border-emerald-300 text-emerald-700 px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+        <div className="fixed top-5 right-5 z-50 bg-union-900 border border-union-900 text-white px-4 py-3 rounded-md shadow-panel text-xs font-semibold flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{toastMessage}</span>
         </div>
@@ -444,11 +444,11 @@ export default function FincasPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 to-cyan-600 border border-blue-400/30 flex items-center justify-center shadow-lg shadow-blue-200">
+          <div className="w-10 h-10 rounded-md bg-blue-700 flex items-center justify-center shadow-card">
             <MapPin className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="text-base font-black tracking-tight text-slate-900 leading-tight">
+            <h1 className="text-base font-semibold tracking-tight text-slate-900 leading-tight">
               Catálogo de Fincas y Lotes
             </h1>
             <p className="text-[10px] uppercase font-bold text-blue-600 tracking-wider">
@@ -494,22 +494,22 @@ export default function FincasPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-white border border-slate-200 rounded-2xl p-4">
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Lotes</p>
-            <p className="text-2xl font-black text-slate-900 mt-0.5">{lotes.length}</p>
+            <p className="text-2xl font-bold text-slate-900 mt-0.5">{lotes.length}</p>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-4">
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Fincas Registradas</p>
-            <p className="text-2xl font-black text-blue-600 mt-0.5">{uniqueFincasCount}</p>
+            <p className="text-2xl font-bold text-blue-600 mt-0.5">{uniqueFincasCount}</p>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-4">
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Hectáreas</p>
-            <p className="text-2xl font-black text-emerald-600 mt-0.5">{totalHa} <span className="text-xs font-normal text-slate-500">ha</span></p>
+            <p className="text-2xl font-bold text-emerald-600 mt-0.5">{totalHa} <span className="text-xs font-normal text-slate-500">ha</span></p>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-4">
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Manzanas</p>
-            <p className="text-2xl font-black text-amber-600 mt-0.5">{totalMz} <span className="text-xs font-normal text-slate-500">mz</span></p>
+            <p className="text-2xl font-bold text-amber-600 mt-0.5">{totalMz} <span className="text-xs font-normal text-slate-500">mz</span></p>
           </div>
         </div>
 
@@ -575,7 +575,7 @@ export default function FincasPage() {
         </div>
 
         {/* Tabla de Fincas y Lotes */}
-        <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl">
+        <div className="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-card">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-600">
               <thead className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
