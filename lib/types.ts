@@ -51,7 +51,7 @@ export interface BurnRequest {
   nombre_finca: string;
   lote_um: string;
   area_hectareas: number;
-  area_manzanas: number;
+  area_manzanas?: number;
   variedad_cana?: string;
   tonelaje_estimado?: number;
   tipo_cosecha: 'Mecanizada' | 'Manual' | 'Mixta';
@@ -118,7 +118,7 @@ export interface FarmLoteCatalog {
   finca: string;
   lote: string;
   area_ha: number;
-  area_mz: number;
+  area_mz?: number;
   variedad?: string;
   activo?: boolean;
   created_at?: string;

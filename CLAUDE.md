@@ -31,7 +31,7 @@ Eres el desarrollador senior a cargo de continuar el desarrollo de esta aplicaci
 - `/`: dashboard con accesos rápidos según rol.
 - `/usuarios`: gestión de perfiles RBAC (`admin`, `digitador`, `jefatura`, `supervisor_quemas`, `supervisor_frente`, `patrulla`, `pendiente`), asignación de Frente/Patrulla, modal de edición completa.
 - `/constantes`: catálogo de Frentes de Cosecha y Patrullas de Quema.
-- `/fincas`: catálogo agronómico de Fincas y Lotes (buscador, KPIs, conversor Ha↔Mz, importación masiva Excel/CSV, exportación CSV).
+- `/fincas`: catálogo agronómico de Fincas y Lotes (buscador, KPIs de Hectáreas, importación masiva Excel/CSV, exportación CSV).
 - **Fase 4 (flujo operativo en tiempo real) — implementada en esta sesión, pendiente de confirmar que el commit/push a producción se completó:**
   - `/quemas/nueva`: Supervisor de Frente (y admin/digitador/supervisor_quemas) crea una solicitud de quema (finca/lote con autocompletado de área y variedad, tipo de cosecha, hora planificada, prioridad, observaciones).
   - `/quemas`: Tablero de despacho en tiempo real (Pendientes → En Camino → En Frente/Revisión → En Quema → Finalizadas), asignación de patrulla, cancelación, indicador de tiempo de respuesta.

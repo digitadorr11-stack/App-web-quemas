@@ -20,11 +20,6 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
     .reduce((acc, s) => acc + (Number(s.area_hectareas) || 0), 0)
     .toFixed(1);
 
-  const totalMz = solicitudes
-    .filter((s) => s.estado !== 'CANCELADA')
-    .reduce((acc, s) => acc + (Number(s.area_manzanas) || 0), 0)
-    .toFixed(1);
-
   const totalQuemas = solicitudes.length;
   const solicitadas = solicitudes.filter((s) => s.estado === 'SOLICITADA').length;
   const enProceso = solicitudes.filter(
@@ -41,7 +36,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({
       id: 'ALL',
       titulo: 'TOTAL QUEMAS',
       valor: totalQuemas,
-      subtitulo: `${totalHa} ha | ${totalMz} mz`,
+      subtitulo: `${totalHa} ha`,
       icon: Layers,
       border: 'border-slate-200',
       iconBg: 'bg-slate-100 text-slate-600',

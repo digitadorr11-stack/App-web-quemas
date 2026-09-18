@@ -51,7 +51,7 @@ export const quemasService = {
     nombre_finca: string;
     lote_um: string;
     area_hectareas: number;
-    area_manzanas: number;
+    area_manzanas?: number;
     variedad_cana?: string | null;
     tonelaje_estimado?: number | null;
     hora_planificada: string;
@@ -64,7 +64,10 @@ export const quemasService = {
     if (!supabase) throw new Error('Supabase no está configurado');
     const { data, error } = await supabase
       .from('solicitudes_quemas')
-      .insert(payload)
+      .insert({
+        ...payload,
+        area_manzanas: payload.area_manzanas ?? 0,
+      })
       .select('*')
       .single();
 

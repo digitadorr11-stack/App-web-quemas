@@ -49,7 +49,6 @@ export default function FincasPage() {
   const [formFinca, setFormFinca] = useState('');
   const [formLote, setFormLote] = useState('');
   const [formHa, setFormHa] = useState('');
-  const [formMz, setFormMz] = useState('');
   const [formVariedad, setFormVariedad] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -59,7 +58,6 @@ export default function FincasPage() {
   const [editFinca, setEditFinca] = useState('');
   const [editLote, setEditLote] = useState('');
   const [editHa, setEditHa] = useState('');
-  const [editMz, setEditMz] = useState('');
   const [editVariedad, setEditVariedad] = useState('');
   const [editActivo, setEditActivo] = useState(true);
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
@@ -73,54 +71,11 @@ export default function FincasPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Convertidor Ha <-> Mz en tiempo real en formulario nuevo
-  const handleHaChange = (val: string) => {
-    setFormHa(val);
-    const num = parseFloat(val);
-    if (!isNaN(num) && num > 0) {
-      setFormMz((num * 1.4308).toFixed(2));
-    } else {
-      setFormMz('');
-    }
-  };
-
-  const handleMzChange = (val: string) => {
-    setFormMz(val);
-    const num = parseFloat(val);
-    if (!isNaN(num) && num > 0) {
-      setFormHa((num * 0.698896).toFixed(2));
-    } else {
-      setFormHa('');
-    }
-  };
-
-  // Convertidores para formulario de edición
-  const handleEditHaChange = (val: string) => {
-    setEditHa(val);
-    const num = parseFloat(val);
-    if (!isNaN(num) && num > 0) {
-      setEditMz((num * 1.4308).toFixed(2));
-    } else {
-      setEditMz('');
-    }
-  };
-
-  const handleEditMzChange = (val: string) => {
-    setEditMz(val);
-    const num = parseFloat(val);
-    if (!isNaN(num) && num > 0) {
-      setEditHa((num * 0.698896).toFixed(2));
-    } else {
-      setEditHa('');
-    }
-  };
-
   const handleOpenEdit = (item: FarmLoteCatalog) => {
     setEditingLote(item);
     setEditFinca(item.finca);
     setEditLote(item.lote);
     setEditHa(item.area_ha ? item.area_ha.toString() : '');
-    setEditMz(item.area_mz ? item.area_mz.toString() : '');
     setEditVariedad(item.variedad || '');
     setEditActivo(item.activo !== false);
     setIsEditModalOpen(true);
@@ -136,7 +91,7 @@ export default function FincasPage() {
         finca: editFinca.trim(),
         lote: editLote.trim(),
         area_ha: parseFloat(editHa) || 0,
-        area_mz: parseFloat(editMz) || 0,
+        area_mz: 0,
         variedad: editVariedad.trim().toUpperCase() || null,
         activo: editActivo,
       };
@@ -242,7 +197,7 @@ export default function FincasPage() {
         finca: formFinca.trim(),
         lote: formLote.trim(),
         area_ha: parseFloat(formHa) || 0,
-        area_mz: parseFloat(formMz) || 0,
+        area_mz: 0,
         variedad: formVariedad.trim().toUpperCase() || null,
         activo: true,
       };
@@ -263,7 +218,6 @@ export default function FincasPage() {
       setFormFinca('');
       setFormLote('');
       setFormHa('');
-      setFormMz('');
       setFormVariedad('');
       loadLotes();
     } catch (err: any) {
@@ -291,7 +245,7 @@ export default function FincasPage() {
           continue;
         }
 
-        // Separadores soportados: coma, punto y coma, tabulador
+        // Separadores soportados: tabulador, punto y coma, coma
         let parts = line.split('\t');
         if (parts.length < 2) parts = line.split(';');
         if (parts.length < 2) parts = line.split(',');
@@ -299,17 +253,25 @@ export default function FincasPage() {
         if (parts.length >= 2) {
           const finca = parts[0]?.trim();
           const lote = parts[1]?.trim();
-          const ha = parseFloat(parts[2]?.trim() || '0') || 0;
-          const mz = parseFloat(parts[3]?.trim() || '0') || (ha > 0 ? Number((ha * 1.4308).toFixed(2)) : 0);
-          const variedad = parts[4]?.trim() || null;
+          const rawHa = parts[2]?.trim().replace(',', '.') || '0';
+          const ha = parseFloat(rawHa) || 0;
+
+          // Variedad: puede venir en parts[3] (Finca, Lote, Ha, Variedad)
+          // o en parts[4] (si copian Finca, Lote, Ha, Tm, Variedad)
+          let variedad: string | null = null;
+          if (parts.length === 4) {
+            variedad = parts[3]?.trim() || null;
+          } else if (parts.length >= 5) {
+            variedad = parts[4]?.trim() || parts[3]?.trim() || null;
+          }
 
           if (finca && lote) {
             recordsToInsert.push({
               finca,
               lote,
               area_ha: ha,
-              area_mz: mz,
-              variedad,
+              area_mz: 0,
+              variedad: variedad ? variedad.toUpperCase() : null,
               activo: true,
             });
           }
@@ -317,7 +279,7 @@ export default function FincasPage() {
       }
 
       if (recordsToInsert.length === 0) {
-        throw new Error('No se encontraron registros válidos. Verifica el formato: Finca, Lote, Ha, Mz, Variedad');
+        throw new Error('No se encontraron registros válidos. Verifica el formato: Finca, Lote, Área Ha, Variedad');
       }
 
       const { error } = await supabase
@@ -358,11 +320,11 @@ export default function FincasPage() {
   // Exportar Catálogo a CSV
   const handleExportCSV = () => {
     if (lotes.length === 0) return;
-    const header = 'Finca,Lote,Area_Ha,Area_Mz,Variedad,Estado\n';
+    const header = 'Finca,Lote,Area_Ha,Variedad,Estado\n';
     const rows = lotes
       .map(
         (l) =>
-          `"${l.finca}","${l.lote}",${l.area_ha},${l.area_mz},"${l.variedad || ''}",${l.activo ? 'ACTIVO' : 'INACTIVO'}`
+          `"${l.finca}","${l.lote}",${l.area_ha},"${l.variedad || ''}",${l.activo ? 'ACTIVO' : 'INACTIVO'}`
       )
       .join('\n');
 
@@ -409,10 +371,6 @@ export default function FincasPage() {
 
   const totalHa = useMemo(() => {
     return lotes.reduce((acc, curr) => acc + curr.area_ha, 0).toFixed(2);
-  }, [lotes]);
-
-  const totalMz = useMemo(() => {
-    return lotes.reduce((acc, curr) => acc + curr.area_mz, 0).toFixed(2);
   }, [lotes]);
 
   if (isLoading) {
@@ -491,7 +449,7 @@ export default function FincasPage() {
       {/* Main Content */}
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-6">
         {/* KPI Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white border border-slate-200 rounded-2xl p-4">
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Lotes</p>
             <p className="text-2xl font-bold text-slate-900 mt-0.5">{lotes.length}</p>
@@ -505,11 +463,6 @@ export default function FincasPage() {
           <div className="bg-white border border-slate-200 rounded-2xl p-4">
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Hectáreas</p>
             <p className="text-2xl font-bold text-emerald-600 mt-0.5">{totalHa} <span className="text-xs font-normal text-slate-500">ha</span></p>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-2xl p-4">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Manzanas</p>
-            <p className="text-2xl font-bold text-amber-600 mt-0.5">{totalMz} <span className="text-xs font-normal text-slate-500">mz</span></p>
           </div>
         </div>
 
@@ -583,7 +536,6 @@ export default function FincasPage() {
                   <th className="px-5 py-4">Finca</th>
                   <th className="px-4 py-4">Lote (U.M.)</th>
                   <th className="px-4 py-4 text-right">Área (Ha)</th>
-                  <th className="px-4 py-4 text-right">Área (Mz)</th>
                   <th className="px-4 py-4">Variedad</th>
                   <th className="px-4 py-4 text-center">Estado</th>
                   <th className="px-5 py-4 text-right">Acción</th>
@@ -592,7 +544,7 @@ export default function FincasPage() {
               <tbody className="divide-y divide-slate-200">
                 {paginatedLotes.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-slate-500">
+                    <td colSpan={6} className="text-center py-12 text-slate-500">
                       No se encontraron lotes que coincidan con la búsqueda.
                     </td>
                   </tr>
@@ -609,10 +561,6 @@ export default function FincasPage() {
 
                       <td className="px-4 py-3.5 text-right font-mono text-emerald-600 font-semibold">
                         {item.area_ha.toFixed(2)}
-                      </td>
-
-                      <td className="px-4 py-3.5 text-right font-mono text-amber-600 font-semibold">
-                        {item.area_mz.toFixed(2)}
                       </td>
 
                       <td className="px-4 py-3.5 font-mono text-slate-500 text-[11px]">
@@ -744,34 +692,18 @@ export default function FincasPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                    Área en Hectáreas (Ha)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="12.50"
-                    value={formHa}
-                    onChange={(e) => handleHaChange(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                    Área en Manzanas (Mz)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="17.88"
-                    value={formMz}
-                    onChange={(e) => handleMzChange(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-amber-500 font-mono"
-                  />
-                </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+                  Área en Hectáreas (Ha)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="12.50"
+                  value={formHa}
+                  onChange={(e) => setFormHa(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-mono"
+                />
               </div>
 
               <div>
@@ -855,34 +787,18 @@ export default function FincasPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                    Área en Hectáreas (Ha)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="12.50"
-                    value={editHa}
-                    onChange={(e) => handleEditHaChange(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                    Área en Manzanas (Mz)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="17.88"
-                    value={editMz}
-                    onChange={(e) => handleEditMzChange(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-amber-500 font-mono"
-                  />
-                </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-500 mb-1">
+                  Área en Hectáreas (Ha)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="12.50"
+                  value={editHa}
+                  onChange={(e) => setEditHa(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-mono"
+                />
               </div>
 
               <div>
@@ -957,13 +873,13 @@ export default function FincasPage() {
               Copia y pega las columnas desde tu Excel o CSV. El orden esperado por fila es:
               <br />
               <code className="bg-slate-50 text-blue-700 px-2 py-0.5 rounded text-[11px] font-mono mt-1 block">
-                Finca [tab/coma] Lote [tab/coma] Área_Ha [tab/coma] Área_Mz [tab/coma] Variedad
+                Finca [tab/coma] Lote [tab/coma] Área_Ha [tab/coma] Variedad
               </code>
             </p>
 
             <textarea
               rows={8}
-              placeholder={`Finca El Baúl\tLote 101\t12.50\t17.88\tCP-72-2086\nFinca El Baúl\tLote 102\t15.20\t21.75\tCG-96-01\nFinca San Antonio\tLote 01\t10.00\t14.30\tCP-88-1165`}
+              placeholder={`Finca El Baúl\tLote 101\t12.50\tCP-72-2086\nFinca El Baúl\tLote 102\t15.20\tCG-96-01\nFinca San Antonio\tLote 01\t10.00\tCP-88-1165`}
               value={bulkDataText}
               onChange={(e) => setBulkDataText(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 font-mono focus:outline-none focus:border-blue-500"

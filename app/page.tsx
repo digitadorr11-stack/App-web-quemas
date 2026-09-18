@@ -258,11 +258,11 @@ export default function HomePage() {
 
   const exportarExcel = () => {
     if (listaFiltrada.length === 0) return;
-    const header = 'Quema,Frente,Finca,Lote,Area_Ha,Area_Mz,Hora_Planificada,Patrulla,Estado,Prioridad\n';
+    const header = 'Quema,Frente,Finca,Lote,Area_Ha,Hora_Planificada,Patrulla,Estado,Prioridad\n';
     const rows = listaFiltrada
       .map(
         (s) =>
-          `"${s.numero_quema}","${s.numero_frente}","${s.nombre_finca}","${s.lote_um}",${s.area_hectareas},${s.area_manzanas},"${formatearHora(
+          `"${s.numero_quema}","${s.numero_frente}","${s.nombre_finca}","${s.lote_um}",${s.area_hectareas},"${formatearHora(
             s.hora_planificada
           )}","${s.nombre_patrulla_asignada || ''}","${ESTADOS_CONFIG[s.estado]?.label || s.estado}","${PRIORIDADES_CONFIG[s.prioridad]?.label || s.prioridad}"`
       )
@@ -550,7 +550,7 @@ export default function HomePage() {
                           <span className="truncate">{s.nombre_finca} · {s.lote_um}</span>
                         </p>
                         <p className="text-[11px] text-slate-500 font-mono pl-5">
-                          {s.area_hectareas} Ha ({s.area_manzanas} Mz) {s.variedad_cana ? `· Var: ${s.variedad_cana}` : ''}
+                          {s.area_hectareas} Ha {s.variedad_cana ? `· Var: ${s.variedad_cana}` : ''}
                         </p>
                       </div>
 
@@ -611,7 +611,7 @@ export default function HomePage() {
                         <th className="px-4 py-3.5">Quema</th>
                         <th className="px-4 py-3.5">Frente</th>
                         <th className="px-4 py-3.5">Finca / Lote</th>
-                        <th className="px-4 py-3.5">Área (Ha / Mz)</th>
+                        <th className="px-4 py-3.5">Área (Ha)</th>
                         <th className="px-4 py-3.5">Hora Plan.</th>
                         <th className="px-4 py-3.5">Patrulla Asignada</th>
                         <th className="px-4 py-3.5">Estado</th>
@@ -631,7 +631,7 @@ export default function HomePage() {
                             {s.nombre_finca} · {s.lote_um}
                           </td>
                           <td className="px-4 py-3 text-slate-600 font-mono whitespace-nowrap">
-                            {s.area_hectareas} Ha / {s.area_manzanas} Mz
+                            {s.area_hectareas} Ha
                           </td>
                           <td className="px-4 py-3 text-slate-600 font-mono whitespace-nowrap">{formatearHora(s.hora_planificada)}</td>
                           <td className="px-4 py-3 text-emerald-800 font-bold whitespace-nowrap">{s.nombre_patrulla_asignada || '—'}</td>
@@ -845,7 +845,7 @@ export default function HomePage() {
               </div>
               <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
                 <p className="text-slate-400 text-[10px] uppercase font-bold">Área Registrada</p>
-                <p className="text-slate-900 font-bold mt-0.5">{detailTarget.area_hectareas} Ha ({detailTarget.area_manzanas} Mz)</p>
+                <p className="text-slate-900 font-bold mt-0.5">{detailTarget.area_hectareas} Ha</p>
               </div>
               <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
                 <p className="text-slate-400 text-[10px] uppercase font-bold">Patrulla Asignada</p>

@@ -49,7 +49,6 @@ export default function NuevaSolicitudPage() {
   const [selectedLoteId, setSelectedLoteId] = useState('');
 
   const [areaHa, setAreaHa] = useState<number>(0);
-  const [areaMz, setAreaMz] = useState<number>(0);
   const [variedad, setVariedad] = useState('');
   const [tipoCosecha, setTipoCosecha] = useState<'Mecanizada' | 'Manual' | 'Mixta'>('Mecanizada');
   const [tonelaje, setTonelaje] = useState('');
@@ -89,7 +88,7 @@ export default function NuevaSolicitudPage() {
               finca: row.finca,
               lote: row.lote,
               area_ha: Number(row.area_ha || 0),
-              area_mz: Number(row.area_mz || 0),
+              area_mz: 0,
               variedad: row.variedad || '',
               activo: row.activo,
             }))
@@ -139,7 +138,6 @@ export default function NuevaSolicitudPage() {
     setIsFincaDropdownOpen(false);
     setSelectedLoteId('');
     setAreaHa(0);
-    setAreaMz(0);
     setVariedad('');
   };
 
@@ -148,7 +146,6 @@ export default function NuevaSolicitudPage() {
     const lote = lotesDeFinca.find((l) => l.id === loteId);
     if (lote) {
       setAreaHa(lote.area_ha);
-      setAreaMz(lote.area_mz);
       setVariedad(lote.variedad || '');
     }
   };
@@ -185,7 +182,6 @@ export default function NuevaSolicitudPage() {
         nombre_finca: selectedFinca,
         lote_um: lote.lote,
         area_hectareas: areaHa,
-        area_manzanas: areaMz,
         variedad_cana: variedad || null,
         tonelaje_estimado: tonelaje ? parseFloat(tonelaje) : null,
         hora_planificada: new Date(horaPlanificada).toISOString(),
@@ -203,7 +199,6 @@ export default function NuevaSolicitudPage() {
       setSelectedFinca('');
       setSelectedLoteId('');
       setAreaHa(0);
-      setAreaMz(0);
       setVariedad('');
       setTonelaje('');
       setHoraPlanificada(defaultHoraPlanificada());
@@ -348,21 +343,17 @@ export default function NuevaSolicitudPage() {
                 <option value="">Seleccione un lote...</option>
                 {lotesDeFinca.map((l) => (
                   <option key={l.id} value={l.id}>
-                    {l.lote} · {l.area_ha.toFixed(2)} Ha / {l.area_mz.toFixed(2)} Mz{l.variedad ? ` · ${l.variedad}` : ''}
+                    {l.lote} · {l.area_ha.toFixed(2)} Ha{l.variedad ? ` · ${l.variedad}` : ''}
                   </option>
                 ))}
               </select>
             )}
 
             {selectedLoteId && (
-              <div className="grid grid-cols-3 gap-3 pt-1">
+              <div className="grid grid-cols-2 gap-3 pt-1">
                 <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-center">
                   <p className="text-[10px] uppercase font-bold text-slate-500">Hectáreas</p>
-                  <p className="text-sm font-bold text-emerald-700">{areaHa.toFixed(2)}</p>
-                </div>
-                <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-center">
-                  <p className="text-[10px] uppercase font-bold text-slate-500">Manzanas</p>
-                  <p className="text-sm font-bold text-emerald-700">{areaMz.toFixed(2)}</p>
+                  <p className="text-sm font-bold text-emerald-700">{areaHa.toFixed(2)} Ha</p>
                 </div>
                 <div className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-center overflow-hidden">
                   <p className="text-[10px] uppercase font-bold text-slate-500">Variedad</p>
