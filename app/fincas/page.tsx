@@ -234,7 +234,11 @@ export default function FincasPage() {
     try {
       setIsProcessingBulk(true);
       const lines = bulkDataText.trim().split('\n');
-      const recordsToInsert: any[] = [];
+      // Usar Map para deduplicar por clave única (finca + lote) dentro del mismo lote de carga.
+      // PostgreSQL falla con "ON CONFLICT DO UPDATE cannot affect row a second time" si el
+      // texto pegado contiene filas repetidas para la misma Finca y Lote.
+      const recordsMap = new Map<string, any>();
+      let duplicadosDetectados = 0;
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
@@ -266,7 +270,12 @@ export default function FincasPage() {
           }
 
           if (finca && lote) {
-            recordsToInsert.push({
+            // Clave única compuesta en mayúsculas para deduplicar
+            const key = `${finca.toUpperCase()}:::${lote.toUpperCase()}`;
+            if (recordsMap.has(key)) {
+              duplicadosDetectados++;
+            }
+            recordsMap.set(key, {
               finca,
               lote,
               area_ha: ha,
@@ -278,17 +287,28 @@ export default function FincasPage() {
         }
       }
 
+      const recordsToInsert = Array.from(recordsMap.values());
+
       if (recordsToInsert.length === 0) {
         throw new Error('No se encontraron registros válidos. Verifica el formato: Finca, Lote, Área Ha, Variedad');
       }
 
-      const { error } = await supabase
-        .from('catalogo_fincas_lotes')
-        .upsert(recordsToInsert, { onConflict: 'finca,lote' });
+      // Enviar en bloques (chunks) de 200 registros para evitar límites de tamaño de petición
+      const CHUNK_SIZE = 200;
+      for (let i = 0; i < recordsToInsert.length; i += CHUNK_SIZE) {
+        const chunk = recordsToInsert.slice(i, i + CHUNK_SIZE);
+        const { error } = await supabase
+          .from('catalogo_fincas_lotes')
+          .upsert(chunk, { onConflict: 'finca,lote' });
 
-      if (error) throw error;
+        if (error) throw error;
+      }
 
-      showToast(`¡Se procesaron ${recordsToInsert.length} lotes con éxito!`);
+      const toastText = duplicadosDetectados > 0
+        ? `¡Se procesaron ${recordsToInsert.length} lotes únicos! (${duplicadosDetectados} registros repetidos unificados)`
+        : `¡Se procesaron ${recordsToInsert.length} lotes con éxito!`;
+
+      showToast(toastText);
       setBulkDataText('');
       setIsBulkModalOpen(false);
       loadLotes();
