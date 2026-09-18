@@ -17,7 +17,6 @@ import {
   PRIORIDADES_CONFIG,
 } from '@/lib/types';
 import { PatrolAvailabilityMonitor } from '@/components/PatrolAvailabilityMonitor';
-import { StatsOverview } from '@/components/StatsOverview';
 import { Sidebar } from '@/components/Sidebar';
 import {
   Menu,
@@ -427,12 +426,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* 7 TARJETAS DE ESTADO (KPIs originales en tonos pastel con filtros clicables) */}
-          <StatsOverview
-            solicitudes={solicitudes}
-            filtroActivo={filtroStatus}
-            onSelectFiltro={(f) => setFiltroStatus(f)}
-          />
 
           {/* MONITOR EN VIVO DE PATRULLAS */}
           <PatrolAvailabilityMonitor
