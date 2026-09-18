@@ -18,6 +18,7 @@ import {
 } from '@/lib/types';
 import { PatrolAvailabilityMonitor } from '@/components/PatrolAvailabilityMonitor';
 import { Sidebar } from '@/components/Sidebar';
+import { NuevaSolicitudForm } from '@/components/NuevaSolicitudForm';
 import {
   Menu,
   Flame,
@@ -40,6 +41,7 @@ import {
   ShieldCheck,
   Sparkles,
   Inbox,
+  ArrowLeft,
 } from 'lucide-react';
 
 const ROLES_CREAR_SOLICITUD = ['supervisor_frente', 'supervisor_quemas', 'digitador', 'admin'];
@@ -78,6 +80,30 @@ export default function HomePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [, setTick] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [moduloActivo, setModuloActivo] = useState<'programadas' | 'nueva'>('programadas');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('modulo') === 'nueva' || params.get('nueva') === 'true') {
+        setModuloActivo('nueva');
+      }
+    }
+  }, []);
+
+  const handleCambiarModulo = (modulo: 'programadas' | 'nueva') => {
+    setModuloActivo(modulo);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (modulo === 'nueva') {
+        url.searchParams.set('modulo', 'nueva');
+      } else {
+        url.searchParams.delete('modulo');
+        url.searchParams.delete('nueva');
+      }
+      window.history.pushState({}, '', url.toString());
+    }
+  };
 
   // Filtro de Estado (integrado con StatsOverview)
   const [filtroStatus, setFiltroStatus] = useState<string>('ALL');
@@ -308,7 +334,14 @@ export default function HomePage() {
         </div>
       )}
 
-      <Sidebar currentUser={currentUser} open={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
+      <Sidebar
+        currentUser={currentUser}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onLogout={handleLogout}
+        moduloActivo={moduloActivo}
+        onSelectModulo={handleCambiarModulo}
+      />
 
       <div className={`transition-[padding] duration-200 ${sidebarOpen ? 'lg:pl-64' : 'lg:pl-0'}`}>
         
@@ -325,7 +358,9 @@ export default function HomePage() {
             <div className="flex items-center gap-2 text-sm">
               <span className="text-slate-400 font-medium">Quemas</span>
               <span className="text-slate-300">/</span>
-              <span className="font-bold text-slate-800">Panel de Control</span>
+              <span className="font-bold text-slate-800">
+                {moduloActivo === 'nueva' ? 'Nueva Solicitud' : 'Panel de Control'}
+              </span>
             </div>
           </div>
 
@@ -360,79 +395,108 @@ export default function HomePage() {
               <div className="space-y-1 min-w-0">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-union-300">Módulo activo</p>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-                  Quemas Programadas
+                  {moduloActivo === 'nueva' ? 'Nueva Solicitud de Quema' : 'Quemas Programadas'}
                 </h1>
                 <p className="text-xs sm:text-sm text-union-100/80 leading-relaxed">
-                  {currentUser.rol === 'supervisor_frente' &&
-                    `Vista de Frente: Administra las solicitudes correspondientes a tu turno/frente (${currentUser.frente_asignado || 'Frente asignado'}).`}
-                  {currentUser.rol === 'supervisor_quemas' &&
-                    'Coordinación de Quemas: Monitorea todas las solicitudes entrantes y asigna patrullas de campo con medición de tiempos.'}
-                  {currentUser.rol === 'patrulla' &&
-                    `Operación de Patrulla: Registra tus tiempos de llegada, inspección técnica y finalización para tu unidad (${currentUser.patrulla_asignada || 'Patrulla'}).`}
-                  {currentUser.rol === 'digitador' &&
-                    'Control Total de Digitador: Supervisión global de todos los frentes, despacho de unidades y administración de catálogos.'}
-                  {currentUser.rol === 'admin' &&
-                    'Administración Integral: Control total del flujo de despacho, constantes operativas, fincas, lotes y usuarios.'}
-                  {currentUser.rol === 'jefatura' &&
-                    'Supervisión Gerencial: Visión ejecutiva y consolidada de avance de zafra en toda la plantación.'}
+                  {moduloActivo === 'nueva'
+                    ? 'Planificación Operativa: Completa los datos del lote, frente, hora y prioridad directamente en pantalla sin salir del panel principal.'
+                    : currentUser.rol === 'supervisor_frente'
+                    ? `Vista de Frente: Administra las solicitudes correspondientes a tu turno/frente (${currentUser.frente_asignado || 'Frente asignado'}).`
+                    : currentUser.rol === 'supervisor_quemas'
+                    ? 'Coordinación de Quemas: Monitorea todas las solicitudes entrantes y asigna patrullas de campo con medición de tiempos.'
+                    : currentUser.rol === 'patrulla'
+                    ? `Operación de Patrulla: Registra tus tiempos de llegada, inspección técnica y finalización para tu unidad (${currentUser.patrulla_asignada || 'Patrulla'}).`
+                    : currentUser.rol === 'digitador'
+                    ? 'Control Total de Digitador: Supervisión global de todos los frentes, despacho de unidades y administración de catálogos.'
+                    : currentUser.rol === 'admin'
+                    ? 'Administración Integral: Control total del flujo de despacho, constantes operativas, fincas, lotes y usuarios.'
+                    : 'Supervisión Gerencial: Visión ejecutiva y consolidada de avance de zafra en toda la plantación.'}
                 </p>
               </div>
             </div>
 
             {/* Acciones rapidas del encabezado */}
             <div className="flex flex-wrap items-center gap-2 shrink-0">
-              {puedeCrear && (
-                <Link
-                  href="/quemas/nueva"
-                  className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs sm:text-sm rounded-md shadow-card flex items-center gap-2 transition cursor-pointer"
+              {moduloActivo === 'nueva' ? (
+                <button
+                  type="button"
+                  onClick={() => handleCambiarModulo('programadas')}
+                  className="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs sm:text-sm rounded-md shadow-card flex items-center gap-2 transition cursor-pointer"
                 >
-                  <FilePlus2 className="w-4 h-4" />
-                  <span>Nueva Solicitud de Quema</span>
-                </Link>
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Volver a Quemas Programadas</span>
+                </button>
+              ) : (
+                <>
+                  {puedeCrear && (
+                    <button
+                      type="button"
+                      onClick={() => handleCambiarModulo('nueva')}
+                      className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs sm:text-sm rounded-md shadow-card flex items-center gap-2 transition cursor-pointer"
+                    >
+                      <FilePlus2 className="w-4 h-4" />
+                      <span>Nueva Solicitud de Quema</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setFiltroStatus(filtroStatus === 'FINALIZADA' ? 'ALL' : 'FINALIZADA')}
+                    className={`px-3.5 py-2.5 rounded-md border text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${
+                      filtroStatus === 'FINALIZADA'
+                        ? 'bg-union-700 text-white border-union-700'
+                        : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Finalizadas ({finalizadasCount})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={exportarExcel}
+                    className="px-3 py-2.5 rounded-md bg-white hover:bg-slate-50 border border-slate-300 text-slate-600 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                    title="Descargar reporte en CSV / Excel"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    <span className="hidden sm:inline">Excel</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={exportarPDF}
+                    className="px-3 py-2.5 rounded-md bg-white hover:bg-slate-50 border border-slate-300 text-slate-600 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                    title="Imprimir / Exportar a PDF"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span className="hidden sm:inline">PDF</span>
+                  </button>
+                </>
               )}
-
-              <button
-                type="button"
-                onClick={() => setFiltroStatus(filtroStatus === 'FINALIZADA' ? 'ALL' : 'FINALIZADA')}
-                className={`px-3.5 py-2.5 rounded-md border text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer ${
-                  filtroStatus === 'FINALIZADA'
-                    ? 'bg-union-700 text-white border-union-700'
-                    : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Finalizadas ({finalizadasCount})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={exportarExcel}
-                className="px-3 py-2.5 rounded-md bg-white hover:bg-slate-50 border border-slate-300 text-slate-600 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
-                title="Descargar reporte en CSV / Excel"
-              >
-                <FileSpreadsheet className="w-4 h-4" />
-                <span className="hidden sm:inline">Excel</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={exportarPDF}
-                className="px-3 py-2.5 rounded-md bg-white hover:bg-slate-50 border border-slate-300 text-slate-600 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
-                title="Imprimir / Exportar a PDF"
-              >
-                <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline">PDF</span>
-              </button>
             </div>
           </div>
 
-
-          {/* MONITOR EN VIVO DE PATRULLAS */}
-          <PatrolAvailabilityMonitor
-            patrullas={patrullas}
-            solicitudes={solicitudes}
-            currentUser={currentUser}
-          />
+          {moduloActivo === 'nueva' ? (
+            /* FORMULARIO DE NUEVA SOLICITUD DIRECTAMENTE EN LA PANTALLA PRINCIPAL */
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-card">
+              <NuevaSolicitudForm
+                currentUser={currentUser}
+                onSuccess={(nuevaSol) => {
+                  showToast(`Solicitud ${nuevaSol.numero_quema} registrada exitosamente`);
+                  handleCambiarModulo('programadas');
+                  loadSolicitudes();
+                }}
+                onCancel={() => handleCambiarModulo('programadas')}
+              />
+            </div>
+          ) : (
+            <>
+              {/* MONITOR EN VIVO DE PATRULLAS */}
+              <PatrolAvailabilityMonitor
+                patrullas={patrullas}
+                solicitudes={solicitudes}
+                currentUser={currentUser}
+              />
 
           {/* BARRA DE HERRAMIENTAS Y LISTADO DE SOLICITUDES */}
           <div className="space-y-4">
@@ -508,13 +572,14 @@ export default function HomePage() {
                 </div>
                 {puedeCrear && filtroStatus === 'ALL' && (
                   <div className="pt-2">
-                    <Link
-                      href="/quemas/nueva"
+                    <button
+                      type="button"
+                      onClick={() => handleCambiarModulo('nueva')}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#156b49] hover:bg-[#0f4e34] text-white text-xs font-bold transition shadow-sm cursor-pointer"
                     >
                       <FilePlus2 className="w-4 h-4" />
                       <span>Crear Primera Solicitud</span>
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -669,7 +734,9 @@ export default function HomePage() {
               </div>
             )}
           </div>
-        </main>
+        </>
+      )}
+    </main>
       </div>
 
       {/* MODAL DESPACHO DE PATRULLA */}

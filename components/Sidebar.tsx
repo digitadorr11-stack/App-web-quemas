@@ -25,6 +25,8 @@ interface SidebarProps {
   open: boolean;
   onClose: () => void;
   onLogout: () => void;
+  moduloActivo?: 'programadas' | 'nueva';
+  onSelectModulo?: (modulo: 'programadas' | 'nueva') => void;
 }
 
 interface NavItem {
@@ -77,7 +79,14 @@ function iniciales(nombre: string): string {
   return ((partes[0]?.[0] || '') + (partes[1]?.[0] || '')).toUpperCase();
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentUser, open, onClose, onLogout }) => {
+export const Sidebar: React.FC<SidebarProps> = ({
+  currentUser,
+  open,
+  onClose,
+  onLogout,
+  moduloActivo = 'programadas',
+  onSelectModulo,
+}) => {
   const pathname = usePathname();
   const roleInfo = ROLES_CONFIG[currentUser.rol] || {
     label: currentUser.rol,
@@ -132,7 +141,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, open, onClose, on
                 {expandido && (
                   <div className="space-y-0.5 pb-1.5">
                     {items.map((item) => {
-                      const activo = item.href ? pathname === item.href : false;
+                      let activo = item.href ? pathname === item.href : false;
+                      let linkHref = item.href || '/';
+
+                      if (pathname === '/') {
+                        if (item.href === '/') {
+                          activo = moduloActivo === 'programadas';
+                        } else if (item.href === '/quemas/nueva') {
+                          activo = moduloActivo === 'nueva';
+                        }
+                      } else if (item.href === '/quemas/nueva') {
+                        linkHref = '/?modulo=nueva';
+                      }
+
                       const ItemIcon = item.icon;
 
                       if (item.proximamente || !item.href) {
@@ -152,8 +173,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, open, onClose, on
 
                       return (
                         <Link
-                          key={item.href}
-                          href={item.href}
+                          key={item.label}
+                          href={linkHref}
+                          onClick={(e) => {
+                            if (onSelectModulo) {
+                              if (item.href === '/') {
+                                e.preventDefault();
+                                onSelectModulo('programadas');
+                                onClose();
+                                return;
+                              }
+                              if (item.href === '/quemas/nueva') {
+                                e.preventDefault();
+                                onSelectModulo('nueva');
+                                onClose();
+                                return;
+                              }
+                            }
+                            onClose();
+                          }}
                           className={`flex items-center gap-2.5 pl-2.5 pr-2 py-2 rounded-md text-[12.5px] font-medium border-l-2 transition ${
                             activo
                               ? 'bg-union-800/70 border-amber-400 text-white font-semibold'
